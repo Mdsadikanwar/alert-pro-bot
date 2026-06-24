@@ -1,3 +1,4 @@
+//bot live
 export default async function handler(req, res) {
   try {
     // Binance से BTC price ले रहे हैं
