@@ -1,23 +1,22 @@
 export default async function handler(req, res) {
   try {
-    // Binance API से BTC price ले रहे हैं
-    const response = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT', {
+    // CoinGecko API - Binance से ज्यादा reliable Vercel पे
+    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', {
       headers: { 'User-Agent': 'Mozilla/5.0' }
     });
     
     if (!response.ok) {
-      throw new Error(`Binance API error: ${response.status}`);
+      throw new Error(`CoinGecko API error: ${response.status}`);
     }
     
     const data = await response.json();
-    
-    // lastPrice से price ले रहे हैं, वो सबसे accurate होता है
-    const price = data.lastPrice;
+    const price = data.bitcoin.usd;
     
     res.status(200).json({ 
       ok: true, 
       message: "Bot is live", 
-      btc_price: `$${parseFloat(price).toFixed(2)}`,
+      btc_price: `$${price.toFixed(2)}`,
+      source: "CoinGecko",
       time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
     });
     
