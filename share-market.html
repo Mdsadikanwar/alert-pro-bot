@@ -6,36 +6,81 @@
   <title>Share Market Module - Alert Pro</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;padding:40px 20px;min-height:100vh}
+    body{
+      font-family:'Segoe UI',sans-serif;
+      background:#0a0a0a;
+      color:#fff;
+      padding:40px 20px;
+      min-height:100vh
+    }
     .container{max-width:600px;margin:0 auto}
-    .back-btn{display:inline-block;color:#4ade80;text-decoration:none;margin-bottom:30px;font-size:16px}
+    .back-btn{
+      display:inline-block;
+      color:#4ade80;
+      text-decoration:none;
+      margin-bottom:30px;
+      font-size:16px
+    }
     h1{text-align:center;margin-bottom:40px;font-size:36px}
-    .stock-card{background:#1a1a1a;border:2px solid #2a2a2a;border-radius:15px;padding:30px;margin-bottom:20px;text-align:center}
-    .stock-name{font-size:24px;margin-bottom:15px;color:#4ade80}
-    .price{font-size:40px;font-weight:bold;margin-bottom:8px}
-    .change{font-size:20px;font-weight:bold}
+    .stock-card{
+      background:#1a1a1a;
+      border:2px solid #2a2a2a;
+      border-radius:15px;
+      padding:30px;
+      margin-bottom:20px;
+      text-align:center
+    }
+    .stock-name{
+      font-size:24px;
+      margin-bottom:15px;
+      color:#4ade80
+    }
+    .price{
+      font-size:40px;
+      font-weight:bold;
+      margin-bottom:8px
+    }
+    .change{
+      font-size:20px;
+      font-weight:bold
+    }
     .up{color:#4ade80}
     .down{color:#ef4444}
     .loading{color:#888;font-size:20px;text-align:center;padding:40px}
-    .note{text-align:center;color:#666;margin-top:30px;font-size:14px}
+    .note{
+      text-align:center;
+      color:#666;
+      margin-top:30px;
+      font-size:14px
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <a href="/" class="back-btn">← Back to Dashboard</a>
     <h1>📈 Share Market Module Live</h1>
-    <div id="stocks-data"><div class="loading">Loading NIFTY, RELIANCE, TCS...</div></div>
+    
+    <div id="stocks-data">
+      <div class="loading">Loading NIFTY, RELIANCE, TCS...</div>
+    </div>
+    
     <p class="note">Data from Yahoo Finance • Auto refresh every 30 sec</p>
   </div>
+
   <script>
     async function loadStocks() {
       try {
-        const res = await fetch('https://query1.finance.yahoo.com/v7/finance/quote?symbols=^NSEI,RELIANCE.NS,TCS.NS');
+        // अब सीधा Yahoo नहीं, अपने backend /api/stocks को call करेंगे
+        const res = await fetch('/api/stocks');
         const data = await res.json();
-        const html = data.quoteResponse.result.map(stock => {
+        
+        if(!data.ok) throw new Error('API failed');
+        
+        const html = data.stocks.map(stock => {
           const change = stock.regularMarketChangePercent.toFixed(2);
           const cls = change > 0 ? 'up' : 'down';
           const sign = change > 0 ? '+' : '';
+          
           return `
             <div class="stock-card">
               <div class="stock-name">${stock.shortName || stock.symbol}</div>
@@ -44,11 +89,14 @@
             </div>
           `;
         }).join('');
+        
         document.getElementById('stocks-data').innerHTML = html;
       } catch(e) {
-        document.getElementById('stocks-data').innerHTML = '<div class="loading">Error loading stocks. Refresh करो भाई.</div>';
+        document.getElementById('stocks-data').innerHTML = '<div class="loading">Loading...</div>';
+        console.log(e);
       }
     }
+    
     loadStocks();
     setInterval(loadStocks, 30000);
   </script>
