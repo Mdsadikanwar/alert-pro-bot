@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Module - Alert Pro</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;padding:40px 20px;min-height:100vh}
+    .container{max-width:600px;margin:0 auto}
+    .back-btn{display:inline-block;color:#4ade80;text-decoration:none;margin-bottom:30px;font-size:16px}
+    h1{text-align:center;margin-bottom:40px;font-size:36px}
+    .coin-card{background:#1a1a1a;border:2px solid #2a2a2a;border-radius:15px;padding:35px;margin-bottom:25px;text-align:center}
+    .coin-name{font-size:28px;margin-bottom:15px;color:#4ade80}
+    .price{font-size:48px;font-weight:bold;margin-bottom:10px}
+    .status{color:#aaa;font-size:18px}
+    .status span{color:#4ade80;font-weight:bold}
+    .loading{color:#888;font-size:20px;text-align:center;padding:40px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back-btn">← Back to Dashboard</a>
+    <h1>🚀 Crypto Module Live</h1>
+    <div id="crypto-data"><div class="loading">Loading BTC, ETH, SOL price...</div></div>
+  </div>
+  <script>
+    async function loadCrypto() {
+      try {
+        const res = await fetch('/api');
+        const data = await res.json();
+        const ethRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,solana&vs_currencies=usd');
+        const ethData = await ethRes.json();
+        document.getElementById('crypto-data').innerHTML = `
+          <div class="coin-card">
+            <div class="coin-name">Bitcoin BTC</div>
+            <div class="price">${data.btc_price}</div>
+            <div class="status">Telegram Alert: <span>${data.alert_sent ? 'Sent ✅' : 'Not Sent'}</span></div>
+          </div>
+          <div class="coin-card">
+            <div class="coin-name">Ethereum ETH</div>
+            <div class="price">$${ethData.ethereum.usd.toLocaleString()}</div>
+            <div class="status">Live from CoinGecko</div>
+          </div>
+          <div class="coin-card">
+            <div class="coin-name">Solana SOL</div>
+            <div class="price">$${ethData.solana.usd.toLocaleString()}</div>
+            <div class="status">Live from CoinGecko</div>
+          </div>
+        `;
+      } catch(e) {
+        document.getElementById('crypto-data').innerHTML = '<div class="loading">Error loading data. Refresh करो भाई.</div>';
+      }
+    }
+    loadCrypto();
+    setInterval(loadCrypto, 5000);
+  </script>
+</body>
+</html>
