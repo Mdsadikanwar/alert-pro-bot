@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share Market Strategy Save - Alert Pro</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;padding:40px 20px;min-height:100vh}
+    .container{max-width:700px;margin:0 auto}
+    .back-btn{display:inline-block;color:#4ade80;text-decoration:none;margin-bottom:30px;font-size:16px}
+    h1{text-align:center;margin-bottom:40px;font-size:36px}
+    .form-card{background:#1a1a1a;border:2px solid #2a2a2a;border-radius:15px;padding:35px;margin-bottom:30px}
+    .form-group{margin-bottom:20px}
+    label{display:block;margin-bottom:8px;color:#4ade80;font-weight:bold}
+    input, select, textarea{width:100%;padding:12px;background:#0a0a0a;border:2px solid #2a2a2a;border-radius:8px;color:#fff;font-size:16px}
+    textarea{resize:vertical;min-height:80px}
+    .btn-save{width:100%;background:#4ade80;color:#000;padding:15px;border:none;border-radius:10px;font-size:18px;font-weight:bold;cursor:pointer;transition:0.3s}
+    .btn-save:hover{background:#22c55e;transform:scale(1.02)}
+    .strategy-list{margin-top:40px}
+    .strategy-item{background:#1a1a1a;border-left:4px solid #4ade80;border-radius:8px;padding:20px;margin-bottom:15px}
+    .strategy-title{font-size:20px;font-weight:bold;margin-bottom:8px;color:#4ade80}
+    .strategy-details{color:#aaa;font-size:14px;line-height:1.6}
+    .success-msg{background:#22c55e;color:#000;padding:15px;border-radius:8px;margin-bottom:20px;text-align:center;font-weight:bold;display:none}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/share-market.html" class="back-btn">← Back to Share Market</a>
+    <h1>📈 Share Market Strategy Save</h1>
+    <div id="success" class="success-msg">✅ Share Strategy Saved!</div>
+    
+    <div class="form-card">
+      <form id="strategyForm">
+        <div class="form-group">
+          <label>Strategy Name</label>
+          <input type="text" id="name" placeholder="e.g. RELIANCE Swing" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Stock</label>
+          <select id="symbol" required>
+            <option value="">Select Stock</option>
+            <option value="NIFTY">NIFTY 50</option>
+            <option value="RELIANCE">RELIANCE</option>
+            <option value="TCS">TCS</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Entry Price ₹</label>
+          <input type="number" id="entry" placeholder="2500" step="0.01" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Target Price ₹</label>
+          <input type="number" id="target" placeholder="2700" step="0.01" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Stop Loss ₹</label>
+          <input type="number" id="stoploss" placeholder="2400" step="0.01" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Notes / Logic</label>
+          <textarea id="notes" placeholder="Breakout + Volume confirmation..."></textarea>
+        </div>
+        
+        <button type="submit" class="btn-save">💾 Save Share Strategy</button>
+      </form>
+    </div>
+    
+    <div class="strategy-list">
+      <h2 style="margin-bottom:20px;color:#4ade80">📊 Saved Share Strategies</h2>
+      <div id="savedList"></div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('strategyForm');
+    const savedList = document.getElementById('savedList');
+    const successMsg = document.getElementById('success');
+    
+    loadStrategies();
+    
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const strategy = {
+        id: Date.now(),
+        name: document.getElementById('name').value,
+        symbol: document.getElementById('symbol').value,
+        entry: document.getElementById('entry').value,
+        target: document.getElementById('target').value,
+        stoploss: document.getElementById('stoploss').value,
+        notes: document.getElementById('notes').value,
+        date: new Date().toLocaleString('en-IN')
+      };
+      
+      let strategies = JSON.parse(localStorage.getItem('shareStrategies')) || [];
+      strategies.unshift(strategy);
+      localStorage.setItem('shareStrategies', JSON.stringify(strategies));
+      
+      successMsg.style.display = 'block';
+      setTimeout(() => successMsg.style.display = 'none', 3000);
+      form.reset();
+      loadStrategies();
+    });
+    
+    function loadStrategies() {
+      let strategies = JSON.parse(localStorage.getItem('shareStrategies')) || [];
+      if(strategies.length === 0) {
+        savedList.innerHTML = '<p style="color:#666;text-align:center">No share strategies saved yet</p>';
+        return;
+      }
+      savedList.innerHTML = strategies.map(s => `
+        <div class="strategy-item">
+          <div class="strategy-title">${s.name} - ${s.symbol}</div>
+          <div class="strategy-details">
+            Entry: ₹${s.entry} | Target: ₹${s.target} | SL: ₹${s.stoploss}<br>
+            Notes: ${s.notes || 'No notes'}<br>
+            <small>Saved: ${s.date}</small>
+          </div>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>
