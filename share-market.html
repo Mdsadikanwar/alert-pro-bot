@@ -6,99 +6,58 @@
   <title>Share Market Module - Alert Pro</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{
-      font-family:'Segoe UI',sans-serif;
-      background:#0a0a0a;
-      color:#fff;
-      padding:40px 20px;
-      min-height:100vh
-    }
-    .container{max-width:600px;margin:0 auto}
-    .back-btn{
-      display:inline-block;
-      color:#4ade80;
-      text-decoration:none;
-      margin-bottom:30px;
-      font-size:16px
-    }
-    h1{text-align:center;margin-bottom:40px;font-size:36px}
-    .stock-card{
-      background:#1a1a1a;
-      border:2px solid #2a2a2a;
-      border-radius:15px;
-      padding:30px;
-      margin-bottom:20px;
-      text-align:center
-    }
-    .stock-name{
-      font-size:24px;
-      margin-bottom:15px;
-      color:#4ade80
-    }
-    .price{
-      font-size:40px;
-      font-weight:bold;
-      margin-bottom:8px
-    }
-    .change{
-      font-size:20px;
-      font-weight:bold
-    }
-    .up{color:#4ade80}
-    .down{color:#ef4444}
-    .loading{color:#888;font-size:20px;text-align:center;padding:40px}
-    .note{
-      text-align:center;
-      color:#666;
-      margin-top:30px;
-      font-size:14px
-    }
+    body{font-family:'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;padding:40px 20px;min-height:100vh}
+    .container{max-width:800px;margin:0 auto}
+    .back-btn{display:inline-block;color:#4ade80;text-decoration:none;margin-bottom:20px;font-size:16px}
+    h1{text-align:center;margin-bottom:30px;font-size:36px}
+    .btn{display:inline-block;background:#4ade80;color:#000;padding:15px 35px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:16px;transition:0.3s}
+    .btn:hover{background:#22c55e;transform:scale(1.05)}
+    .card{background:#1a1a1a;border:2px solid #2a2a2a;border-radius:15px;padding:30px;margin-bottom:25px;text-align:center}
+    .price-box{font-size:48px;font-weight:bold;color:#4ade80;margin:20px 0}
+    .stock-name{font-size:24px;color:#aaa;margin-bottom:10px}
+    .btn-refresh{background:#2a2a2a;color:#fff;padding:12px 25px;border:none;border-radius:8px;cursor:pointer;font-size:16px;margin-top:20px}
+    .btn-refresh:hover{background:#3a3a3a}
   </style>
 </head>
 <body>
   <div class="container">
     <a href="/" class="back-btn">← Back to Dashboard</a>
-    <h1>📈 Share Market Module Live</h1>
     
-    <div id="stocks-data">
-      <div class="loading">Loading NIFTY, RELIANCE, TCS...</div>
+    <a href="/share-strategy.html" class="btn" style="margin-bottom:20px;display:block">📝 Save Share Strategy</a>
+    
+    <h1>📈 Share Market Module</h1>
+    
+    <div class="card">
+      <div class="stock-name">NIFTY 50</div>
+      <div class="price-box" id="nifty-price">Loading...</div>
+      <button class="btn-refresh" onclick="getPrice()">🔄 Refresh Price</button>
     </div>
     
-    <p class="note">Data from Yahoo Finance • Auto refresh every 30 sec</p>
+    <div class="card">
+      <div class="stock-name">RELIANCE</div>
+      <div class="price-box" id="reliance-price">Loading...</div>
+    </div>
+    
+    <div class="card">
+      <div class="stock-name">TCS</div>
+      <div class="price-box" id="tcs-price">Loading...</div>
+    </div>
   </div>
 
   <script>
-    async function loadStocks() {
+    async function getPrice() {
       try {
-        // अब सीधा Yahoo नहीं, अपने backend /api/stocks को call करेंगे
-        const res = await fetch('/api/stocks');
+        const res = await fetch('/api/stock');
         const data = await res.json();
-        
-        if(!data.ok) throw new Error('API failed');
-        
-        const html = data.stocks.map(stock => {
-          const change = stock.regularMarketChangePercent.toFixed(2);
-          const cls = change > 0 ? 'up' : 'down';
-          const sign = change > 0 ? '+' : '';
-          
-          return `
-            <div class="stock-card">
-              <div class="stock-name">${stock.shortName || stock.symbol}</div>
-              <div class="price">₹${stock.regularMarketPrice.toFixed(2)}</div>
-              <div class="change ${cls}">${sign}${change}%</div>
-            </div>
-          `;
-        }).join('');
-        
-        document.getElementById('stocks-data').innerHTML = html;
+        document.getElementById('nifty-price').textContent = '₹' + data.nifty;
+        document.getElementById('reliance-price').textContent = '₹' + data.reliance;
+        document.getElementById('tcs-price').textContent = '₹' + data.tcs;
       } catch(e) {
-        document.getElementById('stocks-data').innerHTML = '<div class="loading">Loading...</div>';
-        console.log(e);
+        document.getElementById('nifty-price').textContent = 'Error';
       }
     }
-    
-    loadStocks();
-    setInterval(loadStocks, 30000);
+    getPrice();
+    setInterval(getPrice, 30000);
   </script>
 </body>
 </html>
