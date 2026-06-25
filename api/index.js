@@ -1,39 +1,47 @@
-export const config = {
-  schedule: '*/5 *'  // हर 5 मिनट Vercel खुद hit करेगा
-};
-
 export default async function handler(req, res) {
-  try {
-    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
-    const data = await response.json();
-    const price = data.bitcoin.usd;
-
-    const TOKEN = process.env.TELEGRAM_TOKEN;
-    const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-    const ALERT_PRICE = 110000; // $110k पे alert बजेगा
-
-    let message = `BTC: $${price.toFixed(2)}\nTime: ${new Date().toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}`;
-    let alert_sent = false;
-
-    // Alert logic - $110k cross होते ही धमाका
-    if (price >= ALERT_PRICE && TOKEN && CHAT_ID) {
-      message = `🚨 ALERT! BTC $${price.toFixed(2)} cross कर गया!\n$110k टूट गया भाई! 🔥\nTime: ${new Date().toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}`;
-      alert_sent = true;
-
-      await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({chat_id: CHAT_ID, text: message})
+  // CORS enable करो
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  
+  const { query } = req;
+  
+  // 1. BTC Price API
+  if (req.url.includes('/api?coins=')) {
+    try {
+      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd');
+      const data = await r.json();
+      return res.status(200).json({ 
+        ok: true,
+        btc_price: `$${data.bitcoin.usd.toLocaleString()}`,
+        eth_price: `$${data.ethereum.usd.toLocaleString()}`,
+        sol_price: `$${data.solana.usd.toLocaleString()}`,
+        alert_sent: false
       });
+    } catch(e) {
+      return res.status(500).json({ ok: false, error: e.message });
     }
-
-    res.status(200).json({
-      ok: true,
-      btc_price: `$${price.toFixed(2)}`,
-      alert_sent: alert_sent
+  }
+  
+  // 2. Stocks API - Yahoo Finance proxy
+  if (req.url.includes('/api/stocks')) {
+    try {
+      const r = await fetch('https://query1.finance.yahoo.com/v7/finance/quote?symbols=^NSEI,RELIANCE.NS,TCS.NS');
+      const data = await r.json();
+      return res.status(200).json({ ok: true, stocks: data.quoteResponse.result });
+    } catch(e) {
+      return res.status(500).json({ ok: false, error: e.message });
+    }
+  }
+  
+  // Default - BTC price
+  try {
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+    const data = await r.json();
+    return res.status(200).json({ 
+      ok: true, 
+      btc_price: `$${data.bitcoin.usd.toLocaleString()}`, 
+      alert_sent: false 
     });
-    
-  } catch (error) {
-    res.status(500).json({ok: false, error: error.message});
+  } catch(e) {
+    return res.status(500).json({ ok: false, error: e.message });
   }
 }
