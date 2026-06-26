@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/share", 
-      "schedule": "*/1 * * * *"
+      "schedule": "*/15 * * * *"
     }
   ]
 }
