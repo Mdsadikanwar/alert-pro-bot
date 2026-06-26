@@ -1,18 +1,22 @@
 export default async function handler(req, res) {
   try {
-    // Check env vars pehle
     if (!process.env.TELEGRAM_BOT_TOKEN ||!process.env.TELEGRAM_CHAT_ID) {
       return res.status(500).json({ error: 'Telegram env vars missing' });
     }
 
-    const response = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=50');
+    // CoinGecko API - Vercel se 100% chalti hai
+    const response = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=2&interval=hourly');
     
     if (!response.ok) {
-      return res.status(500).json({ error: 'Binance API failed' });
+      return res.status(500).json({ error: `CoinGecko API failed: ${response.status}` });
     }
     
     const data = await response.json();
-    const closes = data.map(candle => parseFloat(candle[4]));
+    const closes = data.prices.map(p => p[1]); // CoinGecko format alag hai
+    
+    if (closes.length < 20) {
+      return res.status(500).json({ error: 'Not enough data from CoinGecko' });
+    }
     
     const ema5 = calculateEMA(closes, 5);
     const ema20 = calculateEMA(closes, 20);
@@ -33,7 +37,7 @@ export default async function handler(req, res) {
     }
     
     if (signal!== 'No crossover') {
-      const tgResponse = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -43,7 +47,14 @@ export default async function handler(req, res) {
       });
     }
     
-    res.status(200).json({ success: true, signal, price, ema5: currentEma5, ema20: currentEma20 });
+    res.status(200).json({ 
+      success: true, 
+      signal, 
+      price: price.toFixed(2), 
+      ema5: currentEma5.toFixed(2), 
+      ema20: currentEma20.toFixed(2),
+      source: 'CoinGecko'
+    });
     
   } catch (error) {
     console.error(error);
