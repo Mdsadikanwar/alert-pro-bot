@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/crypto",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 */5 * * * *"
     },
     {
-      "path": "/api/share",
-      "schedule": "*/5 * * * *"
+      "path": "/api/share", 
+      "schedule": "0 */5 * * * *"
     }
   ]
 }
