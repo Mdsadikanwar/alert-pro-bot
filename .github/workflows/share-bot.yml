@@ -1,0 +1,13 @@
+name: Share Bot Market Hours
+on:
+  schedule:
+    - cron: '15-59 3 * * 1-5'
+    - cron: '* 4-9 * * 1-5'    
+    - cron: '0-15 10 * * 1-5'
+  workflow_dispatch:
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Share API
+        run: curl https://alert-pro-bot.vercel.app/api/share-bot
