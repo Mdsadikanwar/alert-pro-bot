@@ -1,0 +1,11 @@
+name: Crypto Bot 24x7
+on:
+  schedule:
+    - cron: '*/5 * * * *' # Har 5 minute
+  workflow_dispatch:
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Crypto API
+        run: curl https://alert-pro-bot.vercel.app/api/crypto-bot
