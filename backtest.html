@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AlertPro - Backtest Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial; background: #0a0e1a; color: #e2e8f0; padding: 15px; }
+    .header { display: flex; align-items: center; margin-bottom: 20px; gap: 10px; }
+    .back { background: #1e293b; border: none; color: #3b82f6; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; }
+    .header h1 { font-size: 20px; color: #8b5cf6; }
+    .card { background: #131b2e; border: 1px solid #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 15px; }
+    .card h2 { font-size: 16px; margin-bottom: 12px; color: #8b5cf6; }
+    select, input { width: 100%; padding: 10px; margin: 6px 0; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; }
+    label { font-size: 13px; color: #94a3b8; display: block; margin-top: 8px; }
+    button { background: #8b5cf6; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; margin-top: 10px; font-weight: 600; }
+    .flex { display: flex; gap: 8px; }
+    .flex > * { flex: 1; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+    th, td { padding: 10px 6px; text-align: left; border-bottom: 1px solid #1e293b; }
+    th { color: #94a3b8; font-size: 12px; }
+    .buy { color: #10b981; font-weight: 600; }
+    .sell { color: #ef4444; font-weight: 600; }
+    .profit { color: #10b981; }
+    .loss { color: #ef4444; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+    .stat-box { background: #0f172a; padding: 12px; border-radius: 8px; text-align: center; }
+    .stat-box h3 { font-size: 11px; color: #64748b; margin-bottom: 5px; }
+    .stat-box p { font-size: 20px; font-weight: 700; color: #3b82f6; }
+    .loading { text-align: center; padding: 20px; color: #64748b; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="/" class="back">← Back</a>
+    <h1>🔬 Backtest Lab</h1>
+  </div>
+
+  <div class="card">
+    <h2>⚙️ Test Settings</h2>
+    
+    <label>Market Type</label>
+    <select id="marketType" onchange="loadStrategies()">
+      <option value="crypto">Crypto</option>
+      <option value="stocks">Stocks</option>
+    </select>
+    
+    <label>Strategy Select Karo</label>
+    <select id="strategySelect">
+      <option value="">Pehle strategy banao...</option>
+    </select>
+    
+    <div class="flex">
+      <div>
+        <label>Start Date</label>
+        <input id="startDate" type="date" />
+      </div>
+      <div>
+        <label>End Date</label>
+        <input id="endDate" type="date" />
+      </div>
+    </div>
+    
+    <button onclick="runBacktest()">▶️ Backtest Chalao</button>
+  </div>
+
+  <div class="card" id="resultsCard" style="display:none;">
+    <h2>📊 Backtest Results</h2>
+    
+    <div class="stats-grid">
+      <div class="stat-box">
+        <h3>Total Signals</h3>
+        <p id="totalSignals">0</p>
+      </div>
+      <div class="stat-box">
+        <h3>Win Rate</h3>
+        <p id="winRate">0%</p>
+      </div>
+      <div class="stat-box">
+        <h3>Total P/L</h3>
+        <p id="totalPL" class="profit">+0%</p>
+      </div>
+      <div class="stat-box">
+        <h3>Best Trade</h3>
+        <p id="bestTrade" class="profit">+0%</p>
+      </div>
+    </div>
+
+    <table id="resultTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Signal</th>
+          <th>Price</th>
+          <th>P/L %</th>
+        </tr>
+      </thead>
+      <tbody id="resultBody">
+      </tbody>
+    </table>
+  </div>
+
+<script>
+// Default dates - Last 30 days
+const today = new Date();
+const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+document.getElementById('endDate').valueAsDate = today;
+document.getElementById('startDate').valueAsDate = thirtyDaysAgo;
+
+// Load saved strategies from localStorage
+function loadStrategies() {
+  const market = document.getElementById('marketType').value;
+  const key = market === 'crypto' ? 'strategies_crypto' : 'strategies_stocks';
+  const strategies = JSON.parse(localStorage.getItem(key) || '[]');
+  
+  const select = document.getElementById('strategySelect');
+  select.innerHTML = '<option value="">Strategy choose karo...</option>';
+  
+  strategies.forEach(s => {
+    const symbol = market === 'crypto' ? s.coin : s.stock;
+    select.innerHTML += `<option value="${s.id}">${s.name} (${symbol})</option>`;
+  });
+}
+
+// Run Backtest - Abhi dummy data, baad mein API call
+async function runBacktest() {
+  const strategyId = document.getElementById('strategySelect').value;
+  if(!strategyId) { alert('Pehle strategy select karo!'); return; }
+  
+  document.getElementById('resultsCard').style.display = 'block';
+  document.getElementById('resultBody').innerHTML = '<tr><td colspan="4" class="loading">Backtesting... ⏳</td></tr>';
+  
+  // TODO: Ye API call karega /api/backtest
+  // Abhi dummy data dikhate hain
+  setTimeout(() => {
+    const dummyResults = [
+      { date: '2026-06-20', signal: 'BUY', price: 65234, pl: 2.3 },
+      { date: '2026-06-18', signal: 'SELL', price: 66890, pl: -1.2 },
+      { date: '2026-06-15', signal: 'BUY', price: 64100, pl: 3.8 },
+      { date: '2026-06-10', signal: 'BUY', price: 62300, pl: 1.5 },
+    ];
+    
+    let html = '';
+    let totalPL = 0;
+    let wins = 0;
+    
+    dummyResults.forEach(r => {
+      totalPL += r.pl;
+      if(r.pl > 0) wins++;
+      const plClass = r.pl >= 0 ? 'profit' : 'loss';
+      const plSign = r.pl >= 0 ? '+' : '';
+      html += `
+        <tr>
+          <td>${r.date}</td>
+          <td class="${r.signal === 'BUY' ? 'buy' : 'sell'}">${r.signal}</td>
+          <td>$${r.price.toLocaleString()}</td>
+          <td class="${plClass}">${plSign}${r.pl}%</td>
+        </tr>
+      `;
+    });
+    
+    document.getElementById('resultBody').innerHTML = html;
+    document.getElementById('totalSignals').innerText = dummyResults.length;
+    document.getElementById('winRate').innerText = Math.round(wins / dummyResults.length * 100) + '%';
+    document.getElementById('totalPL').innerText = (totalPL >= 0 ? '+' : '') + totalPL.toFixed(1) + '%';
+    document.getElementById('totalPL').className = totalPL >= 0 ? 'profit' : 'loss';
+    document.getElementById('bestTrade').innerText = '+3.8%';
+  }, 1500);
+}
+
+// Page load pe strategies load karo
+loadStrategies();
+</script>
+
+</body>
+</html>
