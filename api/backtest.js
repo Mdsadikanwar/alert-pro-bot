@@ -1,71 +1,72 @@
 export default async function handler(req, res) {
   try {
-    const { market, strategyId, startDate, endDate } = req.query;
+    const { market, startDate, endDate } = req.query;
     const strategy = JSON.parse(req.query.strategy || '{}');
 
     if (!strategy.coin &&!strategy.stock) {
       return res.status(400).json({ success: false, error: 'Strategy data missing' });
     }
 
-    let candles = [];
-    const symbol = market === 'crypto'? strategy.coin : strategy.stock;
-    const start = new Date(startDate).getTime();
-    const end = new Date(endDate).getTime();
-
-    if (market === 'crypto') {
-      // Binance se 5min candles
-      const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=5m&startTime=${start}&endTime=${end}&limit=1000`;
-      const response = await fetch(url);
-      const data = await response.json();
-
-      // FIX: Check karo data array hai ya nahi
-      if (!Array.isArray(data)) {
-        console.log('Binance Error:', data);
-        return res.status(400).json({
-          success: false,
-          error: data.msg || 'Binance se data nahi mila. Symbol ya date check karo.'
-        });
-      }
-
-      if (data.length === 0) {
-        return res.status(200).json({
-          success: true,
-          signals: 0,
-          winRate: 0,
-          totalPL: 0,
-          bestTrade: 0,
-          trades: [],
-          message: 'Is date range mein koi data nahi mila'
-        });
-      }
-
-      candles = data.map(d => ({
-        time: d[0],
-        open: parseFloat(d[1]),
-        high: parseFloat(d[2]),
-        low: parseFloat(d[3]),
-        close: parseFloat(d[4]),
-        volume: parseFloat(d[5])
-      }));
-
-    } else {
+    if (market!== 'crypto') {
       return res.status(200).json({
         success: false,
-        error: 'Stock backtest abhi ready nahi. Crypto test karo bhai!'
+        error: 'Stock backtest abhi ready nahi. Crypto test karo!'
       });
     }
 
-    // Strategy run karo
+    // STEP 1: CoinGecko se data lao - No restriction
+    const coinId = strategy.coin.toLowerCase().replace('usdt', ''); // BTCUSDT -> btc
+    const coinMap = { btc: 'bitcoin', eth: 'ethereum', bnb: 'binancecoin' };
+    const geckoId = coinMap[coinId] || 'bitcoin';
+
+    const fromTime = Math.floor(new Date(startDate).getTime() / 1000);
+    const toTime = Math.floor(new Date(endDate).getTime() / 1000);
+
+    // CoinGecko: 30 din ka hourly data free mein
+    const url = `https://api.coingecko.com/api/v3/coins/${geckoId}/market_chart/range?vs_currency=usd&from=${fromTime}&to=${toTime}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!data.prices ||!Array.isArray(data.prices)) {
+      return res.status(400).json({
+        success: false,
+        error: 'CoinGecko se data nahi mila. Coin name check karo ya date range kam karo.'
+      });
+    }
+
+    if (data.prices.length === 0) {
+      return res.status(200).json({
+        success: true,
+        signals: 0,
+        winRate: 0,
+        totalPL: 0,
+        bestTrade: 0,
+        trades: [],
+        message: 'Is date range mein koi data nahi mila'
+      });
+    }
+
+    // STEP 2: CoinGecko data ko candle format mein convert karo
+    const candles = data.prices.map(p => ({
+      time: p[0],
+      close: p[1],
+      open: p[1], // CoinGecko hourly mein OHLC nahi deta, close hi use karo
+      high: p[1],
+      low: p[1]
+    }));
+
+    // STEP 3: Strategy run karo
     const signals = runStrategyOnCandles(candles, strategy);
     const results = calculatePL(signals);
 
     res.status(200).json({
       success: true,
-      signals: signals.length,
+      signals: signals.filter(s => s.type === 'SELL').length,
       winRate: results.winRate,
       totalPL: results.totalPL,
       bestTrade: results.bestTrade,
-      trades: signals.filter(s => s.type === 'SELL') // Sirf closed trades dikhao
+      trades: signals
     });
 
   } catch (error) {
@@ -74,7 +75,7 @@ export default async function handler(req, res) {
   }
 }
 
-// Helper: Strategy Logic
+// Helper Functions - Same as before
 function runStrategyOnCandles(candles, strat) {
   const emaFast = parseInt(strat.emaFast);
   const emaSlow = parseInt(strat.emaSlow);
