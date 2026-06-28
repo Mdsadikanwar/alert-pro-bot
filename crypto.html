@@ -6,144 +6,212 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Arial; background: #0a0e1a; color: #e2e8f0; padding: 15px; }
-    .header { display: flex; align-items: center; margin-bottom: 20px; gap: 10px; }
-    .back { background: #1e293b; border: none; color: #3b82f6; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; }
-    .header h1 { font-size: 20px; color: #f59e0b; }
-    .card { background: #131b2e; border: 1px solid #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 15px; }
-    .card h2 { font-size: 16px; margin-bottom: 12px; color: #f59e0b; }
-    input, select { width: 100%; padding: 10px; margin: 6px 0; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; }
+   .header { display: flex; align-items: center; margin-bottom: 20px; gap: 10px; }
+   .back { background: #1e293b; border: none; color: #3b82f6; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; }
+   .header h1 { font-size: 20px; color: #3b82f6; }
+   .card { background: #131b2e; border: 1px solid #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 15px; }
+   .card h2 { font-size: 16px; margin-bottom: 12px; color: #3b82f6; }
+    select, input, textarea { width: 100%; padding: 10px; margin: 6px 0; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; }
+    textarea { min-height: 80px; font-family: monospace; }
     label { font-size: 13px; color: #94a3b8; display: block; margin-top: 8px; }
-    button { background: #f59e0b; color: #000; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; margin-top: 10px; font-weight: 600; }
-    .btn-red { background: #ef4444; color: #fff; padding: 6px 10px; width: auto; font-size: 12px; margin-left: 5px; }
-    .btn-small { background: #3b82f6; color: #fff; padding: 6px 10px; width: auto; font-size: 12px; margin-left: 5px; }
-    .strategy-item { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid #f59e0b; }
-    .strategy-item h3 { font-size: 15px; margin-bottom: 5px; }
-    .strategy-item p { font-size: 12px; color: #94a3b8; }
-    .actions { margin-top: 8px; }
-    .flex { display: flex; gap: 8px; }
-    .flex > * { flex: 1; }
-    .tag { display: inline-block; background: #1e293b; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 5px; }
+    button { background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; margin-top: 10px; font-weight: 600; }
+   .btn-secondary { background: #475569; }
+   .btn-danger { background: #ef4444; }
+   .btn-success { background: #10b981; }
+   .strategy-item { background: #0f172a; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #1e293b; }
+   .strategy-item h3 { font-size: 15px; margin-bottom: 8px; color: #10b981; }
+   .strategy-item p { font-size: 12px; color: #94a3b8; margin: 4px 0; }
+   .action-btns { display: flex; gap: 8px; margin-top: 10px; }
+   .action-btns button { margin: 0; padding: 8px; font-size: 12px; }
+   .tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+   .tab { flex: 1; padding: 10px; background: #1e293b; border: none; color: #94a3b8; border-radius: 8px; cursor: pointer; }
+   .tab.active { background: #3b82f6; color: white; }
+   .hidden { display: none; }
   </style>
 </head>
 <body>
   <div class="header">
     <a href="/" class="back">← Back</a>
-    <h1>₿ Crypto Strategies</h1>
+    <h1>💰 Crypto Strategies</h1>
   </div>
 
   <div class="card">
-    <h2>➕ Nayi Crypto Strategy</h2>
-    <label>Strategy Naam</label>
-    <input id="stratName" placeholder="Ex: BTC EMA Cross 5-20" />
+    <h2>⚡ Nayi Crypto Strategy</h2>
+    
+    <label>Strategy Name</label>
+    <input id="strategyName" type="text" placeholder="Meri BTC Strategy" />
     
     <label>Coin Select Karo</label>
-    <select id="coin">
+    <select id="coinSelect">
       <option value="BTCUSDT">Bitcoin - BTC/USDT</option>
       <option value="ETHUSDT">Ethereum - ETH/USDT</option>
-      <option value="BNBUSDT">BNB - BNB/USDT</option>
-      <option value="SOLUSDT">Solana - SOL/USDT</option>
+      <option value="BNBUSDT">Binance - BNB/USDT</option>
     </select>
-    
-    <div class="flex">
-      <div>
-        <label>EMA Fast</label>
-        <input id="emaFast" type="number" value="5" />
-      </div>
-      <div>
-        <label>EMA Slow</label>
-        <input id="emaSlow" type="number" value="20" />
-      </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('simple')">Simple Mode</button>
+      <button class="tab" onclick="switchTab('custom')">Custom Mode</button>
+    </div>
+
+    <div id="simpleMode">
+      <label>EMA Fast Period</label>
+      <input id="emaFast" type="number" value="9" />
+      
+      <label>EMA Slow Period</label>
+      <input id="emaSlow" type="number" value="21" />
+      
+      <label>RSI Period</label>
+      <input id="rsiPeriod" type="number" value="14" />
+      
+      <label>RSI Buy Level - Isse neeche khareedo</label>
+      <input id="rsiLevel" type="number" value="45" />
+    </div>
+
+    <div id="customMode" class="hidden">
+      <label>Custom Strategy - Apni language mein likh</label>
+      <textarea id="customStrategy" placeholder="Example:
+BUY jab 5 EMA 13 EMA ko cross kare upar
+Aur RSI 50 se kam ho
+SELL jab 5 EMA 13 EMA ko cross kare neeche"></textarea>
+      <p style="font-size:11px; color:#64748b; margin-top:5px;">Note: Abhi ye feature aa raha hai. Filhaal Simple Mode use karo.</p>
     </div>
     
-    <div class="flex">
-      <div>
-        <label>RSI Period</label>
-        <input id="rsiPeriod" type="number" value="14" />
-      </div>
-      <div>
-        <label>RSI Buy Level</label>
-        <input id="rsiLevel" type="number" value="30" />
-      </div>
-    </div>
-    
-    <button onclick="saveStrategy()">💾 Crypto Strategy Save Karo</button>
+    <button id="saveBtn" onclick="saveStrategy()">💾 Crypto Strategy Save Karo</button>
+    <button id="updateBtn" class="hidden btn-success" onclick="updateStrategy()">✅ Update Karo</button>
+    <button id="cancelBtn" class="hidden btn-secondary" onclick="cancelEdit()">❌ Cancel</button>
   </div>
 
   <div class="card">
-    <h2>📂 Meri Crypto Strategies</h2>
-    <div id="strategyList">
-      <p style="color:#64748b; font-size:13px; text-align:center;">Abhi koi strategy save nahi hai</p>
+    <h2>📁 Meri Crypto Strategies</h2>
+    <div id="strategiesList">
+      <p style="color:#64748b; text-align:center;">Koi strategy nahi mili</p>
     </div>
   </div>
 
 <script>
-const STORAGE_KEY = 'strategies_crypto';
+let strategies = JSON.parse(localStorage.getItem('strategies_crypto') || '[]');
+let editingId = null;
+let currentTab = 'simple';
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('simpleMode').classList.toggle('hidden', tab!== 'simple');
+  document.getElementById('customMode').classList.toggle('hidden', tab!== 'custom');
+}
+
+function renderStrategies() {
+  const list = document.getElementById('strategiesList');
+  if (strategies.length === 0) {
+    list.innerHTML = '<p style="color:#64748b; text-align:center;">Koi strategy nahi mili</p>';
+    return;
+  }
+  
+  list.innerHTML = strategies.map(s => `
+    <div class="strategy-item">
+      <h3>${s.name}</h3>
+      <p><b>Coin:</b> ${s.coin}</p>
+      <p><b>EMA:</b> ${s.emaFast}/${s.emaSlow} | <b>RSI:</b> ${s.rsiPeriod} < ${s.rsiLevel}</p>
+      <p style="font-size:10px; color:#475569;">Saved: ${new Date(s.savedAt).toLocaleString('en-IN')}</p>
+      <div class="action-btns">
+        <button class="btn-secondary" onclick="editStrategy(${s.id})">✏️ Edit</button>
+        <button class="btn-secondary" onclick="testStrategy(${s.id})">▶️ Test Now</button>
+        <button class="btn-danger" onclick="deleteStrategy(${s.id})">🗑️ Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
 
 function saveStrategy() {
-  const name = document.getElementById('stratName').value;
-  if(!name) { alert('Naam to daal bhai!'); return; }
+  const name = document.getElementById('strategyName').value;
+  if (!name) { alert('Strategy ka naam daal bhai!'); return; }
   
   const strategy = {
     id: Date.now(),
     name: name,
-    coin: document.getElementById('coin').value,
+    coin: document.getElementById('coinSelect').value,
     emaFast: document.getElementById('emaFast').value,
     emaSlow: document.getElementById('emaSlow').value,
     rsiPeriod: document.getElementById('rsiPeriod').value,
     rsiLevel: document.getElementById('rsiLevel').value,
-    created: new Date().toLocaleString('en-IN')
+    savedAt: new Date().toISOString()
   };
   
-  let strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
   strategies.push(strategy);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(strategies));
-  
-  document.getElementById('stratName').value = '';
-  loadStrategies();
-  alert('✅ Crypto strategy save ho gayi!');
+  localStorage.setItem('strategies_crypto', JSON.stringify(strategies));
+  renderStrategies();
+  clearForm();
+  alert('✅ Strategy save ho gayi!');
 }
 
-function loadStrategies() {
-  const strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  const listDiv = document.getElementById('strategyList');
+function editStrategy(id) {
+  const s = strategies.find(st => st.id === id);
+  if (!s) return;
   
-  if(strategies.length === 0) {
-    listDiv.innerHTML = '<p style="color:#64748b; font-size:13px; text-align:center;">Abhi koi strategy save nahi hai</p>';
-    return;
-  }
+  editingId = id;
+  document.getElementById('strategyName').value = s.name;
+  document.getElementById('coinSelect').value = s.coin;
+  document.getElementById('emaFast').value = s.emaFast;
+  document.getElementById('emaSlow').value = s.emaSlow;
+  document.getElementById('rsiPeriod').value = s.rsiPeriod;
+  document.getElementById('rsiLevel').value = s.rsiLevel;
   
-  listDiv.innerHTML = '';
-  strategies.reverse().forEach(s => {
-    listDiv.innerHTML += `
-      <div class="strategy-item">
-        <h3>${s.name}</h3>
-        <p><span class="tag">${s.coin}</span> EMA: ${s.emaFast}/${s.emaSlow} | RSI: ${s.rsiPeriod} < ${s.rsiLevel}</p>
-        <p style="font-size:11px;">Saved: ${s.created}</p>
-        <div class="actions">
-          <button class="btn-small" onclick="runStrategy(${s.id})">▶️ Test Now</button>
-          <button class="btn-red" onclick="deleteStrategy(${s.id})">🗑️ Delete</button>
-        </div>
-      </div>
-    `;
-  });
+  document.getElementById('saveBtn').classList.add('hidden');
+  document.getElementById('updateBtn').classList.remove('hidden');
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+function updateStrategy() {
+  const idx = strategies.findIndex(st => st.id === editingId);
+  if (idx === -1) return;
+  
+  strategies[idx] = {
+  ...strategies[idx],
+    name: document.getElementById('strategyName').value,
+    coin: document.getElementById('coinSelect').value,
+    emaFast: document.getElementById('emaFast').value,
+    emaSlow: document.getElementById('emaSlow').value,
+    rsiPeriod: document.getElementById('rsiPeriod').value,
+    rsiLevel: document.getElementById('rsiLevel').value,
+  };
+  
+  localStorage.setItem('strategies_crypto', JSON.stringify(strategies));
+  renderStrategies();
+  cancelEdit();
+  alert('✅ Strategy update ho gayi!');
+}
+
+function cancelEdit() {
+  editingId = null;
+  clearForm();
+  document.getElementById('saveBtn').classList.remove('hidden');
+  document.getElementById('updateBtn').classList.add('hidden');
+  document.getElementById('cancelBtn').classList.add('hidden');
 }
 
 function deleteStrategy(id) {
-  if(!confirm('Pakka delete karni hai?')) return;
-  let strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  strategies = strategies.filter(s => s.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(strategies));
-  loadStrategies();
+  if (!confirm('Pakka delete karna hai?')) return;
+  strategies = strategies.filter(st => st.id!== id);
+  localStorage.setItem('strategies_crypto', JSON.stringify(strategies));
+  renderStrategies();
 }
 
-async function runStrategy(id) {
-  const strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  const strat = strategies.find(s => s.id === id);
-  alert(`Running: ${strat.name}\nCoin: ${strat.coin}\n\nNext: Ye button /api/crypto-bot ko params ke saath call karega!`);
-  // TODO: fetch(`/api/crypto-bot?coin=${strat.coin}&emaFast=${strat.emaFast}...`)
+function testStrategy(id) {
+  const s = strategies.find(st => st.id === id);
+  alert(`Running: ${s.name}\nCoin: ${s.coin}\n\nYe /api/crypto-bot ko call karega live alert ke liye!`);
 }
 
-loadStrategies();
+function clearForm() {
+  document.getElementById('strategyName').value = '';
+  document.getElementById('emaFast').value = '9';
+  document.getElementById('emaSlow').value = '21';
+  document.getElementById('rsiPeriod').value = '14';
+  document.getElementById('rsiLevel').value = '45';
+}
+
+renderStrategies();
 </script>
 
 </body>
