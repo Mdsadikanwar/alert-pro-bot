@@ -1,63 +1,150 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crypto Module - Alert Pro</title>
+  <title>AlertPro - Crypto Strategies</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;padding:40px 20px;min-height:100vh}
-    .container{max-width:800px;margin:0 auto}
-    .back-btn{display:inline-block;color:#4ade80;text-decoration:none;margin-bottom:20px;font-size:16px}
-    h1{text-align:center;margin-bottom:30px;font-size:36px}
-    .btn{display:inline-block;background:#4ade80;color:#000;padding:15px 35px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:16px;transition:0.3s}
-    .btn:hover{background:#22c55e;transform:scale(1.05)}
-    .card{background:#1a1a1a;border:2px solid #2a2a2a;border-radius:15px;padding:30px;margin-bottom:25px;text-align:center}
-    .price-box{font-size:48px;font-weight:bold;color:#4ade80;margin:20px 0}
-    .coin-name{font-size:24px;color:#aaa;margin-bottom:10px}
-    .btn-refresh{background:#2a2a2a;color:#fff;padding:12px 25px;border:none;border-radius:8px;cursor:pointer;font-size:16px;margin-top:20px}
-    .btn-refresh:hover{background:#3a3a3a}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial; background: #0a0e1a; color: #e2e8f0; padding: 15px; }
+    .header { display: flex; align-items: center; margin-bottom: 20px; gap: 10px; }
+    .back { background: #1e293b; border: none; color: #3b82f6; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; }
+    .header h1 { font-size: 20px; color: #f59e0b; }
+    .card { background: #131b2e; border: 1px solid #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 15px; }
+    .card h2 { font-size: 16px; margin-bottom: 12px; color: #f59e0b; }
+    input, select { width: 100%; padding: 10px; margin: 6px 0; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; }
+    label { font-size: 13px; color: #94a3b8; display: block; margin-top: 8px; }
+    button { background: #f59e0b; color: #000; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; margin-top: 10px; font-weight: 600; }
+    .btn-red { background: #ef4444; color: #fff; padding: 6px 10px; width: auto; font-size: 12px; margin-left: 5px; }
+    .btn-small { background: #3b82f6; color: #fff; padding: 6px 10px; width: auto; font-size: 12px; margin-left: 5px; }
+    .strategy-item { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid #f59e0b; }
+    .strategy-item h3 { font-size: 15px; margin-bottom: 5px; }
+    .strategy-item p { font-size: 12px; color: #94a3b8; }
+    .actions { margin-top: 8px; }
+    .flex { display: flex; gap: 8px; }
+    .flex > * { flex: 1; }
+    .tag { display: inline-block; background: #1e293b; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 5px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <a href="/" class="back-btn">← Back to Dashboard</a>
+  <div class="header">
+    <a href="/" class="back">← Back</a>
+    <h1>₿ Crypto Strategies</h1>
+  </div>
+
+  <div class="card">
+    <h2>➕ Nayi Crypto Strategy</h2>
+    <label>Strategy Naam</label>
+    <input id="stratName" placeholder="Ex: BTC EMA Cross 5-20" />
     
-    <a href="/crypto-strategy.html" class="btn" style="margin-bottom:20px;display:block">📝 Save Crypto Strategy</a>
+    <label>Coin Select Karo</label>
+    <select id="coin">
+      <option value="BTCUSDT">Bitcoin - BTC/USDT</option>
+      <option value="ETHUSDT">Ethereum - ETH/USDT</option>
+      <option value="BNBUSDT">BNB - BNB/USDT</option>
+      <option value="SOLUSDT">Solana - SOL/USDT</option>
+    </select>
     
-    <h1>🚀 Crypto Module</h1>
-    
-    <div class="card">
-      <div class="coin-name">Bitcoin BTC</div>
-      <div class="price-box" id="btc-price">Loading...</div>
-      <button class="btn-refresh" onclick="getPrice()">🔄 Refresh Price</button>
+    <div class="flex">
+      <div>
+        <label>EMA Fast</label>
+        <input id="emaFast" type="number" value="5" />
+      </div>
+      <div>
+        <label>EMA Slow</label>
+        <input id="emaSlow" type="number" value="20" />
+      </div>
     </div>
     
-    <div class="card">
-      <div class="coin-name">Ethereum ETH</div>
-      <div class="price-box" id="eth-price">Loading...</div>
+    <div class="flex">
+      <div>
+        <label>RSI Period</label>
+        <input id="rsiPeriod" type="number" value="14" />
+      </div>
+      <div>
+        <label>RSI Buy Level</label>
+        <input id="rsiLevel" type="number" value="30" />
+      </div>
     </div>
     
-    <div class="card">
-      <div class="coin-name">Solana SOL</div>
-      <div class="price-box" id="sol-price">Loading...</div>
+    <button onclick="saveStrategy()">💾 Crypto Strategy Save Karo</button>
+  </div>
+
+  <div class="card">
+    <h2>📂 Meri Crypto Strategies</h2>
+    <div id="strategyList">
+      <p style="color:#64748b; font-size:13px; text-align:center;">Abhi koi strategy save nahi hai</p>
     </div>
   </div>
 
-  <script>
-    async function getPrice() {
-      try {
-        const res = await fetch('/api');
-        const data = await res.json();
-        document.getElementById('btc-price').textContent = '$' + data.btc;
-        document.getElementById('eth-price').textContent = '$' + data.eth;
-        document.getElementById('sol-price').textContent = '$' + data.sol;
-      } catch(e) {
-        document.getElementById('btc-price').textContent = 'Error';
-      }
-    }
-    getPrice();
-    setInterval(getPrice, 30000);
-  </script>
+<script>
+const STORAGE_KEY = 'strategies_crypto';
+
+function saveStrategy() {
+  const name = document.getElementById('stratName').value;
+  if(!name) { alert('Naam to daal bhai!'); return; }
+  
+  const strategy = {
+    id: Date.now(),
+    name: name,
+    coin: document.getElementById('coin').value,
+    emaFast: document.getElementById('emaFast').value,
+    emaSlow: document.getElementById('emaSlow').value,
+    rsiPeriod: document.getElementById('rsiPeriod').value,
+    rsiLevel: document.getElementById('rsiLevel').value,
+    created: new Date().toLocaleString('en-IN')
+  };
+  
+  let strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  strategies.push(strategy);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(strategies));
+  
+  document.getElementById('stratName').value = '';
+  loadStrategies();
+  alert('✅ Crypto strategy save ho gayi!');
+}
+
+function loadStrategies() {
+  const strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  const listDiv = document.getElementById('strategyList');
+  
+  if(strategies.length === 0) {
+    listDiv.innerHTML = '<p style="color:#64748b; font-size:13px; text-align:center;">Abhi koi strategy save nahi hai</p>';
+    return;
+  }
+  
+  listDiv.innerHTML = '';
+  strategies.reverse().forEach(s => {
+    listDiv.innerHTML += `
+      <div class="strategy-item">
+        <h3>${s.name}</h3>
+        <p><span class="tag">${s.coin}</span> EMA: ${s.emaFast}/${s.emaSlow} | RSI: ${s.rsiPeriod} < ${s.rsiLevel}</p>
+        <p style="font-size:11px;">Saved: ${s.created}</p>
+        <div class="actions">
+          <button class="btn-small" onclick="runStrategy(${s.id})">▶️ Test Now</button>
+          <button class="btn-red" onclick="deleteStrategy(${s.id})">🗑️ Delete</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function deleteStrategy(id) {
+  if(!confirm('Pakka delete karni hai?')) return;
+  let strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  strategies = strategies.filter(s => s.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(strategies));
+  loadStrategies();
+}
+
+async function runStrategy(id) {
+  const strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  const strat = strategies.find(s => s.id === id);
+  alert(`Running: ${strat.name}\nCoin: ${strat.coin}\n\nNext: Ye button /api/crypto-bot ko params ke saath call karega!`);
+  // TODO: fetch(`/api/crypto-bot?coin=${strat.coin}&emaFast=${strat.emaFast}...`)
+}
+
+loadStrategies();
+</script>
+
 </body>
 </html>
