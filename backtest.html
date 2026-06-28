@@ -122,50 +122,61 @@ function loadStrategies() {
   });
 }
 
-// Run Backtest - Abhi dummy data, baad mein API call
+// Run Backtest - REAL API CALL
 async function runBacktest() {
+  const market = document.getElementById('marketType').value;
   const strategyId = document.getElementById('strategySelect').value;
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
+  
   if(!strategyId) { alert('Pehle strategy select karo!'); return; }
+  if(!startDate || !endDate) { alert('Date select karo!'); return; }
+  
+  // Strategy data nikalo
+  const key = market === 'crypto' ? 'strategies_crypto' : 'strategies_stocks';
+  const strategies = JSON.parse(localStorage.getItem(key) || '[]');
+  const strategy = strategies.find(s => s.id == strategyId);
+  
+  if(!strategy) { alert('Strategy nahi mili!'); return; }
   
   document.getElementById('resultsCard').style.display = 'block';
-  document.getElementById('resultBody').innerHTML = '<tr><td colspan="4" class="loading">Backtesting... ⏳</td></tr>';
+  document.getElementById('resultBody').innerHTML = '<tr><td colspan="4" class="loading">Binance se data laa rahe hain... ⏳</td></tr>';
   
-  // TODO: Ye API call karega /api/backtest
-  // Abhi dummy data dikhate hain
-  setTimeout(() => {
-    const dummyResults = [
-      { date: '2026-06-20', signal: 'BUY', price: 65234, pl: 2.3 },
-      { date: '2026-06-18', signal: 'SELL', price: 66890, pl: -1.2 },
-      { date: '2026-06-15', signal: 'BUY', price: 64100, pl: 3.8 },
-      { date: '2026-06-10', signal: 'BUY', price: 62300, pl: 1.5 },
-    ];
+  try {
+    const url = `/api/backtest?market=${market}&startDate=${startDate}&endDate=${endDate}&strategy=${encodeURIComponent(JSON.stringify(strategy))}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    
+    if (!data.success) throw new Error(data.error);
     
     let html = '';
-    let totalPL = 0;
-    let wins = 0;
-    
-    dummyResults.forEach(r => {
-      totalPL += r.pl;
-      if(r.pl > 0) wins++;
-      const plClass = r.pl >= 0 ? 'profit' : 'loss';
-      const plSign = r.pl >= 0 ? '+' : '';
-      html += `
-        <tr>
-          <td>${r.date}</td>
-          <td class="${r.signal === 'BUY' ? 'buy' : 'sell'}">${r.signal}</td>
-          <td>$${r.price.toLocaleString()}</td>
-          <td class="${plClass}">${plSign}${r.pl}%</td>
-        </tr>
-      `;
-    });
+    if (data.trades.length === 0) {
+      html = '<tr><td colspan="4" style="text-align:center; color:#64748b;">Is period mein koi signal nahi mila</td></tr>';
+    } else {
+      data.trades.forEach(t => {
+        const plClass = t.pl >= 0 ? 'profit' : 'loss';
+        const plSign = t.pl >= 0 ? '+' : '';
+        html += `
+          <tr>
+            <td>${t.date}</td>
+            <td class="${t.type === 'BUY' ? 'buy' : 'sell'}">${t.type}</td>
+            <td>$${t.price.toLocaleString()}</td>
+            <td class="${plClass}">${t.pl ? plSign + t.pl + '%' : '-'}</td>
+          </tr>
+        `;
+      });
+    }
     
     document.getElementById('resultBody').innerHTML = html;
-    document.getElementById('totalSignals').innerText = dummyResults.length;
-    document.getElementById('winRate').innerText = Math.round(wins / dummyResults.length * 100) + '%';
-    document.getElementById('totalPL').innerText = (totalPL >= 0 ? '+' : '') + totalPL.toFixed(1) + '%';
-    document.getElementById('totalPL').className = totalPL >= 0 ? 'profit' : 'loss';
-    document.getElementById('bestTrade').innerText = '+3.8%';
-  }, 1500);
+    document.getElementById('totalSignals').innerText = data.signals;
+    document.getElementById('winRate').innerText = data.winRate + '%';
+    document.getElementById('totalPL').innerText = (data.totalPL >= 0 ? '+' : '') + data.totalPL + '%';
+    document.getElementById('totalPL').className = data.totalPL >= 0 ? 'profit' : 'loss';
+    document.getElementById('bestTrade').innerText = '+' + data.bestTrade + '%';
+    
+  } catch (error) {
+    document.getElementById('resultBody').innerHTML = `<tr><td colspan="4" style="color:#ef4444; text-align:center;">Error: ${error.message}</td></tr>`;
+  }
 }
 
 // Page load pe strategies load karo
