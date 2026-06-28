@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AlertPro - Stock Strategies</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial; background: #0a0e1a; color: #e2e8f0; padding: 15px; }
+    .header { display: flex; align-items: center; margin-bottom: 20px; gap: 10px; }
+    .back { background: #1e293b; border: none; color: #3b82f6; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; }
+    .header h1 { font-size: 20px; color: #10b981; }
+    .card { background: #131b2e; border: 1px solid #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 15px; }
+    .card h2 { font-size: 16px; margin-bottom: 12px; color: #10b981; }
+    input, select { width: 100%; padding: 10px; margin: 6px 0; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; }
+    label { font-size: 13px; color: #94a3b8; display: block; margin-top: 8px; }
+    button { background: #10b981; color: #000; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; margin-top: 10px; font-weight: 600; }
+    .btn-red { background: #ef4444; color: #fff; padding: 6px 10px; width: auto; font-size: 12px; margin-left: 5px; }
+    .btn-small { background: #3b82f6; color: #fff; padding: 6px 10px; width: auto; font-size: 12px; margin-left: 5px; }
+    .strategy-item { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid #10b981; }
+    .strategy-item h3 { font-size: 15px; margin-bottom: 5px; }
+    .strategy-item p { font-size: 12px; color: #94a3b8; }
+    .actions { margin-top: 8px; }
+    .flex { display: flex; gap: 8px; }
+    .flex > * { flex: 1; }
+    .tag { display: inline-block; background: #1e293b; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 5px; }
+    .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+    .checkbox-row input { width: auto; margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="/" class="back">← Back</a>
+    <h1>📈 Stock Strategies</h1>
+  </div>
+
+  <div class="card">
+    <h2>➕ Nayi Stock Strategy</h2>
+    <label>Strategy Naam</label>
+    <input id="stratName" placeholder="Ex: Nifty EMA200 + VWAP" />
+    
+    <label>Stock/Index Select Karo</label>
+    <select id="stock">
+      <option value="NIFTY">Nifty 50</option>
+      <option value="BANKNIFTY">Bank Nifty</option>
+      <option value="RELIANCE.NS">Reliance</option>
+      <option value="TCS.NS">TCS</option>
+      <option value="INFY.NS">Infosys</option>
+      <option value="HDFCBANK.NS">HDFC Bank</option>
+    </select>
+    
+    <div class="flex">
+      <div>
+        <label>EMA Fast</label>
+        <input id="emaFast" type="number" value="9" />
+      </div>
+      <div>
+        <label>EMA Slow</label>
+        <input id="emaSlow" type="number" value="21" />
+      </div>
+    </div>
+    
+    <label>EMA 200 Filter</label>
+    <select id="ema200Filter">
+      <option value="above">Price EMA 200 ke UPARI ho</option>
+      <option value="below">Price EMA 200 ke NEECHE ho</option>
+      <option value="none">Koi Filter Nahi</option>
+    </select>
+    
+    <div class="checkbox-row">
+      <input type="checkbox" id="useVWAP" checked />
+      <label for="useVWAP" style="margin:0;">VWAP Filter Use Karo</label>
+    </div>
+    
+    <div class="flex">
+      <div>
+        <label>RSI Period</label>
+        <input id="rsiPeriod" type="number" value="14" />
+      </div>
+      <div>
+        <label>RSI Level</label>
+        <input id="rsiLevel" type="number" value="40" />
+      </div>
+    </div>
+    
+    <button onclick="saveStrategy()">💾 Stock Strategy Save Karo</button>
+  </div>
+
+  <div class="card">
+    <h2>📂 Meri Stock Strategies</h2>
+    <div id="strategyList">
+      <p style="color:#64748b; font-size:13px; text-align:center;">Abhi koi strategy save nahi hai</p>
+    </div>
+  </div>
+
+<script>
+const STORAGE_KEY = 'strategies_stocks';
+
+function saveStrategy() {
+  const name = document.getElementById('stratName').value;
+  if(!name) { alert('Naam to daal bhai!'); return; }
+  
+  const strategy = {
+    id: Date.now(),
+    name: name,
+    stock: document.getElementById('stock').value,
+    emaFast: document.getElementById('emaFast').value,
+    emaSlow: document.getElementById('emaSlow').value,
+    ema200Filter: document.getElementById('ema200Filter').value,
+    useVWAP: document.getElementById('useVWAP').checked,
+    rsiPeriod: document.getElementById('rsiPeriod').value,
+    rsiLevel: document.getElementById('rsiLevel').value,
+    created: new Date().toLocaleString('en-IN')
+  };
+  
+  let strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  strategies.push(strategy);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(strategies));
+  
+  document.getElementById('stratName').value = '';
+  loadStrategies();
+  alert('✅ Stock strategy save ho gayi!');
+}
+
+function loadStrategies() {
+  const strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  const listDiv = document.getElementById('strategyList');
+  
+  if(strategies.length === 0) {
+    listDiv.innerHTML = '<p style="color:#64748b; font-size:13px; text-align:center;">Abhi koi strategy save nahi hai</p>';
+    return;
+  }
+  
+  listDiv.innerHTML = '';
+  strategies.reverse().forEach(s => {
+    const vwapTag = s.useVWAP ? '<span class="tag">VWAP</span>' : '';
+    const ema200Tag = s.ema200Filter !== 'none' ? `<span class="tag">EMA200 ${s.ema200Filter}</span>` : '';
+    
+    listDiv.innerHTML += `
+      <div class="strategy-item">
+        <h3>${s.name}</h3>
+        <p><span class="tag">${s.stock}</span> ${vwapTag} ${ema200Tag}</p>
+        <p>EMA: ${s.emaFast}/${s.emaSlow} | RSI: ${s.rsiPeriod} < ${s.rsiLevel}</p>
+        <p style="font-size:11px;">Saved: ${s.created}</p>
+        <div class="actions">
+          <button class="btn-small" onclick="runStrategy(${s.id})">▶️ Test Now</button>
+          <button class="btn-red" onclick="deleteStrategy(${s.id})">🗑️ Delete</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function deleteStrategy(id) {
+  if(!confirm('Pakka delete karni hai?')) return;
+  let strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  strategies = strategies.filter(s => s.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(strategies));
+  loadStrategies();
+}
+
+async function runStrategy(id) {
+  const strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  const strat = strategies.find(s => s.id === id);
+  alert(`Running: ${strat.name}\nStock: ${strat.stock}\n\nNext: Ye /api/share-bot ko params ke saath call karega!`);
+  // TODO: fetch(`/api/share-bot?stock=${strat.stock}&emaFast=${strat.emaFast}...`)
+}
+
+loadStrategies();
+</script>
+
+</body>
+</html>
