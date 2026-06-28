@@ -1,95 +1,64 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AlertPro Bot - Control Panel</title>
+  <title>AlertPro - Main Terminal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Arial; background: #0a0e1a; color: #e2e8f0; padding: 15px; }
-    .header { text-align: center; margin-bottom: 25px; }
-    .header h1 { font-size: 28px; margin-bottom: 5px; }
-    .header p { color: #64748b; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 15px; max-width: 600px; margin: 0 auto; }
-    .card { background: #131b2e; border: 1px solid #1e293b; padding: 20px; border-radius: 12px; }
-    .card h2 { font-size: 18px; margin-bottom: 15px; color: #3b82f6; }
-    button { background: #3b82f6; color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-size: 15px; width: 100%; margin-top: 10px; font-weight: 600; }
-    button:hover { background: #2563eb; }
-    button:active { transform: scale(0.98); }
-    .status-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
-    .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; }
-    .online { background: #10b981; color: #000; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
-    th, td { padding: 10px 5px; text-align: left; border-bottom: 1px solid #1e293b; }
-    th { color: #64748b; font-weight: 500; }
-    .buy { color: #10b981; font-weight: bold; }
-    .sell { color: #ef4444; font-weight: bold; }
-    .result { margin-top: 12px; padding: 10px; border-radius: 6px; background: #1e293b; font-size: 14px; display: none; }
+    body { font-family: 'Segoe UI', Arial; background: #0a0e1a; color: #e2e8f0; padding: 20px; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .container { max-width: 400px; width: 100%; }
+    .header { text-align: center; margin-bottom: 40px; }
+    .header h1 { font-size: 32px; margin-bottom: 8px; }
+    .header p { color: #64748b; font-size: 14px; }
+    .market-btn { background: #131b2e; border: 2px solid #1e293b; padding: 30px 20px; border-radius: 16px; margin-bottom: 20px; cursor: pointer; transition: all 0.3s; text-align: center; text-decoration: none; display: block; }
+    .market-btn:hover { border-color: #3b82f6; transform: translateY(-5px); background: #1a2540; }
+    .market-btn h2 { font-size: 24px; margin-bottom: 8px; }
+    .market-btn p { color: #94a3b8; font-size: 13px; }
+    .crypto-btn h2 { color: #f59e0b; }
+    .stock-btn h2 { color: #10b981; }
+    .stats { display: flex; justify-content: space-around; margin-top: 30px; text-align: center; }
+    .stat { font-size: 12px; color: #64748b; }
+    .stat strong { display: block; font-size: 20px; color: #3b82f6; margin-bottom: 4px; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>🚨 AlertPro Control Panel</h1>
-    <p>Manual Check | Backtest | Studies</p>
-  </div>
-
-  <div class="grid">
-    <div class="card">
-      <h2>⚡ Manual Signal Check</h2>
-      <div class="status-row">
-        <span>Bot Status:</span>
-        <span class="status-badge online">AUTO ACTIVE</span>
-      </div>
-      <div class="status-row">
-        <span>Last Auto Check:</span>
-        <span id="lastCheck">--:--:--</span>
-      </div>
-      <button onclick="triggerBot('crypto')">🔄 Check Crypto Signals Now</button>
-      <button onclick="triggerBot('share')">🔄 Check Stock Signals Now</button>
-      <div class="result" id="manualResult"></div>
+  <div class="container">
+    <div class="header">
+      <h1>🚨 AlertPro Terminal</h1>
+      <p>Select Market to Manage Strategies</p>
     </div>
 
-    <div class="card">
-      <h2>📋 Recent Signal History</h2>
-      <table id="signalTable">
-        <tr><th>Time</th><th>Type</th><th>Symbol</th><th>Signal</th></tr>
-        <tr><td colspan="4" style="text-align:center; color:#64748b;">Bot running... Signals will appear here</td></tr>
-      </table>
-      <p style="margin-top:15px; font-size:12px; color:#64748b;">Note: History saves hone ke liye database setup karna padega. Abhi manual check ka result upar dikhega.</p>
-    </div>
+    <a href="/crypto.html" class="market-btn crypto-btn">
+      <h2>₿ CRYPTO</h2>
+      <p>BTC, ETH, Altcoins Signal Strategies</p>
+    </a>
 
-    <div class="card">
-      <h2>🔬 Backtest Lab</h2>
-      <p style="color:#64748b; font-size:14px; margin-bottom:15px;">Pichle signals ka performance check karo</p>
-      <button onclick="alert('Backtest feature next banayenge!')">📊 Run Backtest - Coming Soon</button>
+    <a href="/stocks.html" class="market-btn stock-btn">
+      <h2>📈 SHARE MARKET</h2>
+      <p>Nifty 50, Stocks Signal Strategies</p>
+    </a>
+
+    <div class="stats">
+      <div class="stat">
+        <strong id="cryptoCount">0</strong>
+        Crypto Strategies
+      </div>
+      <div class="stat">
+        <strong id="stockCount">0</strong>
+        Stock Strategies
+      </div>
     </div>
   </div>
 
 <script>
-async function triggerBot(type) {
-  const resultDiv = document.getElementById('manualResult');
-  resultDiv.style.display = 'block';
-  resultDiv.innerText = 'Checking live market...';
-  
-  const url = type === 'crypto' ? '/api/crypto-bot' : '/api/share-bot';
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-    resultDiv.innerText = `✅ Done! ${data.alerts} new alerts sent to Telegram`;
-    document.getElementById('lastCheck').innerText = new Date().toLocaleTimeString('en-IN');
-    
-    // Table mein temporary row add kar dete hain
-    if(data.alerts > 0) {
-      const table = document.getElementById('signalTable');
-      const newRow = `<tr><td>${new Date().toLocaleTimeString('en-IN')}</td><td>${type}</td><td>Live</td><td class="buy">ALERT SENT</td></tr>`;
-      table.insertAdjacentHTML('afterbegin', newRow);
-    }
-  } catch(e) {
-    resultDiv.innerText = '❌ Error: Bot check failed';
-  }
+// Count dikhane ke liye
+function updateCounts() {
+  const crypto = JSON.parse(localStorage.getItem('strategies_crypto') || '[]');
+  const stocks = JSON.parse(localStorage.getItem('strategies_stocks') || '[]');
+  document.getElementById('cryptoCount').innerText = crypto.length;
+  document.getElementById('stockCount').innerText = stocks.length;
 }
-
-// Page load pe time set
-document.getElementById('lastCheck').innerText = new Date().toLocaleTimeString('en-IN');
+updateCounts();
 </script>
 
 </body>
