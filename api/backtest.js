@@ -3,69 +3,51 @@ export default async function handler(req, res) {
     const { market, startDate, endDate } = req.query;
     const strategy = JSON.parse(req.query.strategy || '{}');
 
-    if (!strategy.coin &&!strategy.stock) {
+    if (!strategy.coin) {
       return res.status(400).json({ success: false, error: 'Strategy data missing' });
     }
 
     if (market!== 'crypto') {
       return res.status(200).json({
         success: false,
-        error: 'Stock backtest abhi ready nahi. Crypto test karo!'
+        error: 'Stock backtest abhi ready nahi.'
       });
     }
 
-    // STEP 1: CoinGecko se data lao - No restriction
-    const coinId = strategy.coin.toLowerCase().replace('usdt', ''); // BTCUSDT -> btc
+    const coinId = strategy.coin.toLowerCase().replace('usdt', '');
     const coinMap = { btc: 'bitcoin', eth: 'ethereum', bnb: 'binancecoin' };
     const geckoId = coinMap[coinId] || 'bitcoin';
 
     const fromTime = Math.floor(new Date(startDate).getTime() / 1000);
     const toTime = Math.floor(new Date(endDate).getTime() / 1000);
 
-    // CoinGecko: 30 din ka hourly data free mein
     const url = `https://api.coingecko.com/api/v3/coins/${geckoId}/market_chart/range?vs_currency=usd&from=${fromTime}&to=${toTime}`;
 
     const response = await fetch(url);
     const data = await response.json();
 
-    if (!data.prices ||!Array.isArray(data.prices)) {
-      return res.status(400).json({
-        success: false,
-        error: 'CoinGecko se data nahi mila. Coin name check karo ya date range kam karo.'
-      });
-    }
-
-    if (data.prices.length === 0) {
+    if (!data.prices || data.prices.length === 0) {
       return res.status(200).json({
-        success: true,
-        signals: 0,
-        winRate: 0,
-        totalPL: 0,
-        bestTrade: 0,
-        trades: [],
-        message: 'Is date range mein koi data nahi mila'
+        success: true, signals: 0, winRate: 0, totalPL: 0, bestTrade: 0,
+        trades: [], message: 'Is date range mein data nahi mila'
       });
     }
 
-    // STEP 2: CoinGecko data ko candle format mein convert karo
     const candles = data.prices.map(p => ({
-      time: p[0],
-      close: p[1],
-      open: p[1], // CoinGecko hourly mein OHLC nahi deta, close hi use karo
-      high: p[1],
-      low: p[1]
+      time: p[0], close: p[1], open: p[1], high: p[1], low: p[1]
     }));
 
-    // STEP 3: Strategy run karo
-    const signals = runStrategyOnCandles(candles, strategy);
-    const results = calculatePL(signals);
+    const signals = runStrategyWithSLTP(candles, strategy);
+    const results = calculatePLWithSLTP(signals);
 
     res.status(200).json({
       success: true,
-      signals: signals.filter(s => s.type === 'SELL').length,
+      signals: results.totalTrades,
       winRate: results.winRate,
       totalPL: results.totalPL,
       bestTrade: results.bestTrade,
+      slHits: results.slHits,
+      tpHits: results.tpHits,
       trades: signals
     });
 
@@ -75,55 +57,85 @@ export default async function handler(req, res) {
   }
 }
 
-// Helper Functions - Same as before
-function runStrategyOnCandles(candles, strat) {
+function runStrategyWithSLTP(candles, strat) {
   const emaFast = parseInt(strat.emaFast);
   const emaSlow = parseInt(strat.emaSlow);
   const rsiPeriod = parseInt(strat.rsiPeriod);
   const rsiLevel = parseInt(strat.rsiLevel);
+  const slPercent = parseFloat(strat.stopLoss || 2);
+  const tpPercent = parseFloat(strat.takeProfit || 4);
 
   if (candles.length < emaSlow + 5) return [];
 
-  const emaFastArr = calcEMA(candles.map(c => c.close), emaFast);
-  const emaSlowArr = calcEMA(candles.map(c => c.close), emaSlow);
-  const rsiArr = calcRSI(candles.map(c => c.close), rsiPeriod);
+  const closes = candles.map(c => c.close);
+  const emaFastArr = calcEMA(closes, emaFast);
+  const emaSlowArr = calcEMA(closes, emaSlow);
+  const rsiArr = calcRSI(closes, rsiPeriod);
 
-  let signals = [];
+  let trades = [];
   let position = null;
 
   for (let i = emaSlow; i < candles.length; i++) {
     if (!emaFastArr[i-1] ||!emaSlowArr[i-1] ||!rsiArr[i]) continue;
 
+    const price = candles[i].close;
     const prevFast = emaFastArr[i-1];
     const prevSlow = emaSlowArr[i-1];
     const currFast = emaFastArr[i];
     const currSlow = emaSlowArr[i];
     const rsi = rsiArr[i];
 
-    // BUY: EMA cross + RSI oversold
+    if (position) {
+      const slPrice = position.entry * (1 - slPercent / 100);
+      const tpPrice = position.entry * (1 + tpPercent / 100);
+
+      if (price <= slPrice) {
+        trades.push({
+          type: 'SELL', price: slPrice,
+          time: candles[i].time,
+          date: new Date(candles[i].time).toLocaleDateString('en-IN'),
+          pl: -slPercent, exitReason: 'SL'
+        });
+        position = null;
+        continue;
+      }
+      
+      if (price >= tpPrice) {
+        trades.push({
+          type: 'SELL', price: tpPrice,
+          time: candles[i].time,
+          date: new Date(candles[i].time).toLocaleDateString('en-IN'),
+          pl: tpPercent, exitReason: 'TP'
+        });
+        position = null;
+        continue;
+      }
+    }
+
     if (!position && prevFast <= prevSlow && currFast > currSlow && rsi < rsiLevel) {
-      position = { type: 'BUY', price: candles[i].close, time: candles[i].time };
-      signals.push({
-       ...position,
-        date: new Date(candles[i].time).toLocaleDateString('en-IN')
+      position = { entry: price, time: candles[i].time };
+      trades.push({
+        type: 'BUY', price: price,
+        time: candles[i].time,
+        date: new Date(candles[i].time).toLocaleDateString('en-IN'),
+        sl: price * (1 - slPercent / 100),
+        tp: price * (1 + tpPercent / 100)
       });
     }
 
-    // SELL: EMA cross down
-    if (position && position.type === 'BUY' && prevFast >= prevSlow && currFast < currSlow) {
-      const pl = ((candles[i].close - position.price) / position.price * 100).toFixed(2);
-      signals.push({
-        type: 'SELL',
-        price: candles[i].close,
+    if (position && prevFast >= prevSlow && currFast < currSlow) {
+      const pl = ((price - position.entry) / position.entry * 100);
+      trades.push({
+        type: 'SELL', price: price,
         time: candles[i].time,
         date: new Date(candles[i].time).toLocaleDateString('en-IN'),
-        pl: parseFloat(pl)
+        pl: parseFloat(pl.toFixed(2)), exitReason: 'SIGNAL'
       });
       position = null;
     }
   }
 
-  return signals;
+  return trades;
 }
 
 function calcEMA(data, period) {
@@ -137,7 +149,6 @@ function calcEMA(data, period) {
 
 function calcRSI(data, period) {
   if (data.length < period + 1) return Array(data.length).fill(50);
-
   let gains = 0, losses = 0;
   for (let i = 1; i <= period; i++) {
     const diff = data[i] - data[i-1];
@@ -146,7 +157,6 @@ function calcRSI(data, period) {
   let avgGain = gains / period;
   let avgLoss = losses / period;
   let rsi = [100 - (100 / (1 + avgGain / avgLoss))];
-
   for (let i = period + 1; i < data.length; i++) {
     const diff = data[i] - data[i-1];
     avgGain = (avgGain * (period - 1) + (diff > 0? diff : 0)) / period;
@@ -154,21 +164,24 @@ function calcRSI(data, period) {
     const rs = avgLoss === 0? 100 : avgGain / avgLoss;
     rsi.push(100 - (100 / (1 + rs)));
   }
-
   return Array(period).fill(50).concat(rsi);
 }
 
-function calculatePL(signals) {
-  const trades = signals.filter(s => s.type === 'SELL' && s.pl!== undefined);
-  if (trades.length === 0) return { winRate: 0, totalPL: 0, bestTrade: 0 };
+function calculatePLWithSLTP(trades) {
+  const sells = trades.filter(t => t.type === 'SELL' && t.pl!== undefined);
+  if (sells.length === 0) return { totalTrades: 0, winRate: 0, totalPL: 0, bestTrade: 0, slHits: 0, tpHits: 0 };
 
-  const wins = trades.filter(t => t.pl > 0).length;
-  const totalPL = trades.reduce((sum, t) => sum + t.pl, 0);
-  const bestTrade = Math.max(...trades.map(t => t.pl));
+  const wins = sells.filter(t => t.pl > 0).length;
+  const totalPL = sells.reduce((sum, t) => sum + t.pl, 0);
+  const bestTrade = Math.max(...sells.map(t => t.pl));
+  const slHits = sells.filter(t => t.exitReason === 'SL').length;
+  const tpHits = sells.filter(t => t.exitReason === 'TP').length;
 
   return {
-    winRate: Math.round(wins / trades.length * 100),
+    totalTrades: sells.length,
+    winRate: Math.round(wins / sells.length * 100),
     totalPL: totalPL.toFixed(2),
-    bestTrade: bestTrade.toFixed(2)
+    bestTrade: bestTrade.toFixed(2),
+    slHits, tpHits
   };
 }
