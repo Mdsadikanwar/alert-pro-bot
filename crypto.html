@@ -7,55 +7,62 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Arial; background: #0a0e1a; color: #e2e8f0; padding: 15px; }
-  .header { display: flex; align-items: center; margin-bottom: 20px; gap: 10px; }
-  .back { background: #1e293b; border: none; color: #10b981; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; }
-  .header h1 { font-size: 20px; color: #10b981; }
-  .card { background: #131b2e; border: 1px solid #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 15px; }
-  .card h2 { font-size: 16px; margin-bottom: 12px; color: #10b981; }
+ .header { display: flex; align-items: center; margin-bottom: 20px; gap: 10px; }
+ .back { background: #1e293b; border: none; color: #10b981; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; }
+ .header h1 { font-size: 20px; color: #10b981; }
+ .card { background: #131b2e; border: 1px solid #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 15px; }
+ .card h2 { font-size: 16px; margin-bottom: 12px; color: #10b981; }
     select, input { width: 100%; padding: 10px; margin: 6px 0; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; }
     label { font-size: 13px; color: #94a3b8; display: block; margin-top: 8px; }
-  .row { display: flex; gap: 10px; }
-  .row > div { flex: 1; }
+ .row { display: flex; gap: 10px; }
+ .row > div { flex: 1; }
     button { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; margin-top: 10px; font-weight: 600; }
-  .btn-secondary { background: #475569; }
-  .btn-danger { background: #ef4444; }
-  .btn-success { background: #10b981; }
-  .btn-warning { background: #f59e0b; }
-  .btn-telegram { background: #229ED9; }
-  .btn-telegram.active { background: #10b981; }
-  .btn-ai { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-  .strategy-item { background: #0f172a; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #1e293b; }
-  .strategy-item h3 { font-size: 15px; margin-bottom: 8px; color: #10b981; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .strategy-item p { font-size: 12px; color: #94a3b8; margin: 4px 0; }
-  .action-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-  .action-btns button { margin: 0; padding: 8px; font-size: 12px; flex: 1; min-width: 90px; }
-  .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
-  .badge-sl { background: #ef4444; }
-  .badge-tp { background: #10b981; }
-  .badge-live { background: #10b981; animation: pulse 2s infinite; }
-  .badge-mtf { background: #8b5cf6; }
-  .badge-crypto { background: #f7931a; }
+ .btn-secondary { background: #475569; }
+ .btn-danger { background: #ef4444; }
+ .btn-success { background: #10b981; }
+ .btn-warning { background: #f59e0b; }
+ .btn-telegram { background: #229ED9; }
+ .btn-telegram.active { background: #10b981; }
+ .btn-ai { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+ .btn-paper { background: #8b5cf6; }
+ .strategy-item { background: #0f172a; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #1e293b; }
+ .strategy-item h3 { font-size: 15px; margin-bottom: 8px; color: #10b981; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+ .strategy-item p { font-size: 12px; color: #94a3b8; margin: 4px 0; }
+ .action-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+ .action-btns button { margin: 0; padding: 8px; font-size: 12px; flex: 1; min-width: 90px; }
+ .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
+ .badge-sl { background: #ef4444; }
+ .badge-tp { background: #10b981; }
+ .badge-live { background: #10b981; animation: pulse 2s infinite; }
+ .badge-mtf { background: #8b5cf6; }
+ .badge-crypto { background: #f7931a; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-  .stats-row { display: flex; gap: 10px; margin: 10px 0; }
-  .stat-box { flex: 1; background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; }
-  .stat-box h4 { font-size: 18px; color: #10b981; margin: 0; }
-  .stat-box p { font-size: 11px; color: #64748b; margin: 2px 0 0 0; }
-  .chart-container { height: 200px; margin-top: 10px; }
-  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
-  .modal.active { display: flex; }
-  .modal-content { background: #131b2e; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
-  .ai-suggestion { background: #1e293b; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 3px solid #667eea; }
-  .ai-suggestion h4 { color: #a78bfa; font-size: 14px; margin-bottom: 5px; }
-  .ai-suggestion p { font-size: 12px; color: #cbd5e1; margin: 3px 0; }
-  .hidden { display: none; }
-  .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
-  .checkbox-row input { width: auto; margin: 0; }
+ .stats-row { display: flex; gap: 10px; margin: 10px 0; }
+ .stat-box { flex: 1; background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; }
+ .stat-box h4 { font-size: 18px; color: #10b981; margin: 0; }
+ .stat-box p { font-size: 11px; color: #64748b; margin: 2px 0 0 0; }
+ .chart-container { height: 200px; margin-top: 10px; }
+ .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+ .modal.active { display: flex; }
+ .modal-content { background: #131b2e; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+ .ai-suggestion { background: #1e293b; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 3px solid #667eea; }
+ .ai-suggestion h4 { color: #a78bfa; font-size: 14px; margin-bottom: 5px; }
+ .ai-suggestion p { font-size: 12px; color: #cbd5e1; margin: 3px 0; }
+ .hidden { display: none; }
+ .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+ .checkbox-row input { width: auto; margin: 0; }
   </style>
 </head>
 <body>
   <div class="header">
     <a href="/" class="back">← Back</a>
     <h1>₿ Crypto Strategies Pro Max</h1>
+  </div>
+
+  <div class="card">
+    <button class="btn-paper" onclick="window.location.href='/paper-trade.html'">
+      📝 Paper Trading Dashboard Kholo
+    </button>
   </div>
 
   <div class="card">
@@ -276,7 +283,7 @@ function updateStrategy() {
   if (idx === -1) return;
   
   strategies[idx] = {
-  ...strategies[idx],
+ ...strategies[idx],
     name: document.getElementById('strategyName').value,
     coin: document.getElementById('coinSelect').value,
     timeframeSignal: document.getElementById('timeframeSignal').value,
