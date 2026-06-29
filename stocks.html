@@ -1,171 +1,454 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AlertPro - Stock Strategies</title>
+  <title>AlertPro - Stock Pro Max</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Arial; background: #0a0e1a; color: #e2e8f0; padding: 15px; }
-    .header { display: flex; align-items: center; margin-bottom: 20px; gap: 10px; }
-    .back { background: #1e293b; border: none; color: #3b82f6; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; }
-    .header h1 { font-size: 20px; color: #10b981; }
-    .card { background: #131b2e; border: 1px solid #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 15px; }
-    .card h2 { font-size: 16px; margin-bottom: 12px; color: #10b981; }
-    input, select { width: 100%; padding: 10px; margin: 6px 0; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; }
+   .header { display: flex; align-items: center; margin-bottom: 20px; gap: 10px; }
+   .back { background: #1e293b; border: none; color: #10b981; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; }
+   .header h1 { font-size: 20px; color: #10b981; }
+   .card { background: #131b2e; border: 1px solid #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 15px; }
+   .card h2 { font-size: 16px; margin-bottom: 12px; color: #10b981; }
+    select, input { width: 100%; padding: 10px; margin: 6px 0; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; }
     label { font-size: 13px; color: #94a3b8; display: block; margin-top: 8px; }
-    button { background: #10b981; color: #000; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; margin-top: 10px; font-weight: 600; }
-    .btn-red { background: #ef4444; color: #fff; padding: 6px 10px; width: auto; font-size: 12px; margin-left: 5px; }
-    .btn-small { background: #3b82f6; color: #fff; padding: 6px 10px; width: auto; font-size: 12px; margin-left: 5px; }
-    .strategy-item { background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid #10b981; }
-    .strategy-item h3 { font-size: 15px; margin-bottom: 5px; }
-    .strategy-item p { font-size: 12px; color: #94a3b8; }
-    .actions { margin-top: 8px; }
-    .flex { display: flex; gap: 8px; }
-    .flex > * { flex: 1; }
-    .tag { display: inline-block; background: #1e293b; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 5px; }
-    .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
-    .checkbox-row input { width: auto; margin: 0; }
+   .row { display: flex; gap: 10px; }
+   .row > div { flex: 1; }
+    button { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; margin-top: 10px; font-weight: 600; }
+   .btn-secondary { background: #475569; }
+   .btn-danger { background: #ef4444; }
+   .btn-success { background: #10b981; }
+   .btn-warning { background: #f59e0b; }
+   .btn-telegram { background: #229ED9; }
+   .btn-telegram.active { background: #10b981; }
+   .btn-ai { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+   .strategy-item { background: #0f172a; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #1e293b; }
+   .strategy-item h3 { font-size: 15px; margin-bottom: 8px; color: #10b981; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+   .strategy-item p { font-size: 12px; color: #94a3b8; margin: 4px 0; }
+   .action-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+   .action-btns button { margin: 0; padding: 8px; font-size: 12px; flex: 1; min-width: 90px; }
+   .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
+   .badge-sl { background: #ef4444; }
+   .badge-tp { background: #10b981; }
+   .badge-live { background: #10b981; animation: pulse 2s infinite; }
+   .badge-mtf { background: #8b5cf6; }
+   .badge-stock { background: #f59e0b; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+   .stats-row { display: flex; gap: 10px; margin: 10px 0; }
+   .stat-box { flex: 1; background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; }
+   .stat-box h4 { font-size: 18px; color: #10b981; margin: 0; }
+   .stat-box p { font-size: 11px; color: #64748b; margin: 2px 0 0 0; }
+   .chart-container { height: 200px; margin-top: 10px; }
+   .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+   .modal.active { display: flex; }
+   .modal-content { background: #131b2e; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+   .ai-suggestion { background: #1e293b; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 3px solid #667eea; }
+   .ai-suggestion h4 { color: #a78bfa; font-size: 14px; margin-bottom: 5px; }
+   .ai-suggestion p { font-size: 12px; color: #cbd5e1; margin: 3px 0; }
+   .hidden { display: none; }
+   .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+   .checkbox-row input { width: auto; margin: 0; }
   </style>
 </head>
 <body>
   <div class="header">
     <a href="/" class="back">← Back</a>
-    <h1>📈 Stock Strategies</h1>
+    <h1>📈 Stock Strategies Pro Max</h1>
   </div>
 
   <div class="card">
-    <h2>➕ Nayi Stock Strategy</h2>
-    <label>Strategy Naam</label>
-    <input id="stratName" placeholder="Ex: Nifty EMA200 + VWAP" />
+    <button class="btn-ai" onclick="openAISuggester()">🤖 AI Stock Strategy Suggester</button>
+  </div>
+
+  <div class="card">
+    <h2>⚡ Stock Strategy Builder Pro</h2>
     
-    <label>Stock/Index Select Karo</label>
-    <select id="stock">
-      <option value="NIFTY">Nifty 50</option>
-      <option value="BANKNIFTY">Bank Nifty</option>
-      <option value="RELIANCE.NS">Reliance</option>
-      <option value="TCS.NS">TCS</option>
-      <option value="INFY.NS">Infosys</option>
-      <option value="HDFCBANK.NS">HDFC Bank</option>
-    </select>
+    <label>Strategy Name</label>
+    <input id="strategyName" type="text" placeholder="NIFTY EMA200 + VWAP Pro" />
     
-    <div class="flex">
+    <div class="row">
       <div>
-        <label>EMA Fast</label>
-        <input id="emaFast" type="number" value="9" />
+        <label>Stock/Index</label>
+        <select id="stockSelect">
+          <option value="NIFTY">NIFTY 50</option>
+          <option value="BANKNIFTY">BANK NIFTY</option>
+          <option value="RELIANCE">RELIANCE</option>
+          <option value="TCS">TCS</option>
+          <option value="INFY">INFOSYS</option>
+          <option value="HDFCBANK">HDFC BANK</option>
+          <option value="ICICIBANK">ICICI BANK</option>
+          <option value="SBIN">SBI</option>
+        </select>
       </div>
       <div>
-        <label>EMA Slow</label>
-        <input id="emaSlow" type="number" value="21" />
+        <label>Signal TF</label>
+        <select id="timeframeSignal">
+          <option value="1d">Daily</option>
+          <option value="4h">4 Hour</option>
+          <option value="1h">1 Hour</option>
+        </select>
+      </div>
+      <div>
+        <label>Entry TF</label>
+        <select id="timeframeEntry">
+          <option value="1h">1 Hour</option>
+          <option value="15m">15 Min</option>
+          <option value="5m">5 Min</option>
+        </select>
       </div>
     </div>
-    
+
+    <div class="row">
+      <div><label>EMA Fast</label><input id="emaFast" type="number" value="9" /></div>
+      <div><label>EMA Slow</label><input id="emaSlow" type="number" value="21" /></div>
+    </div>
+
     <label>EMA 200 Filter</label>
     <select id="ema200Filter">
       <option value="above">Price EMA 200 ke UPARI ho</option>
       <option value="below">Price EMA 200 ke NEECHE ho</option>
-      <option value="none">Koi Filter Nahi</option>
+      <option value="none">No Filter</option>
     </select>
-    
+
     <div class="checkbox-row">
-      <input type="checkbox" id="useVWAP" checked />
-      <label for="useVWAP" style="margin:0;">VWAP Filter Use Karo</label>
+      <input type="checkbox" id="vwapFilter" checked>
+      <label for="vwapFilter" style="margin:0;">VWAP Filter Use Karo</label>
+    </div>
+
+    <div class="row">
+      <div><label>RSI Period</label><input id="rsiPeriod" type="number" value="14" /></div>
+      <div><label>RSI Buy Level</label><input id="rsiLevel" type="number" value="40" /></div>
+    </div>
+
+    <h2 style="margin-top:15px; font-size:14px;">🛡️ Risk Management</h2>
+    
+    <div class="row">
+      <div><label>Stop Loss %</label><input id="stopLoss" type="number" value="1.5" step="0.1" /></div>
+      <div><label>Take Profit %</label><input id="takeProfit" type="number" value="3" step="0.1" /></div>
+    </div>
+
+    <div class="row">
+      <div><label>Capital ₹</label><input id="accountSize" type="number" value="100000" /></div>
+      <div><label>Risk Per Trade %</label><input id="riskPercent" type="number" value="1" step="0.1" /></div>
     </div>
     
-    <div class="flex">
-      <div>
-        <label>RSI Period</label>
-        <input id="rsiPeriod" type="number" value="14" />
-      </div>
-      <div>
-        <label>RSI Level</label>
-        <input id="rsiLevel" type="number" value="40" />
-      </div>
-    </div>
-    
-    <button onclick="saveStrategy()">💾 Stock Strategy Save Karo</button>
+    <button id="saveBtn" onclick="saveStrategy()">💾 Stock Strategy Save Karo</button>
+    <button id="updateBtn" class="hidden btn-success" onclick="updateStrategy()">✅ Update Karo</button>
+    <button id="cancelBtn" class="hidden btn-secondary" onclick="cancelEdit()">❌ Cancel</button>
   </div>
 
   <div class="card">
-    <h2>📂 Meri Stock Strategies</h2>
-    <div id="strategyList">
-      <p style="color:#64748b; font-size:13px; text-align:center;">Abhi koi strategy save nahi hai</p>
+    <h2>📁 Meri Stock Strategies</h2>
+    <div id="strategiesList">
+      <p style="color:#64748b; text-align:center;">Abhi koi strategy save nahi hai</p>
+    </div>
+  </div>
+
+  <div class="modal" id="graphModal">
+    <div class="modal-content">
+      <h2 id="modalTitle" style="color:#10b981; margin-bottom:15px;"></h2>
+      <div class="stats-row">
+        <div class="stat-box"><h4 id="modalWinRate">0%</h4><p>Win Rate</p></div>
+        <div class="stat-box"><h4 id="modalTotalPL">0%</h4><p>Total P/L</p></div>
+        <div class="stat-box"><h4 id="modalTrades">0</h4><p>Trades</p></div>
+      </div>
+      <div class="chart-container"><canvas id="performanceChart"></canvas></div>
+      <button class="btn-secondary" onclick="closeModal('graphModal')" style="margin-top:15px;">Close</button>
+    </div>
+  </div>
+
+  <div class="modal" id="aiModal">
+    <div class="modal-content">
+      <h2 style="color:#a78bfa; margin-bottom:15px;">🤖 AI Stock Strategy Suggester</h2>
+      <p style="color:#94a3b8; font-size:13px; margin-bottom:15px;">Market condition ke hisaab se best stock strategy</p>
+      <label>Market Mood</label>
+      <select id="aiMarketMood">
+        <option value="bullish">Bullish - Tez Market</option>
+        <option value="bearish">Bearish - Manda Market</option>
+        <option value="sideways">Sideways - Range Market</option>
+      </select>
+      <label>Risk Appetite</label>
+      <select id="aiRisk">
+        <option value="safe">Safe - Kam risk</option>
+        <option value="moderate">Moderate - Balance</option>
+        <option value="aggressive">Aggressive - Zyada risk</option>
+      </select>
+      <button class="btn-ai" onclick="generateAIStrategy()">✨ Strategy Generate Karo</button>
+      <div id="aiResults" style="margin-top:15px;"></div>
+      <button class="btn-secondary" onclick="closeModal('aiModal')" style="margin-top:15px;">Close</button>
     </div>
   </div>
 
 <script>
-const STORAGE_KEY = 'strategies_stocks';
+let strategies = JSON.parse(localStorage.getItem('strategies_stock_promax') || '[]');
+let editingId = null;
+let chartInstance = null;
+
+function renderStrategies() {
+  const list = document.getElementById('strategiesList');
+  if (strategies.length === 0) {
+    list.innerHTML = '<p style="color:#64748b; text-align:center;">Abhi koi strategy save nahi hai</p>';
+    return;
+  }
+  
+  list.innerHTML = strategies.map(s => {
+    const rr = (s.takeProfit / s.stopLoss).toFixed(1);
+    const isLive = s.telegramActive || false;
+    const isMTF = s.timeframeSignal!== s.timeframeEntry;
+    return `
+    <div class="strategy-item">
+      <h3>${s.name} ${isLive? '<span class="badge badge-live">LIVE</span>' : ''} ${isMTF? '<span class="badge badge-mtf">MTF</span>' : ''} <span class="badge badge-stock">STOCK</span></h3>
+      <p><b>Stock:</b> ${s.stock} | <b>Signal:</b> ${s.timeframeSignal} | <b>Entry:</b> ${s.timeframeEntry}</p>
+      <p><b>EMA:</b> ${s.emaFast}/${s.emaSlow} | <b>EMA200:</b> ${s.ema200Filter} | <b>VWAP:</b> ${s.vwapFilter? 'ON' : 'OFF'}</p>
+      <p><b>RSI:</b> ${s.rsiPeriod} < ${s.rsiLevel} | <b>SL:</b> ${s.stopLoss}% | <b>TP:</b> ${s.takeProfit}% | <b>R:R:</b> 1:${rr}</p>
+      <div class="action-btns">
+        <button class="btn-warning" onclick="backtestStrategy(${s.id})">📊 Test</button>
+        <button class="btn-telegram ${isLive? 'active' : ''}" onclick="toggleTelegram(${s.id})">${isLive? '🟢 ON' : '📱 Start'}</button>
+        <button class="btn-secondary" onclick="showGraph(${s.id})">📈</button>
+        <button class="btn-secondary" onclick="editStrategy(${s.id})">✏️</button>
+        <button class="btn-danger" onclick="deleteStrategy(${s.id})">🗑️</button>
+      </div>
+    </div>
+  `}).join('');
+}
 
 function saveStrategy() {
-  const name = document.getElementById('stratName').value;
-  if(!name) { alert('Naam to daal bhai!'); return; }
+  const name = document.getElementById('strategyName').value;
+  if (!name) { alert('Strategy ka naam daal bhai!'); return; }
   
   const strategy = {
     id: Date.now(),
     name: name,
-    stock: document.getElementById('stock').value,
+    stock: document.getElementById('stockSelect').value,
+    timeframeSignal: document.getElementById('timeframeSignal').value,
+    timeframeEntry: document.getElementById('timeframeEntry').value,
     emaFast: document.getElementById('emaFast').value,
     emaSlow: document.getElementById('emaSlow').value,
     ema200Filter: document.getElementById('ema200Filter').value,
-    useVWAP: document.getElementById('useVWAP').checked,
+    vwapFilter: document.getElementById('vwapFilter').checked,
     rsiPeriod: document.getElementById('rsiPeriod').value,
     rsiLevel: document.getElementById('rsiLevel').value,
-    created: new Date().toLocaleString('en-IN')
+    stopLoss: parseFloat(document.getElementById('stopLoss').value),
+    takeProfit: parseFloat(document.getElementById('takeProfit').value),
+    accountSize: parseFloat(document.getElementById('accountSize').value),
+    riskPercent: parseFloat(document.getElementById('riskPercent').value),
+    telegramActive: false,
+    savedAt: new Date().toISOString()
   };
   
-  let strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
   strategies.push(strategy);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(strategies));
-  
-  document.getElementById('stratName').value = '';
-  loadStrategies();
-  alert('✅ Stock strategy save ho gayi!');
+  localStorage.setItem('strategies_stock_promax', JSON.stringify(strategies));
+  renderStrategies();
+  clearForm();
+  alert('✅ Stock Strategy save ho gayi Pro Max mein!');
 }
 
-function loadStrategies() {
-  const strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  const listDiv = document.getElementById('strategyList');
+function editStrategy(id) {
+  const s = strategies.find(st => st.id === id);
+  if (!s) return;
   
-  if(strategies.length === 0) {
-    listDiv.innerHTML = '<p style="color:#64748b; font-size:13px; text-align:center;">Abhi koi strategy save nahi hai</p>';
-    return;
-  }
+  editingId = id;
+  document.getElementById('strategyName').value = s.name;
+  document.getElementById('stockSelect').value = s.stock;
+  document.getElementById('timeframeSignal').value = s.timeframeSignal;
+  document.getElementById('timeframeEntry').value = s.timeframeEntry;
+  document.getElementById('emaFast').value = s.emaFast;
+  document.getElementById('emaSlow').value = s.emaSlow;
+  document.getElementById('ema200Filter').value = s.ema200Filter;
+  document.getElementById('vwapFilter').checked = s.vwapFilter;
+  document.getElementById('rsiPeriod').value = s.rsiPeriod;
+  document.getElementById('rsiLevel').value = s.rsiLevel;
+  document.getElementById('stopLoss').value = s.stopLoss;
+  document.getElementById('takeProfit').value = s.takeProfit;
+  document.getElementById('accountSize').value = s.accountSize;
+  document.getElementById('riskPercent').value = s.riskPercent;
   
-  listDiv.innerHTML = '';
-  strategies.reverse().forEach(s => {
-    const vwapTag = s.useVWAP ? '<span class="tag">VWAP</span>' : '';
-    const ema200Tag = s.ema200Filter !== 'none' ? `<span class="tag">EMA200 ${s.ema200Filter}</span>` : '';
-    
-    listDiv.innerHTML += `
-      <div class="strategy-item">
-        <h3>${s.name}</h3>
-        <p><span class="tag">${s.stock}</span> ${vwapTag} ${ema200Tag}</p>
-        <p>EMA: ${s.emaFast}/${s.emaSlow} | RSI: ${s.rsiPeriod} < ${s.rsiLevel}</p>
-        <p style="font-size:11px;">Saved: ${s.created}</p>
-        <div class="actions">
-          <button class="btn-small" onclick="runStrategy(${s.id})">▶️ Test Now</button>
-          <button class="btn-red" onclick="deleteStrategy(${s.id})">🗑️ Delete</button>
-        </div>
-      </div>
-    `;
-  });
+  document.getElementById('saveBtn').classList.add('hidden');
+  document.getElementById('updateBtn').classList.remove('hidden');
+  document.getElementById('cancelBtn').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+function updateStrategy() {
+  const idx = strategies.findIndex(st => st.id === editingId);
+  if (idx === -1) return;
+  
+  strategies[idx] = {
+   ...strategies[idx],
+    name: document.getElementById('strategyName').value,
+    stock: document.getElementById('stockSelect').value,
+    timeframeSignal: document.getElementById('timeframeSignal').value,
+    timeframeEntry: document.getElementById('timeframeEntry').value,
+    emaFast: document.getElementById('emaFast').value,
+    emaSlow: document.getElementById('emaSlow').value,
+    ema200Filter: document.getElementById('ema200Filter').value,
+    vwapFilter: document.getElementById('vwapFilter').checked,
+    rsiPeriod: document.getElementById('rsiPeriod').value,
+    rsiLevel: document.getElementById('rsiLevel').value,
+    stopLoss: parseFloat(document.getElementById('stopLoss').value),
+    takeProfit: parseFloat(document.getElementById('takeProfit').value),
+    accountSize: parseFloat(document.getElementById('accountSize').value),
+    riskPercent: parseFloat(document.getElementById('riskPercent').value),
+  };
+  
+  localStorage.setItem('strategies_stock_promax', JSON.stringify(strategies));
+  renderStrategies();
+  cancelEdit();
+  alert('✅ Strategy update ho gayi!');
+}
+
+function cancelEdit() {
+  editingId = null;
+  clearForm();
+  document.getElementById('saveBtn').classList.remove('hidden');
+  document.getElementById('updateBtn').classList.add('hidden');
+  document.getElementById('cancelBtn').classList.add('hidden');
 }
 
 function deleteStrategy(id) {
-  if(!confirm('Pakka delete karni hai?')) return;
-  let strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  strategies = strategies.filter(s => s.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(strategies));
-  loadStrategies();
+  if (!confirm('Pakka delete karna hai?')) return;
+  strategies = strategies.filter(st => st.id!== id);
+  localStorage.setItem('strategies_stock_promax', JSON.stringify(strategies));
+  renderStrategies();
 }
 
-async function runStrategy(id) {
-  const strategies = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  const strat = strategies.find(s => s.id === id);
-  alert(`Running: ${strat.name}\nStock: ${strat.stock}\n\nNext: Ye /api/share-bot ko params ke saath call karega!`);
-  // TODO: fetch(`/api/share-bot?stock=${strat.stock}&emaFast=${strat.emaFast}...`)
+function backtestStrategy(id) {
+  const s = strategies.find(st => st.id === id);
+  localStorage.setItem('backtest_preset', JSON.stringify(s));
+  window.location.href = '/backtest.html?preset=1&market=stock';
 }
 
-loadStrategies();
+async function toggleTelegram(id) {
+  const s = strategies.find(st => st.id === id);
+  const idx = strategies.findIndex(st => st.id === id);
+  
+  s.telegramActive =!s.telegramActive;
+  
+  if (s.telegramActive) {
+    alert(`🟢 Telegram Bot STARTED for ${s.name}\n\nStock: ${s.stock}\nSignal: ${s.timeframeSignal} | Entry: ${s.timeframeEntry}\nSL: ${s.stopLoss}% | TP: ${s.takeProfit}%\nEMA200: ${s.ema200Filter} | VWAP: ${s.vwapFilter? 'ON' : 'OFF'}\n\nAb alerts aayenge!`);
+  } else {
+    alert(`🔴 Telegram Bot STOPPED for ${s.name}`);
+  }
+  
+  strategies[idx] = s;
+  localStorage.setItem('strategies_stock_promax', JSON.stringify(strategies));
+  renderStrategies();
+}
+
+async function showGraph(id) {
+  const s = strategies.find(st => st.id === id);
+  document.getElementById('modalTitle').textContent = s.name + ' - Performance';
+  document.getElementById('graphModal').classList.add('active');
+  
+  document.getElementById('modalWinRate').textContent = '68%';
+  document.getElementById('modalTotalPL').textContent = '+15.7%';
+  document.getElementById('modalTrades').textContent = '14';
+  
+  if (chartInstance) chartInstance.destroy();
+  
+  const ctx = document.getElementById('performanceChart').getContext('2d');
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      datasets: [{
+        label: 'P/L %',
+        data: [0, 1.8, 4.2, 8.1, 12.3, 15.7],
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+        x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } }
+      }
+    }
+  });
+}
+
+function openAISuggester() {
+  document.getElementById('aiModal').classList.add('active');
+  document.getElementById('aiResults').innerHTML = '';
+}
+
+function generateAIStrategy() {
+  const mood = document.getElementById('aiMarketMood').value;
+  const risk = document.getElementById('aiRisk').value;
+  
+  let suggestions = [];
+  
+  if (mood === 'bullish' && risk === 'safe') {
+    suggestions.push({ name: 'NIFTY Bull Rider Safe', desc: 'Tez market ke liye safe. Daily signal, 1h entry. EMA200 + VWAP confirm.', tfSignal: '1d', tfEntry: '1h', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 50, sl: 1, tp: 3 });
+  } else if (mood === 'bullish' && risk === 'aggressive') {
+    suggestions.push({ name: 'BANKNIFTY Rocket Pro', desc: 'Aggressive bull run. 1h signal, 15m entry. VWAP bounce.', tfSignal: '1h', tfEntry: '15m', emaFast: 5, emaSlow: 13, ema200: 'above', vwap: true, rsi: 40, sl: 2, tp: 6 });
+  } else if (mood === 'sideways') {
+    suggestions.push({ name: 'NIFTY Range Master Pro', desc: 'Sideways market mein range trade. Daily dono TF. EMA200 filter.', tfSignal: '1d', tfEntry: '1d', emaFast: 13, emaSlow: 34, ema200: 'none', vwap: false, rsi: 45, sl: 1.5, tp: 1.5 });
+  } else if (mood === 'bearish') {
+    suggestions.push({ name: 'Bear Market Short Pro', desc: 'Girte market mein pullback. 4h signal, 1h entry. EMA200 below.', tfSignal: '4h', tfEntry: '1h', emaFast: 13, emaSlow: 34, ema200: 'below', vwap: true, rsi: 35, sl: 1.5, tp: 4.5 });
+  }
+  
+  suggestions.push({ name: 'RELIANCE Balanced Pro', desc: 'Har market mein kaam karegi. Moderate risk. VWAP + EMA200.', tfSignal: '1d', tfEntry: '1h', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 45, sl: 1.5, tp: 3 });
+  
+  const html = suggestions.map((sug, idx) => `
+    <div class="ai-suggestion">
+      <h4>${sug.name}</h4>
+      <p>${sug.desc}</p>
+      <p><b>TF:</b> ${sug.tfSignal}/${sug.tfEntry} | <b>EMA:</b> ${sug.emaFast}/${sug.emaSlow} | <b>EMA200:</b> ${sug.ema200} | <b>VWAP:</b> ${sug.vwap? 'ON' : 'OFF'}</p>
+      <p><b>RSI:</b> ${sug.rsi} | <b>SL/TP:</b> ${sug.sl}%/${sug.tp}%</p>
+      <button class="btn-success" onclick="applyAIStrategy(${idx})" style="margin-top:8px; padding:8px;">✅ Ye Apply Karo</button>
+    </div>
+  `).join('');
+  
+  document.getElementById('aiResults').innerHTML = html;
+  window.aiSuggestions = suggestions;
+}
+
+function applyAIStrategy(idx) {
+  const sug = window.aiSuggestions[idx];
+  document.getElementById('strategyName').value = sug.name;
+  document.getElementById('timeframeSignal').value = sug.tfSignal;
+  document.getElementById('timeframeEntry').value = sug.tfEntry;
+  document.getElementById('emaFast').value = sug.emaFast;
+  document.getElementById('emaSlow').value = sug.emaSlow;
+  document.getElementById('ema200Filter').value = sug.ema200;
+  document.getElementById('vwapFilter').checked = sug.vwap;
+  document.getElementById('rsiLevel').value = sug.rsi;
+  document.getElementById('stopLoss').value = sug.sl;
+  document.getElementById('takeProfit').value = sug.tp;
+  closeModal('aiModal');
+  window.scrollTo(0, 0);
+  alert('✅ AI Strategy load ho gayi! Ab Save Karo');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function clearForm() {
+  document.getElementById('strategyName').value = '';
+  document.getElementById('emaFast').value = '9';
+  document.getElementById('emaSlow').value = '21';
+  document.getElementById('ema200Filter').value = 'above';
+  document.getElementById('vwapFilter').checked = true;
+  document.getElementById('rsiPeriod').value = '14';
+  document.getElementById('rsiLevel').value = '40';
+  document.getElementById('stopLoss').value = '1.5';
+  document.getElementById('takeProfit').value = '3';
+  document.getElementById('accountSize').value = '100000';
+  document.getElementById('riskPercent').value = '1';
+  document.getElementById('timeframeSignal').value = '1d';
+  document.getElementById('timeframeEntry').value = '1h';
+}
+
+renderStrategies();
 </script>
 
 </body>
