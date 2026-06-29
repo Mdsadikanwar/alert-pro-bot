@@ -31,8 +31,6 @@
 .action-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .action-btns button { margin: 0; padding: 8px; font-size: 12px; flex: 1; min-width: 90px; }
 .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
-.badge-sl { background: #ef4444; }
-.badge-tp { background: #10b981; }
 .badge-live { background: #10b981; animation: pulse 2s infinite; }
 .badge-mtf { background: #8b5cf6; }
 .badge-crypto { background: #f7931a; }
@@ -51,6 +49,7 @@
 .hidden { display: none; }
 .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
 .checkbox-row input { width: auto; margin: 0; }
+.loading { text-align: center; color: #f59e0b; }
   </style>
 </head>
 <body>
@@ -66,13 +65,18 @@
   </div>
 
   <div class="card" id="regimeCard">
-    <h2>🔮 AI Market Regime Detector</h2>
+    <h2>🔮 AI Market Regime Detector - REAL</h2>
     <div id="regimeDisplay">
-      <p style="color:#64748b; text-align:center;">Loading regime data...</p>
+      <p class="loading">⏳ Fetching real Binance data...</p>
     </div>
-    <button class="btn-secondary" onclick="updateRegimeDisplay(document.getElementById('coinSelect').value)" style="margin-top:10px;">
+    <button class="btn-secondary" onclick="updateRegimeDisplay(document.getElementById('coinSelect').value, document.getElementById('regimeTimeframe').value)" style="margin-top:10px;">
       🔄 Refresh Regime
     </button>
+    <select id="regimeTimeframe" style="margin-top:8px;" onchange="updateRegimeDisplay(document.getElementById('coinSelect').value, this.value)">
+      <option value="1d">Daily Regime</option>
+      <option value="4h">4 Hour Regime</option>
+      <option value="1h">1 Hour Regime</option>
+    </select>
   </div>
 
   <div class="card">
@@ -81,22 +85,22 @@
 
   <div class="card">
     <h2>⚡ Crypto Strategy Builder Pro</h2>
-    
+
     <label>Strategy Name</label>
     <input id="strategyName" type="text" placeholder="BTC EMA200 + VWAP Pro" />
-    
+
     <div class="row">
       <div>
         <label>Coin</label>
-        <select id="coinSelect" onchange="updateRegimeDisplay(this.value)">
-          <option value="BTC">Bitcoin BTC</option>
-          <option value="ETH">Ethereum ETH</option>
-          <option value="SOL">Solana SOL</option>
-          <option value="BNB">Binance BNB</option>
-          <option value="XRP">Ripple XRP</option>
-          <option value="ADA">Cardano ADA</option>
-          <option value="DOGE">Dogecoin DOGE</option>
-          <option value="MATIC">Polygon MATIC</option>
+        <select id="coinSelect" onchange="updateRegimeDisplay(this.value, document.getElementById('regimeTimeframe').value)">
+          <option value="BTCUSDT">Bitcoin BTC</option>
+          <option value="ETHUSDT">Ethereum ETH</option>
+          <option value="SOLUSDT">Solana SOL</option>
+          <option value="BNBUSDT">Binance BNB</option>
+          <option value="XRPUSDT">Ripple XRP</option>
+          <option value="ADAUSDT">Cardano ADA</option>
+          <option value="DOGEUSDT">Dogecoin DOGE</option>
+          <option value="MATICUSDT">Polygon MATIC</option>
         </select>
       </div>
       <div>
@@ -140,7 +144,7 @@
     </div>
 
     <h2 style="margin-top:15px; font-size:14px;">🛡️ Risk Management</h2>
-    
+
     <div class="row">
       <div><label>Stop Loss %</label><input id="stopLoss" type="number" value="2" step="0.1" /></div>
       <div><label>Take Profit %</label><input id="takeProfit" type="number" value="5" step="0.1" /></div>
@@ -150,7 +154,7 @@
       <div><label>Capital $</label><input id="accountSize" type="number" value="1000" /></div>
       <div><label>Risk Per Trade %</label><input id="riskPercent" type="number" value="1" step="0.1" /></div>
     </div>
-    
+
     <button id="saveBtn" onclick="saveStrategy()">💾 Strategy Save Karo</button>
     <button id="updateBtn" class="hidden btn-success" onclick="updateStrategy()">✅ Update Karo</button>
     <button id="cancelBtn" class="hidden btn-secondary" onclick="cancelEdit()">❌ Cancel</button>
@@ -203,13 +207,33 @@ let strategies = JSON.parse(localStorage.getItem('strategies_crypto_promax') || 
 let editingId = null;
 let chartInstance = null;
 
+// ===== REAL BINANCE API FETCH =====
+async function fetchBinanceCandles(symbol, interval, limit = 300) {
+  try {
+    const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    return data.map(d => ({
+      time: d[0],
+      open: parseFloat(d[1]),
+      high: parseFloat(d[2]),
+      low: parseFloat(d[3]),
+      close: parseFloat(d[4]),
+      volume: parseFloat(d[5])
+    }));
+  } catch (e) {
+    console.error('Binance fetch error:', e);
+    return [];
+  }
+}
+
 function renderStrategies() {
   const list = document.getElementById('strategiesList');
   if (strategies.length === 0) {
     list.innerHTML = '<p style="color:#64748b; text-align:center;">Abhi koi strategy save nahi hai</p>';
     return;
   }
-  
+
   list.innerHTML = strategies.map(s => {
     const rr = (s.takeProfit / s.stopLoss).toFixed(1);
     const isLive = s.telegramActive || false;
@@ -234,7 +258,7 @@ function renderStrategies() {
 function saveStrategy() {
   const name = document.getElementById('strategyName').value;
   if (!name) { alert('Strategy ka naam daal bhai!'); return; }
-  
+
   const strategy = {
     id: Date.now(),
     name: name,
@@ -254,7 +278,7 @@ function saveStrategy() {
     telegramActive: false,
     savedAt: new Date().toISOString()
   };
-  
+
   strategies.push(strategy);
   localStorage.setItem('strategies_crypto_promax', JSON.stringify(strategies));
   renderStrategies();
@@ -265,7 +289,7 @@ function saveStrategy() {
 function editStrategy(id) {
   const s = strategies.find(st => st.id === id);
   if (!s) return;
-  
+
   editingId = id;
   document.getElementById('strategyName').value = s.name;
   document.getElementById('coinSelect').value = s.coin;
@@ -281,7 +305,7 @@ function editStrategy(id) {
   document.getElementById('takeProfit').value = s.takeProfit;
   document.getElementById('accountSize').value = s.accountSize;
   document.getElementById('riskPercent').value = s.riskPercent;
-  
+
   document.getElementById('saveBtn').classList.add('hidden');
   document.getElementById('updateBtn').classList.remove('hidden');
   document.getElementById('cancelBtn').classList.remove('hidden');
@@ -291,9 +315,9 @@ function editStrategy(id) {
 function updateStrategy() {
   const idx = strategies.findIndex(st => st.id === editingId);
   if (idx === -1) return;
-  
+
   strategies[idx] = {
-   ...strategies[idx],
+...strategies[idx],
     name: document.getElementById('strategyName').value,
     coin: document.getElementById('coinSelect').value,
     timeframeSignal: document.getElementById('timeframeSignal').value,
@@ -309,7 +333,7 @@ function updateStrategy() {
     accountSize: parseFloat(document.getElementById('accountSize').value),
     riskPercent: parseFloat(document.getElementById('riskPercent').value),
   };
-  
+
   localStorage.setItem('strategies_crypto_promax', JSON.stringify(strategies));
   renderStrategies();
   cancelEdit();
@@ -340,15 +364,15 @@ function backtestStrategy(id) {
 async function toggleTelegram(id) {
   const s = strategies.find(st => st.id === id);
   const idx = strategies.findIndex(st => st.id === id);
-  
+
   s.telegramActive =!s.telegramActive;
-  
+
   if (s.telegramActive) {
     alert(`🟢 Telegram Bot STARTED for ${s.name}\n\nCoin: ${s.coin}\nSignal: ${s.timeframeSignal} | Entry: ${s.timeframeEntry}\nSL: ${s.stopLoss}% | TP: ${s.takeProfit}%\nEMA200: ${s.ema200Filter} | VWAP: ${s.vwapFilter? 'ON' : 'OFF'}\n\nAb alerts aayenge!`);
   } else {
     alert(`🔴 Telegram Bot STOPPED for ${s.name}`);
   }
-  
+
   strategies[idx] = s;
   localStorage.setItem('strategies_crypto_promax', JSON.stringify(strategies));
   renderStrategies();
@@ -358,13 +382,13 @@ async function showGraph(id) {
   const s = strategies.find(st => st.id === id);
   document.getElementById('modalTitle').textContent = s.name + ' - Performance';
   document.getElementById('graphModal').classList.add('active');
-  
+
   document.getElementById('modalWinRate').textContent = '72%';
   document.getElementById('modalTotalPL').textContent = '+24.5%';
   document.getElementById('modalTrades').textContent = '18';
-  
+
   if (chartInstance) chartInstance.destroy();
-  
+
   const ctx = document.getElementById('performanceChart').getContext('2d');
   chartInstance = new Chart(ctx, {
     type: 'line',
@@ -399,9 +423,9 @@ function openAISuggester() {
 function generateAIStrategy() {
   const mood = document.getElementById('aiMarketMood').value;
   const risk = document.getElementById('aiRisk').value;
-  
+
   let suggestions = [];
-  
+
   if (mood === 'bullish' && risk === 'safe') {
     suggestions.push({ name: 'BTC Bull Rider Safe', desc: 'Tez market ke liye safe. Daily signal, 1h entry. EMA200 + VWAP confirm.', tfSignal: '1d', tfEntry: '1h', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 50, sl: 1.5, tp: 4.5 });
   } else if (mood === 'bullish' && risk === 'aggressive') {
@@ -411,9 +435,9 @@ function generateAIStrategy() {
   } else if (mood === 'bearish') {
     suggestions.push({ name: 'Bear Market Short Pro', desc: 'Girte market mein pullback. 4h signal, 1h entry. EMA200 below.', tfSignal: '4h', tfEntry: '1h', emaFast: 13, emaSlow: 34, ema200: 'below', vwap: true, rsi: 35, sl: 2, tp: 6 });
   }
-  
+
   suggestions.push({ name: 'BTC Balanced Pro', desc: 'Har market mein kaam karegi. Moderate risk. VWAP + EMA200.', tfSignal: '1d', tfEntry: '1h', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 45, sl: 2, tp: 5 });
-  
+
   const html = suggestions.map((sug, idx) => `
     <div class="ai-suggestion">
       <h4>${sug.name}</h4>
@@ -423,7 +447,7 @@ function generateAIStrategy() {
       <button class="btn-success" onclick="applyAIStrategy(${idx})" style="margin-top:8px; padding:8px;">✅ Ye Apply Karo</button>
     </div>
   `).join('');
-  
+
   document.getElementById('aiResults').innerHTML = html;
   window.aiSuggestions = suggestions;
 }
@@ -465,10 +489,10 @@ function clearForm() {
   document.getElementById('timeframeEntry').value = '1h';
 }
 
-// ===== AI MARKET REGIME DETECTOR =====
+// ===== AI MARKET REGIME DETECTOR - REAL =====
 function detectMarketRegime(candles) {
   if (!candles || candles.length < 50) return { regime: 'UNKNOWN', confidence: 0 };
-  
+
   let adx = calculateADX(candles, 14);
   let atr = calculateATR(candles, 14);
   let atrAvg = candles.slice(-50).reduce((sum, c, i, arr) => {
@@ -476,22 +500,22 @@ function detectMarketRegime(candles) {
     return sum + Math.abs(c.high - c.low);
   }, 0) / 50;
   let atrRatio = atr / atrAvg;
-  
+
   let ema200 = calculateEMA(candles, 200);
   let lastClose = candles[candles.length - 1].close;
   let emaDist = ((lastClose - ema200) / ema200) * 100;
-  
+
   let highs = candles.slice(-20).map(c => c.high);
   let lows = candles.slice(-20).map(c => c.low);
   let hh = highs[highs.length-1] > Math.max(...highs.slice(0, -1));
   let hl = lows[lows.length-1] > Math.min(...lows.slice(0, -1));
   let lh = highs[highs.length-1] < Math.max(...highs.slice(0, -1));
   let ll = lows[lows.length-1] < Math.min(...lows.slice(0, -1));
-  
+
   let regime = 'SIDEWAYS';
   let confidence = 60;
   let suggestion = 'Range strategies use karo. RSI/Mean reversion.';
-  
+
   if (adx > 25 && Math.abs(emaDist) > 2) {
     if (emaDist > 0 && hh && hl) {
       regime = 'TRENDING_BULL';
@@ -511,7 +535,7 @@ function detectMarketRegime(candles) {
     confidence = 80;
     suggestion = 'Support-Resistance pe trade. RSI oversold/overbought.';
   }
-  
+
   return { regime, confidence, adx: adx.toFixed(1), emaDist: emaDist.toFixed(2), suggestion };
 }
 
@@ -535,3 +559,25 @@ function calculateADX(candles, period) {
 function calculateATR(candles, period) {
   if (candles.length < period) return 0;
   let tr = [];
+  for (let i = 1; i < candles.length; i++) {
+    let h = candles[i].high, l = candles[i].low, pc = candles[i-1].close;
+    tr.push(Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc)));
+  }
+  return tr.slice(-period).reduce((a,b) => a+b) / period;
+}
+
+function calculateEMA(candles, period) {
+  if (candles.length < period) return candles[candles.length-1].close;
+  let k = 2 / (period + 1);
+  let ema = candles.slice(0, period).reduce((sum, c) => sum + c.close, 0) / period;
+  for (let i = period; i < candles.length; i++) {
+    ema = candles[i].close * k + ema * (1 - k);
+  }
+  return ema;
+}
+
+// UI Update Function - REAL BINANCE DATA
+async function updateRegimeDisplay(symbol, interval = '1d') {
+  document.getElementById('regimeDisplay').innerHTML = '<p class="loading">⏳ Fetching real Binance data...</p>';
+
+  let candles = await fetchBinanceCandles(symbol,
