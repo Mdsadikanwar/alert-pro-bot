@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paper Trading Pro Max</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-4">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">Paper Trading Pro Max 💰</h1>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left: Controls -->
+      <div class="bg-gray-800 p-6 rounded-xl">
+        <h2 class="text-xl font-bold mb-4">Start Paper Trading</h2>
+
+        <label class="block mb-3">Market</label>
+        <select id="market" class="w-full p-3 bg-gray-700 rounded mb-4">
+          <option value="crypto">Crypto</option>
+          <option value="stock">Indian Stock</option>
+        </select>
+
+        <label class="block mb-3">Coin/Stock</label>
+        <select id="symbol" class="w-full p-3 bg-gray-700 rounded mb-4">
+          <option value="BTCUSDT">BTC/USDT</option>
+          <option value="ETHUSDT">ETH/USDT</option>
+          <option value="RELIANCE">RELIANCE</option>
+          <option value="TCS">TCS</option>
+        </select>
+
+        <label class="block mb-3">Virtual Balance (₹)</label>
+        <input id="balance" type="number" value="100000" class="w-full p-3 bg-gray-700 rounded mb-4">
+
+        <label class="block mb-3">Risk Per Trade (%)</label>
+        <input id="risk" type="number" value="2" class="w-full p-3 bg-gray-700 rounded mb-4">
+
+        <label class="block mb-3">Strategy</label>
+        <select id="strategySelect" class="w-full p-3 bg-gray-700 rounded mb-4">
+          <option value="">Select from backtested strategies</option>
+        </select>
+
+        <button onclick="startPaperTrading()" id="startBtn" class="w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg font-bold">
+          🚀 Start Paper Trading
+        </button>
+        <button onclick="stopPaperTrading()" id="stopBtn" class="w-full bg-red-600 hover:bg-red-700 py-3 rounded-lg font-bold mt-2 hidden">
+          ⛔ Stop Trading
+        </button>
+      </div>
+
+      <!-- Middle: Live Stats -->
+      <div class="bg-gray-800 p-6 rounded-xl">
+        <h2 class="text-xl font-bold mb-4">Live Portfolio</h2>
+        <div class="space-y-3">
+          <div class="bg-gray-700 p-4 rounded">
+            <p class="text-gray-400 text-sm">Current Balance</p>
+            <p id="currentBalance" class="text-2xl font-bold text-green-400">₹1,00,000</p>
+          </div>
+          <div class="bg-gray-700 p-4 rounded">
+            <p class="text-gray-400 text-sm">Total P&L</p>
+            <p id="totalPL" class="text-2xl font-bold">₹0</p>
+          </div>
+          <div class="bg-gray-700 p-4 rounded">
+            <p class="text-gray-400 text-sm">Open Position</p>
+            <p id="position" class="text-lg">No Position</p>
+          </div>
+          <div class="bg-gray-700 p-4 rounded">
+            <p class="text-gray-400 text-sm">Last Price</p>
+            <p id="lastPrice" class="text-xl font-bold">-</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Trade Log -->
+      <div class="bg-gray-800 p-6 rounded-xl">
+        <h2 class="text-xl font-bold mb-4">Trade Log</h2>
+        <div id="tradeLog" class="space-y-2 max-h-96 overflow-y-auto">
+          <p class="text-gray-500 text-center">No trades yet</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const SUPABASE_URL = 'https://obpipbomlolodjzxpcbc.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9icGlwYm9tbG9sb2RqenhwY2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1NDM3NTksImV4cCI6MjA3NDExOTc1OX0.gvjy44kBrsBTMJoKl45BcNQ0hDz2COHhdg5B0f5V9gU';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let tradingInterval = null;
+let currentStrategy = null;
+let virtualBalance = 100000;
+let position = null;
+let trades = [];
+
+async function loadStrategies() {
+  const { data } = await supabase.from('strategies').select('*').order('created_at', { ascending: false });
+  const select = document.getElementById('strategySelect');
+  data?.forEach(s => {
+    select.innerHTML += `<option value='${JSON.stringify(s)}'>${s.name} - ${s.coin || s.stock}</option>`;
+  });
+}
+
+async function startPaperTrading() {
+  const market = document.getElementById('market').value;
+  const symbol = document.getElementById('symbol').value;
+  const balance = parseFloat(document.getElementById('balance').value);
+  const strategyJson = document.getElementById('strategySelect').value;
+
+  if (!strategyJson) return alert('Strategy select kar');
+
+  currentStrategy = JSON.parse(strategyJson);
+  virtualBalance = balance;
+  position = null;
+  trades = [];
+
+  document.getElementById('startBtn').classList.add('hidden');
+  document.getElementById('stopBtn').classList.remove('hidden');
+  document.getElementById('currentBalance').textContent = `₹${virtualBalance.toLocaleString('en-IN')}`;
+
+  addLog('Paper Trading Started', 'green');
+
+  // Har 60 second mein check kar
+  tradingInterval = setInterval(() => checkSignal(market, symbol), 60000);
+  checkSignal(market, symbol); // Pehli baar turant
+}
+
+function stopPaperTrading() {
+  clearInterval(tradingInterval);
+  document.getElementById('startBtn').classList.remove('hidden');
+  document.getElementById('stopBtn').classList.add('hidden');
+  addLog('Paper Trading Stopped', 'red');
+}
+
+async function checkSignal(market, symbol) {
+  try {
+    const res = await fetch(`/api/paper-trade?market=${market}&symbol=${symbol}&strategy=${encodeURIComponent(JSON.stringify(currentStrategy))}&balance=${virtualBalance}&position=${encodeURIComponent(JSON.stringify(position))}`);
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error);
+
+    document.getElementById('lastPrice').textContent = `₹${data.currentPrice?.toLocaleString('en-IN') || data.currentPrice}`;
+
+    if (data.action === 'BUY' &&!position) {
+      position = data.position;
+      virtualBalance = data.newBalance;
+      trades.push(data.trade);
+      addLog(`BUY @ ₹${data.trade.price} | Qty: ${data.trade.qty}`, 'blue');
+      updateUI();
+    }
+
+    if (data.action === 'SELL' && position) {
+      virtualBalance = data.newBalance;
+      trades.push(data.trade);
+      addLog(`SELL @ ₹${data.trade.price} | P&L: ${data.trade.pl > 0? '+' : ''}₹${data.trade.pl} (${data.trade.reason})`, data.trade.pl > 0? 'green' : 'red');
+      position = null;
+      updateUI();
+    }
+
+    if (data.action === 'HOLD') {
+      document.getElementById('position').textContent = position? `LONG @ ₹${position.entry}` : 'No Position';
+    }
+
+  } catch (e) {
+    addLog(`Error: ${e.message}`, 'red');
+  }
+}
+
+function updateUI() {
+  document.getElementById('currentBalance').textContent = `₹${virtualBalance.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+  const totalPL = trades.filter(t => t.type === 'SELL').reduce((sum, t) => sum + (t.pl || 0), 0);
+  const plElement = document.getElementById('totalPL');
+  plElement.textContent = `${totalPL >= 0? '+' : ''}₹${totalPL.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+  plElement.className = `text-2xl font-bold ${totalPL >= 0? 'text-green-400' : 'text-red-400'}`;
+  document.getElementById('position').textContent = position? `LONG ${position.qty} @ ₹${position.entry}` : 'No Position';
+}
+
+function addLog(message, color) {
+  const log = document.getElementById('tradeLog');
+  const colors = { green: 'text-green-400', red: 'text-red-400', blue: 'text-blue-400' };
+  if (log.children[0]?.textContent === 'No trades yet') log.innerHTML = '';
+  log.innerHTML = `<div class="${colors[color]} text-sm">[${new Date().toLocaleTimeString('en-IN')}] ${message}</div>` + log.innerHTML;
+}
+
+loadStrategies();
+</script>
+</body>
+</html>
