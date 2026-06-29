@@ -7,55 +7,62 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Arial; background: #0a0e1a; color: #e2e8f0; padding: 15px; }
-   .header { display: flex; align-items: center; margin-bottom: 20px; gap: 10px; }
-   .back { background: #1e293b; border: none; color: #10b981; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; }
-   .header h1 { font-size: 20px; color: #10b981; }
-   .card { background: #131b2e; border: 1px solid #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 15px; }
-   .card h2 { font-size: 16px; margin-bottom: 12px; color: #10b981; }
+.header { display: flex; align-items: center; margin-bottom: 20px; gap: 10px; }
+.back { background: #1e293b; border: none; color: #10b981; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; }
+.header h1 { font-size: 20px; color: #10b981; }
+.card { background: #131b2e; border: 1px solid #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 15px; }
+.card h2 { font-size: 16px; margin-bottom: 12px; color: #10b981; }
     select, input { width: 100%; padding: 10px; margin: 6px 0; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; }
     label { font-size: 13px; color: #94a3b8; display: block; margin-top: 8px; }
-   .row { display: flex; gap: 10px; }
-   .row > div { flex: 1; }
+.row { display: flex; gap: 10px; }
+.row > div { flex: 1; }
     button { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; margin-top: 10px; font-weight: 600; }
-   .btn-secondary { background: #475569; }
-   .btn-danger { background: #ef4444; }
-   .btn-success { background: #10b981; }
-   .btn-warning { background: #f59e0b; }
-   .btn-telegram { background: #229ED9; }
-   .btn-telegram.active { background: #10b981; }
-   .btn-ai { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-   .strategy-item { background: #0f172a; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #1e293b; }
-   .strategy-item h3 { font-size: 15px; margin-bottom: 8px; color: #10b981; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-   .strategy-item p { font-size: 12px; color: #94a3b8; margin: 4px 0; }
-   .action-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-   .action-btns button { margin: 0; padding: 8px; font-size: 12px; flex: 1; min-width: 90px; }
-   .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
-   .badge-sl { background: #ef4444; }
-   .badge-tp { background: #10b981; }
-   .badge-live { background: #10b981; animation: pulse 2s infinite; }
-   .badge-mtf { background: #8b5cf6; }
-   .badge-stock { background: #f59e0b; }
+.btn-secondary { background: #475569; }
+.btn-danger { background: #ef4444; }
+.btn-success { background: #10b981; }
+.btn-warning { background: #f59e0b; }
+.btn-telegram { background: #229ED9; }
+.btn-telegram.active { background: #10b981; }
+.btn-ai { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.btn-paper { background: #8b5cf6; }
+.strategy-item { background: #0f172a; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #1e293b; }
+.strategy-item h3 { font-size: 15px; margin-bottom: 8px; color: #10b981; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.strategy-item p { font-size: 12px; color: #94a3b8; margin: 4px 0; }
+.action-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.action-btns button { margin: 0; padding: 8px; font-size: 12px; flex: 1; min-width: 90px; }
+.badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
+.badge-sl { background: #ef4444; }
+.badge-tp { background: #10b981; }
+.badge-live { background: #10b981; animation: pulse 2s infinite; }
+.badge-mtf { background: #8b5cf6; }
+.badge-stock { background: #3b82f6; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-   .stats-row { display: flex; gap: 10px; margin: 10px 0; }
-   .stat-box { flex: 1; background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; }
-   .stat-box h4 { font-size: 18px; color: #10b981; margin: 0; }
-   .stat-box p { font-size: 11px; color: #64748b; margin: 2px 0 0 0; }
-   .chart-container { height: 200px; margin-top: 10px; }
-   .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
-   .modal.active { display: flex; }
-   .modal-content { background: #131b2e; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
-   .ai-suggestion { background: #1e293b; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 3px solid #667eea; }
-   .ai-suggestion h4 { color: #a78bfa; font-size: 14px; margin-bottom: 5px; }
-   .ai-suggestion p { font-size: 12px; color: #cbd5e1; margin: 3px 0; }
-   .hidden { display: none; }
-   .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
-   .checkbox-row input { width: auto; margin: 0; }
+.stats-row { display: flex; gap: 10px; margin: 10px 0; }
+.stat-box { flex: 1; background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; }
+.stat-box h4 { font-size: 18px; color: #10b981; margin: 0; }
+.stat-box p { font-size: 11px; color: #64748b; margin: 2px 0 0 0; }
+.chart-container { height: 200px; margin-top: 10px; }
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+.modal.active { display: flex; }
+.modal-content { background: #131b2e; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+.ai-suggestion { background: #1e293b; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 3px solid #667eea; }
+.ai-suggestion h4 { color: #a78bfa; font-size: 14px; margin-bottom: 5px; }
+.ai-suggestion p { font-size: 12px; color: #cbd5e1; margin: 3px 0; }
+.hidden { display: none; }
+.checkbox-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+.checkbox-row input { width: auto; margin: 0; }
   </style>
 </head>
 <body>
   <div class="header">
     <a href="/" class="back">← Back</a>
     <h1>📈 Stock Strategies Pro Max</h1>
+  </div>
+
+  <div class="card">
+    <button class="btn-paper" onclick="window.location.href='/paper-trade.html'">
+      📝 Paper Trading Dashboard Kholo
+    </button>
   </div>
 
   <div class="card">
@@ -70,32 +77,28 @@
     
     <div class="row">
       <div>
-        <label>Stock/Index</label>
-        <select id="stockSelect">
+        <label>Index</label>
+        <select id="indexSelect">
           <option value="NIFTY">NIFTY 50</option>
           <option value="BANKNIFTY">BANK NIFTY</option>
-          <option value="RELIANCE">RELIANCE</option>
-          <option value="TCS">TCS</option>
-          <option value="INFY">INFOSYS</option>
-          <option value="HDFCBANK">HDFC BANK</option>
-          <option value="ICICIBANK">ICICI BANK</option>
-          <option value="SBIN">SBI</option>
+          <option value="FINNIFTY">FIN NIFTY</option>
+          <option value="MIDCPNIFTY">MIDCAP NIFTY</option>
         </select>
       </div>
       <div>
         <label>Signal TF</label>
         <select id="timeframeSignal">
           <option value="1d">Daily</option>
-          <option value="4h">4 Hour</option>
           <option value="1h">1 Hour</option>
+          <option value="15m">15 Min</option>
         </select>
       </div>
       <div>
         <label>Entry TF</label>
         <select id="timeframeEntry">
-          <option value="1h">1 Hour</option>
           <option value="15m">15 Min</option>
           <option value="5m">5 Min</option>
+          <option value="3m">3 Min</option>
         </select>
       </div>
     </div>
@@ -125,8 +128,8 @@
     <h2 style="margin-top:15px; font-size:14px;">🛡️ Risk Management</h2>
     
     <div class="row">
-      <div><label>Stop Loss %</label><input id="stopLoss" type="number" value="1.5" step="0.1" /></div>
-      <div><label>Take Profit %</label><input id="takeProfit" type="number" value="3" step="0.1" /></div>
+      <div><label>Stop Loss %</label><input id="stopLoss" type="number" value="0.5" step="0.1" /></div>
+      <div><label>Take Profit %</label><input id="takeProfit" type="number" value="1.5" step="0.1" /></div>
     </div>
 
     <div class="row">
@@ -134,7 +137,7 @@
       <div><label>Risk Per Trade %</label><input id="riskPercent" type="number" value="1" step="0.1" /></div>
     </div>
     
-    <button id="saveBtn" onclick="saveStrategy()">💾 Stock Strategy Save Karo</button>
+    <button id="saveBtn" onclick="saveStrategy()">💾 Strategy Save Karo</button>
     <button id="updateBtn" class="hidden btn-success" onclick="updateStrategy()">✅ Update Karo</button>
     <button id="cancelBtn" class="hidden btn-secondary" onclick="cancelEdit()">❌ Cancel</button>
   </div>
@@ -200,7 +203,7 @@ function renderStrategies() {
     return `
     <div class="strategy-item">
       <h3>${s.name} ${isLive? '<span class="badge badge-live">LIVE</span>' : ''} ${isMTF? '<span class="badge badge-mtf">MTF</span>' : ''} <span class="badge badge-stock">STOCK</span></h3>
-      <p><b>Stock:</b> ${s.stock} | <b>Signal:</b> ${s.timeframeSignal} | <b>Entry:</b> ${s.timeframeEntry}</p>
+      <p><b>Index:</b> ${s.index} | <b>Signal:</b> ${s.timeframeSignal} | <b>Entry:</b> ${s.timeframeEntry}</p>
       <p><b>EMA:</b> ${s.emaFast}/${s.emaSlow} | <b>EMA200:</b> ${s.ema200Filter} | <b>VWAP:</b> ${s.vwapFilter? 'ON' : 'OFF'}</p>
       <p><b>RSI:</b> ${s.rsiPeriod} < ${s.rsiLevel} | <b>SL:</b> ${s.stopLoss}% | <b>TP:</b> ${s.takeProfit}% | <b>R:R:</b> 1:${rr}</p>
       <div class="action-btns">
@@ -221,7 +224,7 @@ function saveStrategy() {
   const strategy = {
     id: Date.now(),
     name: name,
-    stock: document.getElementById('stockSelect').value,
+    index: document.getElementById('indexSelect').value,
     timeframeSignal: document.getElementById('timeframeSignal').value,
     timeframeEntry: document.getElementById('timeframeEntry').value,
     emaFast: document.getElementById('emaFast').value,
@@ -251,7 +254,7 @@ function editStrategy(id) {
   
   editingId = id;
   document.getElementById('strategyName').value = s.name;
-  document.getElementById('stockSelect').value = s.stock;
+  document.getElementById('indexSelect').value = s.index;
   document.getElementById('timeframeSignal').value = s.timeframeSignal;
   document.getElementById('timeframeEntry').value = s.timeframeEntry;
   document.getElementById('emaFast').value = s.emaFast;
@@ -276,9 +279,9 @@ function updateStrategy() {
   if (idx === -1) return;
   
   strategies[idx] = {
-   ...strategies[idx],
+...strategies[idx],
     name: document.getElementById('strategyName').value,
-    stock: document.getElementById('stockSelect').value,
+    index: document.getElementById('indexSelect').value,
     timeframeSignal: document.getElementById('timeframeSignal').value,
     timeframeEntry: document.getElementById('timeframeEntry').value,
     emaFast: document.getElementById('emaFast').value,
@@ -327,7 +330,7 @@ async function toggleTelegram(id) {
   s.telegramActive =!s.telegramActive;
   
   if (s.telegramActive) {
-    alert(`🟢 Telegram Bot STARTED for ${s.name}\n\nStock: ${s.stock}\nSignal: ${s.timeframeSignal} | Entry: ${s.timeframeEntry}\nSL: ${s.stopLoss}% | TP: ${s.takeProfit}%\nEMA200: ${s.ema200Filter} | VWAP: ${s.vwapFilter? 'ON' : 'OFF'}\n\nAb alerts aayenge!`);
+    alert(`🟢 Telegram Bot STARTED for ${s.name}\n\nIndex: ${s.index}\nSignal: ${s.timeframeSignal} | Entry: ${s.timeframeEntry}\nSL: ${s.stopLoss}% | TP: ${s.takeProfit}%\nEMA200: ${s.ema200Filter} | VWAP: ${s.vwapFilter? 'ON' : 'OFF'}\n\nAb alerts aayenge!`);
   } else {
     alert(`🔴 Telegram Bot STOPPED for ${s.name}`);
   }
@@ -343,8 +346,8 @@ async function showGraph(id) {
   document.getElementById('graphModal').classList.add('active');
   
   document.getElementById('modalWinRate').textContent = '68%';
-  document.getElementById('modalTotalPL').textContent = '+15.7%';
-  document.getElementById('modalTrades').textContent = '14';
+  document.getElementById('modalTotalPL').textContent = '+18.2%';
+  document.getElementById('modalTrades').textContent = '24';
   
   if (chartInstance) chartInstance.destroy();
   
@@ -355,7 +358,7 @@ async function showGraph(id) {
       labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
       datasets: [{
         label: 'P/L %',
-        data: [0, 1.8, 4.2, 8.1, 12.3, 15.7],
+        data: [0, 2.1, 5.4, 9.8, 14.2, 18.2],
         borderColor: '#10b981',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         tension: 0.4,
@@ -386,16 +389,16 @@ function generateAIStrategy() {
   let suggestions = [];
   
   if (mood === 'bullish' && risk === 'safe') {
-    suggestions.push({ name: 'NIFTY Bull Rider Safe', desc: 'Tez market ke liye safe. Daily signal, 1h entry. EMA200 + VWAP confirm.', tfSignal: '1d', tfEntry: '1h', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 50, sl: 1, tp: 3 });
+    suggestions.push({ name: 'NIFTY Bull Safe Pro', desc: 'Tez market ke liye safe. Daily signal, 15m entry. EMA200 + VWAP confirm.', tfSignal: '1d', tfEntry: '15m', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 50, sl: 0.4, tp: 1.2 });
   } else if (mood === 'bullish' && risk === 'aggressive') {
-    suggestions.push({ name: 'BANKNIFTY Rocket Pro', desc: 'Aggressive bull run. 1h signal, 15m entry. VWAP bounce.', tfSignal: '1h', tfEntry: '15m', emaFast: 5, emaSlow: 13, ema200: 'above', vwap: true, rsi: 40, sl: 2, tp: 6 });
+    suggestions.push({ name: 'BANKNIFTY Rocket Pro', desc: 'Aggressive bull run. 1h signal, 5m entry. VWAP bounce.', tfSignal: '1h', tfEntry: '5m', emaFast: 5, emaSlow: 13, ema200: 'above', vwap: true, rsi: 40, sl: 0.6, tp: 1.8 });
   } else if (mood === 'sideways') {
-    suggestions.push({ name: 'NIFTY Range Master Pro', desc: 'Sideways market mein range trade. Daily dono TF. EMA200 filter.', tfSignal: '1d', tfEntry: '1d', emaFast: 13, emaSlow: 34, ema200: 'none', vwap: false, rsi: 45, sl: 1.5, tp: 1.5 });
+    suggestions.push({ name: 'NIFTY Range Master Pro', desc: 'Sideways market mein range trade. Daily dono TF. EMA200 filter.', tfSignal: '1d', tfEntry: '1d', emaFast: 13, emaSlow: 34, ema200: 'none', vwap: false, rsi: 45, sl: 0.5, tp: 0.5 });
   } else if (mood === 'bearish') {
-    suggestions.push({ name: 'Bear Market Short Pro', desc: 'Girte market mein pullback. 4h signal, 1h entry. EMA200 below.', tfSignal: '4h', tfEntry: '1h', emaFast: 13, emaSlow: 34, ema200: 'below', vwap: true, rsi: 35, sl: 1.5, tp: 4.5 });
+    suggestions.push({ name: 'Bear Market Short Pro', desc: 'Girte market mein pullback. 1h signal, 5m entry. EMA200 below.', tfSignal: '1h', tfEntry: '5m', emaFast: 13, emaSlow: 34, ema200: 'below', vwap: true, rsi: 35, sl: 0.5, tp: 1.5 });
   }
   
-  suggestions.push({ name: 'RELIANCE Balanced Pro', desc: 'Har market mein kaam karegi. Moderate risk. VWAP + EMA200.', tfSignal: '1d', tfEntry: '1h', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 45, sl: 1.5, tp: 3 });
+  suggestions.push({ name: 'NIFTY Balanced Pro', desc: 'Har market mein kaam karegi. Moderate risk. VWAP + EMA200.', tfSignal: '1d', tfEntry: '15m', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 45, sl: 0.5, tp: 1.5 });
   
   const html = suggestions.map((sug, idx) => `
     <div class="ai-suggestion">
@@ -440,12 +443,12 @@ function clearForm() {
   document.getElementById('vwapFilter').checked = true;
   document.getElementById('rsiPeriod').value = '14';
   document.getElementById('rsiLevel').value = '40';
-  document.getElementById('stopLoss').value = '1.5';
-  document.getElementById('takeProfit').value = '3';
+  document.getElementById('stopLoss').value = '0.5';
+  document.getElementById('takeProfit').value = '1.5';
   document.getElementById('accountSize').value = '100000';
   document.getElementById('riskPercent').value = '1';
   document.getElementById('timeframeSignal').value = '1d';
-  document.getElementById('timeframeEntry').value = '1h';
+  document.getElementById('timeframeEntry').value = '15m';
 }
 
 renderStrategies();
