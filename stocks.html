@@ -65,6 +65,16 @@
     </button>
   </div>
 
+  <div class="card" id="regimeCard">
+    <h2>🔮 AI Market Regime Detector</h2>
+    <div id="regimeDisplay">
+      <p style="color:#64748b; text-align:center;">Loading regime data...</p>
+    </div>
+    <button class="btn-secondary" onclick="updateRegimeDisplay(document.getElementById('indexSelect').value)" style="margin-top:10px;">
+      🔄 Refresh Regime
+    </button>
+  </div>
+
   <div class="card">
     <button class="btn-ai" onclick="openAISuggester()">🤖 AI Stock Strategy Suggester</button>
   </div>
@@ -78,7 +88,7 @@
     <div class="row">
       <div>
         <label>Index</label>
-        <select id="indexSelect">
+        <select id="indexSelect" onchange="updateRegimeDisplay(this.value)">
           <option value="NIFTY">NIFTY 50</option>
           <option value="BANKNIFTY">BANK NIFTY</option>
           <option value="FINNIFTY">FIN NIFTY</option>
@@ -451,8 +461,76 @@ function clearForm() {
   document.getElementById('timeframeEntry').value = '15m';
 }
 
-renderStrategies();
-</script>
+// ===== AI MARKET REGIME DETECTOR =====
+function detectMarketRegime(candles) {
+  if (!candles || candles.length < 50) return { regime: 'UNKNOWN', confidence: 0 };
+  
+  let adx = calculateADX(candles, 14);
+  let atr = calculateATR(candles, 14);
+  let atrAvg = candles.slice(-50).reduce((sum, c, i, arr) => {
+    if (i === 0) return 0;
+    return sum + Math.abs(c.high - c.low);
+  }, 0) / 50;
+  let atrRatio = atr / atrAvg;
+  
+  let ema200 = calculateEMA(candles, 200);
+  let lastClose = candles[candles.length - 1].close;
+  let emaDist = ((lastClose - ema200) / ema200) * 100;
+  
+  let highs = candles.slice(-20).map(c => c.high);
+  let lows = candles.slice(-20).map(c => c.low);
+  let hh = highs[highs.length-1] > Math.max(...highs.slice(0, -1));
+  let hl = lows[lows.length-1] > Math.min(...lows.slice(0, -1));
+  let lh = highs[highs.length-1] < Math.max(...highs.slice(0, -1));
+  let ll = lows[lows.length-1] < Math.min(...lows.slice(0, -1));
+  
+  let regime = 'SIDEWAYS';
+  let confidence = 60;
+  let suggestion = 'Range strategies use karo. RSI/Mean reversion.';
+  
+  if (adx > 25 && Math.abs(emaDist) > 2) {
+    if (emaDist > 0 && hh && hl) {
+      regime = 'TRENDING_BULL';
+      confidence = 85;
+      suggestion = 'Momentum/Breakout strategies chalao. EMA cross, Trend follow.';
+    } else if (emaDist < 0 && lh && ll) {
+      regime = 'TRENDING_BEAR';
+      confidence = 85;
+      suggestion = 'Short strategies ya Put buying. Sell rallies.';
+    }
+  } else if (atrRatio > 1.5 && adx < 20) {
+    regime = 'CHOPPY';
+    confidence = 75;
+    suggestion = 'Trade band kar do. Sab strategy fail hogi. Cash rakho.';
+  } else if (adx < 20 && Math.abs(emaDist) < 1.5) {
+    regime = 'SIDEWAYS';
+    confidence = 80;
+    suggestion = 'Support-Resistance pe trade. RSI oversold/overbought.';
+  }
+  
+  return { regime, confidence, adx: adx.toFixed(1), emaDist: emaDist.toFixed(2), suggestion };
+}
 
-</body>
-</html>
+function calculateADX(candles, period) {
+  if (candles.length < period * 2) return 0;
+  let tr = [], plusDM = [], minusDM = [];
+  for (let i = 1; i < candles.length; i++) {
+    let h = candles[i].high, l = candles[i].low, pc = candles[i-1].close;
+    let ph = candles[i-1].high, pl = candles[i-1].low;
+    tr.push(Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc)));
+    plusDM.push(h - ph > pl - l? Math.max(h - ph, 0) : 0);
+    minusDM.push(pl - l > h - ph? Math.max(pl - l, 0) : 0);
+  }
+  let atr = tr.slice(-period).reduce((a,b) => a+b) / period;
+  let plusDI = (plusDM.slice(-period).reduce((a,b) => a+b) / period) / atr * 100;
+  let minusDI = (minusDM.slice(-period).reduce((a,b) => a+b) / period) / atr * 100;
+  let dx = Math.abs(plusDI - minusDI) / (plusDI + minusDI) * 100;
+  return dx || 0;
+}
+
+function calculateATR(candles, period) {
+  if (candles.length < period) return 0;
+  let tr = [];
+  for (let i = 1; i < candles.length; i++) {
+    let h = candles[i].high, l = candles[i].low, pc = candles[i-1].close;
+    tr.push(Math.max(h - l, Math.abs(h - pc), Math.abs(l
