@@ -7,11 +7,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Strategy data missing' });
     }
 
-    // STOCK MARKET - ALPHA VANTAGE
+    // STOCK MARKET LOGIC
     if (market === 'stock' || strategy.stock) {
       const stock = strategy.stock || strategy.coin;
-      const candles = await fetchAlphaVantage(stock, startDate, endDate);
-      const signals = runStrategyMTF(candles, strategy);
+      const mockCandles = generateMockStockData(startDate, endDate, stock);
+      const signals = runStrategyMTF(mockCandles, strategy);
       const results = calculatePLWithSLTP(signals);
 
       return res.status(200).json({
@@ -22,11 +22,12 @@ export default async function handler(req, res) {
         bestTrade: results.bestTrade,
         slHits: results.slHits,
         tpHits: results.tpHits,
-        trades: signals
+        trades: signals,
+        message: 'Stock backtest - Mock data. Real API baad mein'
       });
     }
 
-    // CRYPTO - COINGECKO
+    // CRYPTO LOGIC
     const coinId = strategy.coin.toLowerCase().replace('usdt', '');
     const coinMap = { btc: 'bitcoin', eth: 'ethereum', bnb: 'binancecoin', sol: 'solana' };
     const geckoId = coinMap[coinId] || 'bitcoin';
@@ -63,50 +64,25 @@ export default async function handler(req, res) {
   }
 }
 
-// ALPHA VANTAGE - TERI KEY KE SAATH
-async function fetchAlphaVantage(stock, startDate, endDate) {
-  const API_KEY = 'DRQ4Q13ARJZ6FVEW';
-
-  const symbolMap = {
-    'NIFTY': '^NSEI',
-    'BANKNIFTY': '^NSEBANK',
-    'RELIANCE': 'RELIANCE.BSE',
-    'TCS': 'TCS.BSE',
-    'INFY': 'INFY.BSE',
-    'HDFCBANK': 'HDFCBANK.BSE',
-    'ICICIBANK': 'ICICIBANK.BSE',
-    'SBIN': 'SBIN.BSE'
-  };
-
-  const symbol = symbolMap[stock] || `${stock}.BSE`;
-  const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=full&apikey=${API_KEY}`;
-
-  const response = await fetch(url);
-  const data = await response.json();
-
-  if (data['Error Message'] || data['Note']) {
-    throw new Error(data['Error Message'] || 'API limit hit. 1 min wait kar');
+function generateMockStockData(startDate, endDate, stock) {
+  const candles = [];
+  const start = new Date(startDate).getTime();
+  const end = new Date(endDate).getTime();
+  const days = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+  
+  const basePrice = { NIFTY: 25000, BANKNIFTY: 52000, RELIANCE: 2800, TCS: 4100, INFY: 1800, HDFCBANK: 1700, ICICIBANK: 1200, SBIN: 800 }[stock] || 1000;
+  let price = basePrice;
+  
+  for (let i = 0; i < days; i++) {
+    price += (Math.random() - 0.48) * basePrice * 0.01;
+    candles.push({
+      time: start + i * 24 * 60 * 60 * 1000,
+      close: price,
+      open: price,
+      high: price * 1.01,
+      low: price * 0.99
+    });
   }
-
-  if (!data['Time Series (Daily)']) {
-    throw new Error('Stock data nahi mila. Symbol check kar: ' + symbol);
-  }
-
-  const timeSeries = data['Time Series (Daily)'];
-  const startTime = new Date(startDate).getTime();
-  const endTime = new Date(endDate).getTime();
-
-  const candles = Object.entries(timeSeries)
-   .map(([date, values]) => ({
-      time: new Date(date).getTime(),
-      open: parseFloat(values['1. open']),
-      high: parseFloat(values['2. high']),
-      low: parseFloat(values['3. low']),
-      close: parseFloat(values['4. close'])
-    }))
-   .filter(c => c.time >= startTime && c.time <= endTime)
-   .sort((a, b) => a.time - b.time);
-
   return candles;
 }
 
@@ -153,7 +129,7 @@ function runStrategyMTF(candles, strat) {
         trades.push({ type: 'SELL', price: slPrice, time: candles[i].time, date: new Date(candles[i].time).toLocaleDateString('en-IN'), pl: -slPercent, exitReason: 'SL' });
         position = null; signalReady = false; continue;
       }
-
+      
       if (price >= tpPrice) {
         trades.push({ type: 'SELL', price: tpPrice, time: candles[i].time, date: new Date(candles[i].time).toLocaleDateString('en-IN'), pl: tpPercent, exitReason: 'TP' });
         position = null; signalReady = false; continue;
@@ -162,77 +138,3 @@ function runStrategyMTF(candles, strat) {
 
     if (!position && signalReady && currFast > currSlow) {
       position = { entry: price, time: candles[i].time };
-      trades.push({ type: 'BUY', price: price, time: candles[i].time, date: new Date(candles[i].time).toLocaleDateString('en-IN'), sl: price * (1 - slPercent / 100), tp: price * (1 + tpPercent / 100), tf: `${tfSignal}/${tfEntry}` });
-      signalReady = false;
-    }
-
-    if (position && prevFast >= prevSlow && currFast < currSlow) {
-      const pl = ((price - position.entry) / position.entry * 100);
-      trades.push({ type: 'SELL', price: price, time: candles[i].time, date: new Date(candles[i].time).toLocaleDateString('en-IN'), pl: parseFloat(pl.toFixed(2)), exitReason: 'SIGNAL' });
-      position = null;
-    }
-  }
-
-  return trades;
-}
-
-function calcEMA(data, period) {
-  const k = 2 / (period + 1);
-  let ema = [data[0]];
-  for (let i = 1; i < data.length; i++) {
-    ema.push(data[i] * k + ema[i-1] * (1 - k));
-  }
-  return ema;
-}
-
-function calcRSI(data, period) {
-  if (data.length < period + 1) return Array(data.length).fill(50);
-  let gains = 0, losses = 0;
-  for (let i = 1; i <= period; i++) {
-    const diff = data[i] - data[i-1];
-    if (diff >= 0) gains += diff; else losses -= diff;
-  }
-  let avgGain = gains / period;
-  let avgLoss = losses / period;
-  let rsi = [100 - (100 / (1 + avgGain / avgLoss))];
-  for (let i = period + 1; i < data.length; i++) {
-    const diff = data[i] - data[i-1];
-    avgGain = (avgGain * (period - 1) + (diff > 0? diff : 0)) / period;
-    avgLoss = (avgLoss * (period - 1) + (diff < 0? -diff : 0)) / period;
-    const rs = avgLoss === 0? 100 : avgGain / avgLoss;
-    rsi.push(100 - (100 / (1 + rs)));
-  }
-  return Array(period).fill(50).concat(rsi);
-}
-
-function calculatePLWithSLTP(trades) {
-  let totalPL = 0;
-  let wins = 0;
-  let slHits = 0;
-  let tpHits = 0;
-  let bestTrade = 0;
-
-  for (let i = 0; i < trades.length; i++) {
-    if (trades[i].type === 'SELL' && trades[i].pl!== undefined) {
-      const pl = trades[i].pl;
-      totalPL += pl;
-      if (pl > 0) wins++;
-      if (pl > bestTrade) bestTrade = pl;
-      if (trades[i].exitReason === 'SL') slHits++;
-      if (trades[i].exitReason === 'TP') tpHits++;
-    }
-  }
-
-  const sellTrades = trades.filter(t => t.type === 'SELL' && t.pl!== undefined);
-  const totalTrades = sellTrades.length;
-  const winRate = totalTrades > 0? (wins / totalTrades * 100) : 0;
-
-  return {
-    totalTrades,
-    winRate: parseFloat(winRate.toFixed(1)),
-    totalPL: parseFloat(totalPL.toFixed(2)),
-    bestTrade: parseFloat(bestTrade.toFixed(2)),
-    slHits,
-    tpHits
-  };
-}
