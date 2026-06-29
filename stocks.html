@@ -31,8 +31,6 @@
 .action-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .action-btns button { margin: 0; padding: 8px; font-size: 12px; flex: 1; min-width: 90px; }
 .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
-.badge-sl { background: #ef4444; }
-.badge-tp { background: #10b981; }
 .badge-live { background: #10b981; animation: pulse 2s infinite; }
 .badge-mtf { background: #8b5cf6; }
 .badge-stock { background: #3b82f6; }
@@ -51,6 +49,7 @@
 .hidden { display: none; }
 .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
 .checkbox-row input { width: auto; margin: 0; }
+.loading { text-align: center; color: #f59e0b; }
   </style>
 </head>
 <body>
@@ -66,13 +65,18 @@
   </div>
 
   <div class="card" id="regimeCard">
-    <h2>🔮 AI Market Regime Detector</h2>
+    <h2>🔮 AI Market Regime Detector - NSE REAL</h2>
     <div id="regimeDisplay">
-      <p style="color:#64748b; text-align:center;">Loading regime data...</p>
+      <p class="loading">⏳ Fetching real NSE data...</p>
     </div>
-    <button class="btn-secondary" onclick="updateRegimeDisplay(document.getElementById('indexSelect').value)" style="margin-top:10px;">
+    <button class="btn-secondary" onclick="updateRegimeDisplay(document.getElementById('indexSelect').value, document.getElementById('regimeTimeframe').value)" style="margin-top:10px;">
       🔄 Refresh Regime
     </button>
+    <select id="regimeTimeframe" style="margin-top:8px;" onchange="updateRegimeDisplay(document.getElementById('indexSelect').value, this.value)">
+      <option value="1d">Daily Regime</option>
+      <option value="60m">1 Hour Regime</option>
+      <option value="15m">15 Min Regime</option>
+    </select>
   </div>
 
   <div class="card">
@@ -81,14 +85,14 @@
 
   <div class="card">
     <h2>⚡ Stock Strategy Builder Pro</h2>
-    
+
     <label>Strategy Name</label>
     <input id="strategyName" type="text" placeholder="NIFTY EMA200 + VWAP Pro" />
-    
+
     <div class="row">
       <div>
         <label>Index</label>
-        <select id="indexSelect" onchange="updateRegimeDisplay(this.value)">
+        <select id="indexSelect" onchange="updateRegimeDisplay(this.value, document.getElementById('regimeTimeframe').value)">
           <option value="NIFTY">NIFTY 50</option>
           <option value="BANKNIFTY">BANK NIFTY</option>
           <option value="FINNIFTY">FIN NIFTY</option>
@@ -136,7 +140,7 @@
     </div>
 
     <h2 style="margin-top:15px; font-size:14px;">🛡️ Risk Management</h2>
-    
+
     <div class="row">
       <div><label>Stop Loss %</label><input id="stopLoss" type="number" value="0.5" step="0.1" /></div>
       <div><label>Take Profit %</label><input id="takeProfit" type="number" value="1.5" step="0.1" /></div>
@@ -146,7 +150,7 @@
       <div><label>Capital ₹</label><input id="accountSize" type="number" value="100000" /></div>
       <div><label>Risk Per Trade %</label><input id="riskPercent" type="number" value="1" step="0.1" /></div>
     </div>
-    
+
     <button id="saveBtn" onclick="saveStrategy()">💾 Strategy Save Karo</button>
     <button id="updateBtn" class="hidden btn-success" onclick="updateStrategy()">✅ Update Karo</button>
     <button id="cancelBtn" class="hidden btn-secondary" onclick="cancelEdit()">❌ Cancel</button>
@@ -199,13 +203,173 @@ let strategies = JSON.parse(localStorage.getItem('strategies_stock_promax') || '
 let editingId = null;
 let chartInstance = null;
 
+// ===== AI MARKET REGIME DETECTOR - REAL NSE DATA =====
+function detectMarketRegime(candles) {
+  if (!candles || candles.length < 50) return { regime: 'UNKNOWN', confidence: 0 };
+
+  let adx = calculateADX(candles, 14);
+  let atr = calculateATR(candles, 14);
+  let atrAvg = candles.slice(-50).reduce((sum, c, i, arr) => {
+    if (i === 0) return 0;
+    return sum + Math.abs(c.high - c.low);
+  }, 0) / 50;
+  let atrRatio = atr / atrAvg;
+
+  let ema200 = calculateEMA(candles, 200);
+  let lastClose = candles[candles.length - 1].close;
+  let emaDist = ((lastClose - ema200) / ema200) * 100;
+
+  let highs = candles.slice(-20).map(c => c.high);
+  let lows = candles.slice(-20).map(c => c.low);
+  let hh = highs[highs.length-1] > Math.max(...highs.slice(0, -1));
+  let hl = lows[lows.length-1] > Math.min(...lows.slice(0, -1));
+  let lh = highs[highs.length-1] < Math.max(...highs.slice(0, -1));
+  let ll = lows[lows.length-1] < Math.min(...lows.slice(0, -1));
+
+  let regime = 'SIDEWAYS';
+  let confidence = 60;
+  let suggestion = 'Range strategies use karo. RSI/Mean reversion.';
+
+  if (adx > 25 && Math.abs(emaDist) > 2) {
+    if (emaDist > 0 && hh && hl) {
+      regime = 'TRENDING_BULL';
+      confidence = 85;
+      suggestion = 'Momentum/Breakout strategies chalao. EMA cross, Trend follow.';
+    } else if (emaDist < 0 && lh && ll) {
+      regime = 'TRENDING_BEAR';
+      confidence = 85;
+      suggestion = 'Short strategies ya Put buying. Sell rallies.';
+    }
+  } else if (atrRatio > 1.5 && adx < 20) {
+    regime = 'CHOPPY';
+    confidence = 75;
+    suggestion = 'Trade band kar do. Sab strategy fail hogi. Cash rakho.';
+  } else if (adx < 20 && Math.abs(emaDist) < 1.5) {
+    regime = 'SIDEWAYS';
+    confidence = 80;
+    suggestion = 'Support-Resistance pe trade. RSI oversold/overbought.';
+  }
+
+  return { regime, confidence, adx: adx.toFixed(1), emaDist: emaDist.toFixed(2), suggestion };
+}
+
+function calculateADX(candles, period) {
+  if (candles.length < period * 2) return 0;
+  let tr = [], plusDM = [], minusDM = [];
+  for (let i = 1; i < candles.length; i++) {
+    let h = candles[i].high, l = candles[i].low, pc = candles[i-1].close;
+    let ph = candles[i-1].high, pl = candles[i-1].low;
+    tr.push(Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc)));
+    plusDM.push(h - ph > pl - l? Math.max(h - ph, 0) : 0);
+    minusDM.push(pl - l > h - ph? Math.max(pl - l, 0) : 0);
+  }
+  let atr = tr.slice(-period).reduce((a,b) => a+b) / period;
+  let plusDI = (plusDM.slice(-period).reduce((a,b) => a+b) / period) / atr * 100;
+  let minusDI = (minusDM.slice(-period).reduce((a,b) => a+b) / period) / atr * 100;
+  let dx = Math.abs(plusDI - minusDI) / (plusDI + minusDI) * 100;
+  return dx || 0;
+}
+
+function calculateATR(candles, period) {
+  if (candles.length < period) return 0;
+  let tr = [];
+  for (let i = 1; i < candles.length; i++) {
+    let h = candles[i].high, l = candles[i].low, pc = candles[i-1].close;
+    tr.push(Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc)));
+  }
+  return tr.slice(-period).reduce((a,b) => a+b) / period;
+}
+
+function calculateEMA(candles, period) {
+  if (candles.length < period) return candles[candles.length-1].close;
+  let k = 2 / (period + 1);
+  let ema = candles.slice(0, period).reduce((sum, c) => sum + c.close, 0) / period;
+  for (let i = period; i < candles.length; i++) {
+    ema = candles[i].close * k + ema * (1 - k);
+  }
+  return ema;
+}
+
+// UI Update Function - NSE REAL DATA VIA YAHOO FINANCE
+async function updateRegimeDisplay(symbol, interval = '1d') {
+  document.getElementById('regimeDisplay').innerHTML = '<p class="loading">⏳ Fetching real NSE data...</p>';
+
+  try {
+    let yahooSymbol = '^NSEI';
+    if (symbol === 'BANKNIFTY') yahooSymbol = '^NSEBANK';
+    if (symbol === 'FINNIFTY') yahooSymbol = 'NIFTY_FIN_SERVICE.NS';
+    if (symbol === 'MIDCPNIFTY') yahooSymbol = 'NIFTY_MIDCAP_50.NS';
+
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?interval=${interval}&range=1y`;
+    const res = await fetch(proxyUrl + encodeURIComponent(yahooUrl));
+
+    if (!res.ok) throw new Error('NSE API Fail');
+
+    const data = await res.json();
+    const result = data.chart.result[0];
+    const timestamps = result.timestamp;
+    const quotes = result.indicators.quote[0];
+
+    let candles = timestamps.map((time, i) => ({
+      time: time * 1000,
+      open: quotes.open[i],
+      high: quotes.high[i],
+      low: quotes.low[i],
+      close: quotes.close[i],
+      volume: quotes.volume[i]
+    })).filter(c => c.close!== null);
+
+    let regimeResult = detectMarketRegime(candles);
+    let lastPrice = candles[candles.length-1].close.toFixed(2);
+
+    let emoji = {
+      'TRENDING_BULL': '🐂',
+      'TRENDING_BEAR': '🐻',
+      'SIDEWAYS': '↔️',
+      'CHOPPY': '🌪️',
+      'UNKNOWN': '❓'
+    };
+
+    let color = {
+      'TRENDING_BULL': '#10b981',
+      'TRENDING_BEAR': '#ef4444',
+      'SIDEWAYS': '#f59e0b',
+      'CHOPPY': '#8b5cf6',
+      'UNKNOWN': '#64748b'
+    };
+
+    document.getElementById('regimeDisplay').innerHTML = `
+      <div style="background:#0f172a; padding:15px; border-radius:8px; border-left:4px solid ${color[regimeResult.regime]}">
+        <h3 style="color:${color[regimeResult.regime]}; margin:0 0 8px 0; font-size:16px;">
+          ${emoji[regimeResult.regime]} ${regimeResult.regime.replace('_', ' ')}
+          <span class="badge" style="background:${color[regimeResult.regime]}">${regimeResult.confidence}%</span>
+        </h3>
+        <p style="font-size:12px; color:#94a3b8; margin:4px 0;">
+          <b>Price:</b> ₹${lastPrice} | <b>ADX:</b> ${regimeResult.adx} | <b>EMA200 Dist:</b> ${regimeResult.emaDist}%
+        </p>
+        <p style="font-size:13px; color:#cbd5e1; margin:8px 0 0 0;">💡 ${regimeResult.suggestion}</p>
+      </div>
+    `;
+
+  } catch (error) {
+    console.log('NSE data fail:', error);
+    document.getElementById('regimeDisplay').innerHTML = `
+      <div style="background:#0f172a; padding:15px; border-radius:8px; border-left:4px solid #ef4444">
+        <h3 style="color:#ef4444; margin:0 0 8px 0; font-size:16px;">❌ NSE DATA FAIL</h3>
+        <p style="font-size:12px; color:#94a3b8;">Yahoo Finance se data nahi aaya. Market close ho sakta hai ya net issue.</p>
+      </div>
+    `;
+  }
+}
+
 function renderStrategies() {
   const list = document.getElementById('strategiesList');
   if (strategies.length === 0) {
     list.innerHTML = '<p style="color:#64748b; text-align:center;">Abhi koi strategy save nahi hai</p>';
     return;
   }
-  
+
   list.innerHTML = strategies.map(s => {
     const rr = (s.takeProfit / s.stopLoss).toFixed(1);
     const isLive = s.telegramActive || false;
@@ -230,7 +394,7 @@ function renderStrategies() {
 function saveStrategy() {
   const name = document.getElementById('strategyName').value;
   if (!name) { alert('Strategy ka naam daal bhai!'); return; }
-  
+
   const strategy = {
     id: Date.now(),
     name: name,
@@ -250,7 +414,7 @@ function saveStrategy() {
     telegramActive: false,
     savedAt: new Date().toISOString()
   };
-  
+
   strategies.push(strategy);
   localStorage.setItem('strategies_stock_promax', JSON.stringify(strategies));
   renderStrategies();
@@ -261,7 +425,7 @@ function saveStrategy() {
 function editStrategy(id) {
   const s = strategies.find(st => st.id === id);
   if (!s) return;
-  
+
   editingId = id;
   document.getElementById('strategyName').value = s.name;
   document.getElementById('indexSelect').value = s.index;
@@ -277,7 +441,7 @@ function editStrategy(id) {
   document.getElementById('takeProfit').value = s.takeProfit;
   document.getElementById('accountSize').value = s.accountSize;
   document.getElementById('riskPercent').value = s.riskPercent;
-  
+
   document.getElementById('saveBtn').classList.add('hidden');
   document.getElementById('updateBtn').classList.remove('hidden');
   document.getElementById('cancelBtn').classList.remove('hidden');
@@ -287,7 +451,7 @@ function editStrategy(id) {
 function updateStrategy() {
   const idx = strategies.findIndex(st => st.id === editingId);
   if (idx === -1) return;
-  
+
   strategies[idx] = {
 ...strategies[idx],
     name: document.getElementById('strategyName').value,
@@ -305,7 +469,7 @@ function updateStrategy() {
     accountSize: parseFloat(document.getElementById('accountSize').value),
     riskPercent: parseFloat(document.getElementById('riskPercent').value),
   };
-  
+
   localStorage.setItem('strategies_stock_promax', JSON.stringify(strategies));
   renderStrategies();
   cancelEdit();
@@ -336,15 +500,15 @@ function backtestStrategy(id) {
 async function toggleTelegram(id) {
   const s = strategies.find(st => st.id === id);
   const idx = strategies.findIndex(st => st.id === id);
-  
+
   s.telegramActive =!s.telegramActive;
-  
+
   if (s.telegramActive) {
     alert(`🟢 Telegram Bot STARTED for ${s.name}\n\nIndex: ${s.index}\nSignal: ${s.timeframeSignal} | Entry: ${s.timeframeEntry}\nSL: ${s.stopLoss}% | TP: ${s.takeProfit}%\nEMA200: ${s.ema200Filter} | VWAP: ${s.vwapFilter? 'ON' : 'OFF'}\n\nAb alerts aayenge!`);
   } else {
     alert(`🔴 Telegram Bot STOPPED for ${s.name}`);
   }
-  
+
   strategies[idx] = s;
   localStorage.setItem('strategies_stock_promax', JSON.stringify(strategies));
   renderStrategies();
@@ -354,13 +518,13 @@ async function showGraph(id) {
   const s = strategies.find(st => st.id === id);
   document.getElementById('modalTitle').textContent = s.name + ' - Performance';
   document.getElementById('graphModal').classList.add('active');
-  
+
   document.getElementById('modalWinRate').textContent = '68%';
   document.getElementById('modalTotalPL').textContent = '+18.2%';
   document.getElementById('modalTrades').textContent = '24';
-  
+
   if (chartInstance) chartInstance.destroy();
-  
+
   const ctx = document.getElementById('performanceChart').getContext('2d');
   chartInstance = new Chart(ctx, {
     type: 'line',
@@ -395,9 +559,9 @@ function openAISuggester() {
 function generateAIStrategy() {
   const mood = document.getElementById('aiMarketMood').value;
   const risk = document.getElementById('aiRisk').value;
-  
+
   let suggestions = [];
-  
+
   if (mood === 'bullish' && risk === 'safe') {
     suggestions.push({ name: 'NIFTY Bull Safe Pro', desc: 'Tez market ke liye safe. Daily signal, 15m entry. EMA200 + VWAP confirm.', tfSignal: '1d', tfEntry: '15m', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 50, sl: 0.4, tp: 1.2 });
   } else if (mood === 'bullish' && risk === 'aggressive') {
@@ -407,130 +571,5 @@ function generateAIStrategy() {
   } else if (mood === 'bearish') {
     suggestions.push({ name: 'Bear Market Short Pro', desc: 'Girte market mein pullback. 1h signal, 5m entry. EMA200 below.', tfSignal: '1h', tfEntry: '5m', emaFast: 13, emaSlow: 34, ema200: 'below', vwap: true, rsi: 35, sl: 0.5, tp: 1.5 });
   }
-  
-  suggestions.push({ name: 'NIFTY Balanced Pro', desc: 'Har market mein kaam karegi. Moderate risk. VWAP + EMA200.', tfSignal: '1d', tfEntry: '15m', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 45, sl: 0.5, tp: 1.5 });
-  
-  const html = suggestions.map((sug, idx) => `
-    <div class="ai-suggestion">
-      <h4>${sug.name}</h4>
-      <p>${sug.desc}</p>
-      <p><b>TF:</b> ${sug.tfSignal}/${sug.tfEntry} | <b>EMA:</b> ${sug.emaFast}/${sug.emaSlow} | <b>EMA200:</b> ${sug.ema200} | <b>VWAP:</b> ${sug.vwap? 'ON' : 'OFF'}</p>
-      <p><b>RSI:</b> ${sug.rsi} | <b>SL/TP:</b> ${sug.sl}%/${sug.tp}%</p>
-      <button class="btn-success" onclick="applyAIStrategy(${idx})" style="margin-top:8px; padding:8px;">✅ Ye Apply Karo</button>
-    </div>
-  `).join('');
-  
-  document.getElementById('aiResults').innerHTML = html;
-  window.aiSuggestions = suggestions;
-}
 
-function applyAIStrategy(idx) {
-  const sug = window.aiSuggestions[idx];
-  document.getElementById('strategyName').value = sug.name;
-  document.getElementById('timeframeSignal').value = sug.tfSignal;
-  document.getElementById('timeframeEntry').value = sug.tfEntry;
-  document.getElementById('emaFast').value = sug.emaFast;
-  document.getElementById('emaSlow').value = sug.emaSlow;
-  document.getElementById('ema200Filter').value = sug.ema200;
-  document.getElementById('vwapFilter').checked = sug.vwap;
-  document.getElementById('rsiLevel').value = sug.rsi;
-  document.getElementById('stopLoss').value = sug.sl;
-  document.getElementById('takeProfit').value = sug.tp;
-  closeModal('aiModal');
-  window.scrollTo(0, 0);
-  alert('✅ AI Strategy load ho gayi! Ab Save Karo');
-}
-
-function closeModal(id) {
-  document.getElementById(id).classList.remove('active');
-}
-
-function clearForm() {
-  document.getElementById('strategyName').value = '';
-  document.getElementById('emaFast').value = '9';
-  document.getElementById('emaSlow').value = '21';
-  document.getElementById('ema200Filter').value = 'above';
-  document.getElementById('vwapFilter').checked = true;
-  document.getElementById('rsiPeriod').value = '14';
-  document.getElementById('rsiLevel').value = '40';
-  document.getElementById('stopLoss').value = '0.5';
-  document.getElementById('takeProfit').value = '1.5';
-  document.getElementById('accountSize').value = '100000';
-  document.getElementById('riskPercent').value = '1';
-  document.getElementById('timeframeSignal').value = '1d';
-  document.getElementById('timeframeEntry').value = '15m';
-}
-
-// ===== AI MARKET REGIME DETECTOR =====
-function detectMarketRegime(candles) {
-  if (!candles || candles.length < 50) return { regime: 'UNKNOWN', confidence: 0 };
-  
-  let adx = calculateADX(candles, 14);
-  let atr = calculateATR(candles, 14);
-  let atrAvg = candles.slice(-50).reduce((sum, c, i, arr) => {
-    if (i === 0) return 0;
-    return sum + Math.abs(c.high - c.low);
-  }, 0) / 50;
-  let atrRatio = atr / atrAvg;
-  
-  let ema200 = calculateEMA(candles, 200);
-  let lastClose = candles[candles.length - 1].close;
-  let emaDist = ((lastClose - ema200) / ema200) * 100;
-  
-  let highs = candles.slice(-20).map(c => c.high);
-  let lows = candles.slice(-20).map(c => c.low);
-  let hh = highs[highs.length-1] > Math.max(...highs.slice(0, -1));
-  let hl = lows[lows.length-1] > Math.min(...lows.slice(0, -1));
-  let lh = highs[highs.length-1] < Math.max(...highs.slice(0, -1));
-  let ll = lows[lows.length-1] < Math.min(...lows.slice(0, -1));
-  
-  let regime = 'SIDEWAYS';
-  let confidence = 60;
-  let suggestion = 'Range strategies use karo. RSI/Mean reversion.';
-  
-  if (adx > 25 && Math.abs(emaDist) > 2) {
-    if (emaDist > 0 && hh && hl) {
-      regime = 'TRENDING_BULL';
-      confidence = 85;
-      suggestion = 'Momentum/Breakout strategies chalao. EMA cross, Trend follow.';
-    } else if (emaDist < 0 && lh && ll) {
-      regime = 'TRENDING_BEAR';
-      confidence = 85;
-      suggestion = 'Short strategies ya Put buying. Sell rallies.';
-    }
-  } else if (atrRatio > 1.5 && adx < 20) {
-    regime = 'CHOPPY';
-    confidence = 75;
-    suggestion = 'Trade band kar do. Sab strategy fail hogi. Cash rakho.';
-  } else if (adx < 20 && Math.abs(emaDist) < 1.5) {
-    regime = 'SIDEWAYS';
-    confidence = 80;
-    suggestion = 'Support-Resistance pe trade. RSI oversold/overbought.';
-  }
-  
-  return { regime, confidence, adx: adx.toFixed(1), emaDist: emaDist.toFixed(2), suggestion };
-}
-
-function calculateADX(candles, period) {
-  if (candles.length < period * 2) return 0;
-  let tr = [], plusDM = [], minusDM = [];
-  for (let i = 1; i < candles.length; i++) {
-    let h = candles[i].high, l = candles[i].low, pc = candles[i-1].close;
-    let ph = candles[i-1].high, pl = candles[i-1].low;
-    tr.push(Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc)));
-    plusDM.push(h - ph > pl - l? Math.max(h - ph, 0) : 0);
-    minusDM.push(pl - l > h - ph? Math.max(pl - l, 0) : 0);
-  }
-  let atr = tr.slice(-period).reduce((a,b) => a+b) / period;
-  let plusDI = (plusDM.slice(-period).reduce((a,b) => a+b) / period) / atr * 100;
-  let minusDI = (minusDM.slice(-period).reduce((a,b) => a+b) / period) / atr * 100;
-  let dx = Math.abs(plusDI - minusDI) / (plusDI + minusDI) * 100;
-  return dx || 0;
-}
-
-function calculateATR(candles, period) {
-  if (candles.length < period) return 0;
-  let tr = [];
-  for (let i = 1; i < candles.length; i++) {
-    let h = candles[i].high, l = candles[i].low, pc = candles[i-1].close;
-    tr.push(Math.max(h - l, Math.abs(h - pc), Math.abs(l
+  suggestions.push({ name: 'NIFTY Balanced Pro', desc: 'Har market mein kaam karegi. Moderate risk. VWAP + EMA200.', tfSignal: '1d', tfEntry: '15m', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 45, sl: 0.5, tp
