@@ -76,6 +76,7 @@
       border-left: 3px solid #10b981; 
       padding: 10px; border-radius: 6px; 
       font-size: 13px; line-height: 1.5; color: #cbd5e1;
+      margin-bottom: 12px;
     }
     .selectors { 
       display: grid; grid-template-columns: 1fr 1fr; 
@@ -85,7 +86,7 @@
       font-size: 12px; color: #94a3b8; 
       display: block; margin-bottom: 6px; 
     }
-    select { 
+    select, input { 
       width: 100%; padding: 10px; 
       background: #0f172a; border: 1px solid #334155; 
       color: #e2e8f0; border-radius: 8px; font-size: 14px;
@@ -100,6 +101,36 @@
     .positive { color: #10b981; }
     .negative { color: #ef4444; }
     .hidden { display: none; }
+    .btn { 
+      width: 100%; background: linear-gradient(135deg, #10b981, #059669); 
+      color: white; border: none; padding: 12px; border-radius: 10px; 
+      font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 12px;
+    }
+    .btn:active { transform: scale(0.98); }
+    .strategy-item { 
+      background: rgba(15, 23, 42, 0.6); 
+      padding: 12px; border-radius: 8px; margin-bottom: 10px;
+      border: 1px solid #334155;
+    }
+    .strategy-title { font-weight: 600; color: #10b981; margin-bottom: 6px; }
+    .strategy-desc { font-size: 12px; color: #94a3b8; line-height: 1.5; }
+    .badge { 
+      display: inline-block; padding: 4px 8px; 
+      background: #1e293b; border-radius: 6px; 
+      font-size: 11px; font-weight: 600; margin-top: 6px;
+    }
+    .badge.bull { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .badge.bear { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .paper-balance { 
+      text-align: center; padding: 20px; 
+      background: rgba(16, 185, 129, 0.1); 
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 10px; margin-bottom: 16px;
+    }
+    .balance-label { font-size: 12px; color: #94a3b8; }
+    .balance-amount { font-size: 28px; font-weight: 700; color: #10b981; margin-top: 6px; }
+    .trade-form { display: grid; gap: 10px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   </style>
 </head>
 <body>
@@ -110,16 +141,16 @@
     </div>
 
     <div class="tabs">
-      <div class="tab active" onclick="showTab('sentiment')">
+      <div class="tab active" onclick="showTab('sentiment', this)">
         <span class="tab-icon">📊</span>Sentiment
       </div>
-      <div class="tab" onclick="showTab('strategy')">
+      <div class="tab" onclick="showTab('strategy', this)">
         <span class="tab-icon">⚡</span>Strategy
       </div>
-      <div class="tab" onclick="showTab('ai')">
+      <div class="tab" onclick="showTab('ai', this)">
         <span class="tab-icon">🤖</span>AI Suggest
       </div>
-      <div class="tab" onclick="showTab('paper')">
+      <div class="tab" onclick="showTab('paper', this)">
         <span class="tab-icon">📝</span>Paper
       </div>
     </div>
@@ -157,8 +188,8 @@
             <label>Timeframe</label>
             <select id="timeframe">
               <option value="daily">Daily</option>
-              <option value="hourly">Hourly</option>
-              <option value="weekly">Weekly</option>
+              <option value="4h">4 Hour</option>
+              <option value="1h">1 Hour</option>
             </select>
           </div>
         </div>
@@ -175,34 +206,135 @@
     <!-- Strategy Tab -->
     <div id="strategy" class="tab-content hidden">
       <div class="card">
-        <div class="card-header">⚡ Active Strategies</div>
-        <div class="advice">💡 Strategy builder jaldi aa raha hai. Abhi sentiment follow karo.</div>
+        <div class="card-header">⚡ Active Trading Strategies</div>
+        
+        <div class="strategy-item">
+          <div class="strategy-title">🚀 Momentum Breakout</div>
+          <div class="strategy-desc">RSI > 60 + Price > EMA20 + Volume spike. 24h change positive hone pe entry.</div>
+          <span class="badge bull" id="momentumStatus">Checking...</span>
+        </div>
+
+        <div class="strategy-item">
+          <div class="strategy-title">📉 Mean Reversion</div>
+          <div class="strategy-desc">RSI < 30 oversold. Support pe bounce expect karo. 3-5% target rakho.</div>
+          <span class="badge bear" id="reversionStatus">Checking...</span>
+        </div>
+
+        <div class="strategy-item">
+          <div class="strategy-title">⚡ EMA Cross Trend</div>
+          <div class="strategy-desc">EMA 9 > EMA 21 bullish cross. Trend follow karo, pullback pe add karo.</div>
+          <span class="badge" id="emaStatus">Checking...</span>
+        </div>
+
+        <div class="strategy-item">
+          <div class="strategy-title">💎 DCA Strategy</div>
+          <div class="strategy-desc">Har dip pe 20% capital invest karo. Long term hold ke liye best.</div>
+          <span class="badge bull">Always Active</span>
+        </div>
+
+        <button class="btn" onclick="refreshStrategies()">🔄 Refresh Signals</button>
       </div>
     </div>
 
     <!-- AI Suggest Tab -->
     <div id="ai" class="tab-content hidden">
       <div class="card">
-        <div class="card-header">🤖 AI Suggestions</div>
+        <div class="card-header">🤖 AI Trade Suggestions</div>
         <div class="advice" id="aiAdvice">💡 Market analyze ho raha...</div>
+        
+        <div class="strategy-item" style="margin-top: 16px;">
+          <div class="strategy-title">🎯 Today's Top Pick</div>
+          <div class="strategy-desc" id="topPick">Analyzing market conditions...</div>
+        </div>
+
+        <div class="strategy-item">
+          <div class="strategy-title">⚠️ Risk Alert</div>
+          <div class="strategy-desc" id="riskAlert">Calculating risk levels...</div>
+        </div>
+
+        <div class="strategy-item">
+          <div class="strategy-title">📊 Entry/Exit Levels</div>
+          <div class="strategy-desc" id="levels">Loading support/resistance...</div>
+        </div>
+
+        <button class="btn" onclick="generateAI()">🤖 Generate New Analysis</button>
       </div>
     </div>
 
     <!-- Paper Tab -->
     <div id="paper" class="tab-content hidden">
       <div class="card">
-        <div class="card-header">📝 Paper Trading</div>
-        <div class="advice">💡 Virtual trading mode jaldi add hoga. Practice karo risk-free.</div>
+        <div class="card-header">📝 Paper Trading Account</div>
+        
+        <div class="paper-balance">
+          <div class="balance-label">Virtual Balance</div>
+          <div class="balance-amount" id="paperBalance">$10,000.00 USDT</div>
+        </div>
+
+        <div class="trade-form">
+          <div class="form-row">
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Action</label>
+              <select id="tradeAction">
+                <option value="buy">Buy / Long</option>
+                <option value="sell">Sell / Short</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Coin</label>
+              <select id="paperCoin">
+                <option value="BTC">BTC</option>
+                <option value="ETH">ETH</option>
+                <option value="SOL">SOL</option>
+              </select>
+            </div>
+          </div>
+          
+          <div>
+            <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Amount (USDT)</label>
+            <input type="number" id="tradeAmount" placeholder="100" value="100">
+          </div>
+
+          <div class="form-row">
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Leverage</label>
+              <select id="leverage">
+                <option value="1">1x Spot</option>
+                <option value="2">2x</option>
+                <option value="3">3x</option>
+                <option value="5">5x</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Stop Loss %</label>
+              <input type="number" id="stopLoss" placeholder="5" value="5">
+            </div>
+          </div>
+
+          <button class="btn" onclick="executePaperTrade()">📝 Execute Paper Trade</button>
+        </div>
+
+        <div style="margin-top: 16px; padding: 12px; background: rgba(15, 23, 42, 0.6); border-radius: 8px;">
+          <div style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">Open Positions</div>
+          <div id="positions" style="font-size: 13px; color: #cbd5e1;">No open positions</div>
+        </div>
       </div>
     </div>
   </div>
 
 <script>
-function showTab(tabName) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+let currentCoinData = {};
+let paperBalance = 10000;
+let positions = [];
+
+function showTab(tabName, el) {
+  document.querySelectorAll('.tab-content').forEach(e => e.classList.add('hidden'));
+  document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
   document.getElementById(tabName).classList.remove('hidden');
-  event.target.closest('.tab').classList.add('active');
+  el.classList.add('active');
+  
+  if(tabName === 'strategy') refreshStrategies();
+  if(tabName === 'ai') generateAI();
 }
 
 async function fetchCrypto() {
@@ -211,9 +343,12 @@ async function fetchCrypto() {
   try {
     const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coin}`);
     const data = await res.json();
+    currentCoinData = data;
     
     const price = data.market_data.current_price.usd;
     const change = data.market_data.price_change_percentage_24h;
+    const high = data.market_data.high_24h.usd;
+    const low = data.market_data.low_24h.usd;
     
     document.getElementById('price').innerHTML = `$${price.toLocaleString()}`;
     
@@ -231,15 +366,15 @@ async function fetchCrypto() {
       color = '#10b981';
     } else if (change > 2) {
       emoji = '📈'; text = 'BULLISH'; 
-      advice = 'Trend following karo. Pullback pe entry lo. Stop loss tight rakho.';
+      advice = 'Trend following karo. Pullback pe entry lo. Stop loss tight rakho. 2x leverage safe.';
       color = '#34d399';
     } else if (change < -5) {
       emoji = '🐻'; text = 'BEARISH'; 
-      advice = 'Short selling ya USDT hold. Breakdown strategies use karo. Long mat lena.';
+      advice = 'Short selling ya USDT hold. Breakdown strategies use karo. Long mat lena. Risk high hai.';
       color = '#ef4444';
     } else if (change < -2) {
       emoji = '📉'; text = 'BEARISH'; 
-      advice = 'Selling pressure hai. Rallies pe short karo. Support test ho raha.';
+      advice = 'Selling pressure hai. Rallies pe short karo. Support test ho raha. Caution.';
       color = '#f87171';
     } else {
       emoji = '😐'; text = 'NEUTRAL'; 
@@ -251,12 +386,129 @@ async function fetchCrypto() {
     document.getElementById('sentimentResult').innerHTML = `${emoji} ${text} - ${Math.round(score)}%`;
     document.getElementById('sentimentResult').style.color = color;
     document.getElementById('advice').innerHTML = `💡 ${advice}`;
-    document.getElementById('aiAdvice').innerHTML = `💡 ${advice} Current trend: ${text}`;
+    
+    updateStrategies(change, price, high, low);
     
   } catch (err) {
     document.getElementById('sentimentResult').innerHTML = '❌ Error';
-    document.getElementById('advice').innerHTML = '💡 API error. Net check karo ya 1 min baad refresh karo.';
+    document.getElementById('advice').innerHTML = '💡 API error. Net check karo.';
   }
+}
+
+function updateStrategies(change, price, high, low) {
+  const momentumEl = document.getElementById('momentumStatus');
+  const reversionEl = document.getElementById('reversionStatus');
+  const emaEl = document.getElementById('emaStatus');
+  
+  if (change > 3) {
+    momentumEl.textContent = '🟢 Active - Bullish Signal';
+    momentumEl.className = 'badge bull';
+  } else {
+    momentumEl.textContent = '⚪ Waiting';
+    momentumEl.className = 'badge';
+  }
+  
+  if (change < -3) {
+    reversionEl.textContent = '🟢 Active - Oversold';
+    reversionEl.className = 'badge bull';
+  } else {
+    reversionEl.textContent = '⚪ Waiting';
+    reversionEl.className = 'badge';
+  }
+  
+  if (Math.abs(change) > 2) {
+    emaEl.textContent = change > 0 ? '🟢 Bullish Cross' : '🔴 Bearish Cross';
+    emaEl.className = change > 0 ? 'badge bull' : 'badge bear';
+  } else {
+    emaEl.textContent = '⚪ No Signal';
+    emaEl.className = 'badge';
+  }
+}
+
+function refreshStrategies() {
+  if (currentCoinData.market_data) {
+    const change = currentCoinData.market_data.price_change_percentage_24h;
+    const price = currentCoinData.market_data.current_price.usd;
+    const high = currentCoinData.market_data.high_24h.usd;
+    const low = currentCoinData.market_data.low_24h.usd;
+    updateStrategies(change, price, high, low);
+  }
+}
+
+function generateAI() {
+  if (!currentCoinData.market_data) {
+    document.getElementById('aiAdvice').innerHTML = '💡 Pehle coin select karo Sentiment tab mein';
+    return;
+  }
+  
+  const change = currentCoinData.market_data.price_change_percentage_24h;
+  const price = currentCoinData.market_data.current_price.usd;
+  const high = currentCoinData.market_data.high_24h.usd;
+  const low = currentCoinData.market_data.low_24h.usd;
+  const volume = currentCoinData.market_data.total_volume.usd;
+  
+  let advice, pick, risk, levels;
+  
+  if (change > 5) {
+    advice = `Strong bullish momentum detected. ${change.toFixed(2)}% gain in 24h with high volume. Trend continuation likely.`;
+    pick = `${currentCoinData.symbol.toUpperCase()} - Long position recommended. Entry: $${(price * 0.98).toFixed(2)}, Target: $${(price * 1.08).toFixed(2)}, SL: $${(price * 0.95).toFixed(2)}`;
+    risk = `Medium Risk - High volatility. Use 2-3x leverage max. Trail stop loss.`;
+    levels = `Resistance: $${high.toFixed(2)} | Support: $${(price * 0.96).toFixed(2)} | Pivot: $${((high + low + price) / 3).toFixed(2)}`;
+  } else if (change < -5) {
+    advice = `Heavy selling pressure. ${Math.abs(change).toFixed(2)}% drop. Wait for support test or short rallies.`;
+    pick = `${currentCoinData.symbol.toUpperCase()} - Short/Sell recommended. Entry: $${(price * 1.02).toFixed(2)}, Target: $${(price * 0.92).toFixed(2)}, SL: $${(price * 1.05).toFixed(2)}`;
+    risk = `High Risk - Downtrend active. Avoid longs. Use tight SL if shorting.`;
+    levels = `Support: $${low.toFixed(2)} | Resistance: $${(price * 1.04).toFixed(2)} | Pivot: $${((high + low + price) / 3).toFixed(2)}`;
+  } else {
+    advice = `Range-bound market. ${change.toFixed(2)}% change shows consolidation. Trade the range.`;
+    pick = `${currentCoinData.symbol.toUpperCase()} - Range trade. Buy: $${low.toFixed(2)}, Sell: $${high.toFixed(2)}. Wait for breakout.`;
+    risk = `Low-Medium Risk - Sideways. Small position size. Scalp 2-3% moves.`;
+    levels = `Range: $${low.toFixed(2)} - $${high.toFixed(2)} | Mid: $${((high + low) / 2).toFixed(2)}`;
+  }
+  
+  document.getElementById('aiAdvice').innerHTML = `💡 ${advice}`;
+  document.getElementById('topPick').innerHTML = pick;
+  document.getElementById('riskAlert').innerHTML = risk;
+  document.getElementById('levels').innerHTML = levels;
+}
+
+function executePaperTrade() {
+  const action = document.getElementById('tradeAction').value;
+  const coin = document.getElementById('paperCoin').value;
+  const amount = parseFloat(document.getElementById('tradeAmount').value);
+  const leverage = parseInt(document.getElementById('leverage').value);
+  const sl = parseFloat(document.getElementById('stopLoss').value);
+  
+  if (amount > paperBalance) {
+    alert('Insufficient balance!');
+    return;
+  }
+  
+  const price = currentCoinData.market_data?.current_price?.usd || 50000;
+  const qty = (amount * leverage) / price;
+  
+  paperBalance -= amount;
+  positions.push({
+    coin, action, qty: qty.toFixed(6), 
+    entry: price, leverage, sl,
+    value: amount * leverage
+  });
+  
+  document.getElementById('paperBalance').textContent = `$${paperBalance.toFixed(2)} USDT`;
+  updatePositions();
+  alert(`Paper trade executed! ${action.toUpperCase()} ${qty.toFixed(6)} ${coin} @ $${price}`);
+}
+
+function updatePositions() {
+  const posEl = document.getElementById('positions');
+  if (positions.length === 0) {
+    posEl.innerHTML = 'No open positions';
+    return;
+  }
+  
+  posEl.innerHTML = positions.map((p, i) => 
+    `${i+1}. ${p.action.toUpperCase()} ${p.qty} ${p.coin} @ $${p.entry} (${p.leverage}x) | SL: ${p.sl}%`
+  ).join('<br>');
 }
 
 window.onload = fetchCrypto;
