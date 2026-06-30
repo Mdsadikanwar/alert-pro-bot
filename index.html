@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AlertPro Terminal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
@@ -16,34 +16,168 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
+      position: relative;
     }
-    .container { max-width: 480px; width: 100%; }
-    .header { text-align: center; margin-bottom: 30px; }
-    .logo { font-size: 28px; margin-bottom: 8px; }
-    .subtitle { color: #94a3b8; font-size: 14px; }
+    
+    /* Animated background glow */
+    body::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(245, 158, 11, 0.06) 0%, transparent 50%);
+      animation: rotate 20s linear infinite;
+      z-index: 0;
+    }
+    
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .container { 
+      max-width: 480px; 
+      width: 100%; 
+      position: relative;
+      z-index: 1;
+    }
+    
+    .header { 
+      text-align: center; 
+      margin-bottom: 40px;
+      animation: fadeInDown 0.6s ease;
+    }
+    
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .logo { 
+      font-size: 32px; 
+      font-weight: 800;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #10b981, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.3));
+    }
+    
+    .subtitle { 
+      color: #94a3b8; 
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
     .market-card { 
-      background: rgba(19, 27, 46, 0.8); 
-      border: 1px solid rgba(30, 41, 59, 0.6); 
-      border-radius: 16px; padding: 24px; margin-bottom: 16px;
-      text-decoration: none; display: block;
-      transition: all 0.3s ease;
+      background: rgba(19, 27, 46, 0.6); 
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(30, 41, 59, 0.8); 
+      border-radius: 20px; 
+      padding: 28px; 
+      margin-bottom: 18px;
+      text-decoration: none; 
+      display: block;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      animation: fadeInUp 0.6s ease backwards;
     }
+    
+    .market-card:nth-child(2) { animation-delay: 0.1s; }
+    .market-card:nth-child(3) { animation-delay: 0.2s; }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .market-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.5), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+    
+    .market-card:hover::before {
+      transform: translateX(100%);
+    }
+    
     .market-card:hover { 
-      border-color: #10b981; 
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.5); 
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(16, 185, 129, 0.15),
+                  0 0 60px rgba(16, 185, 129, 0.1);
+      background: rgba(19, 27, 46, 0.8);
     }
+    
+    .crypto:hover {
+      box-shadow: 0 20px 40px rgba(245, 158, 11, 0.15),
+                  0 0 60px rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.5);
+    }
+    
     .market-title { 
-      font-size: 22px; font-weight: 700; 
-      margin-bottom: 8px; display: flex; 
-      align-items: center; justify-content: center; gap: 10px;
+      font-size: 26px; 
+      font-weight: 800; 
+      margin-bottom: 10px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 12px;
+      letter-spacing: -0.5px;
     }
+    
     .market-desc { 
-      text-align: center; color: #94a3b8; 
-      font-size: 13px; 
+      text-align: center; 
+      color: #94a3b8; 
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.5;
     }
-    .crypto .market-title { color: #f59e0b; }
-    .stock .market-title { color: #10b981; }
+    
+    .crypto .market-title { 
+      color: #f59e0b;
+      text-shadow: 0 0 30px rgba(245, 158, 11, 0.5);
+    }
+    
+    .stock .market-title { 
+      color: #10b981;
+      text-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+    }
+    
+    .icon-glow {
+      display: inline-block;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 11px;
+      color: #475569;
+      animation: fadeIn 1s ease 0.5s backwards;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -54,14 +188,22 @@
     </div>
 
     <a href="/crypto.html" class="market-card crypto">
-      <div class="market-title">₿ CRYPTO</div>
-      <div class="market-desc">BTC, ETH, Altcoins Signal Strategies</div>
+      <div class="market-title">
+        <span class="icon-glow">₿</span> CRYPTO
+      </div>
+      <div class="market-desc">BTC, ETH, Altcoins • Real-time Signal Strategies</div>
     </a>
 
     <a href="/stock.html" class="market-card stock">
-      <div class="market-title">📈 SHARE MARKET</div>
-      <div class="market-desc">Nifty 50, Stocks Signal Strategies</div>
+      <div class="market-title">
+        <span class="icon-glow">📈</span> SHARE MARKET
+      </div>
+      <div class="market-desc">Nifty 50, Bank Nifty • Professional Trading Setup</div>
     </a>
+    
+    <div class="footer">
+      Powered by AlertPro AI • v2.0
+    </div>
   </div>
 </body>
 </html>
