@@ -113,6 +113,7 @@
           <option value="3m">3 Min</option>
         </select>
       </div>
+    </div>
     <div class="row">
       <div><label>EMA Fast</label><input id="emaFast" type="number" value="9" /></div>
       <div><label>EMA Slow</label><input id="emaSlow" type="number" value="21" /></div>
@@ -436,6 +437,23 @@ function cancelEdit() {
   document.getElementById('cancelBtn').classList.add('hidden');
 }
 
+function clearForm() {
+  document.getElementById('strategyName').value = '';
+  document.getElementById('indexSelect').value = 'NIFTY';
+  document.getElementById('timeframeSignal').value = '1d';
+  document.getElementById('timeframeEntry').value = '15m';
+  document.getElementById('emaFast').value = '9';
+  document.getElementById('emaSlow').value = '21';
+  document.getElementById('ema200Filter').value = 'above';
+  document.getElementById('vwapFilter').checked = true;
+  document.getElementById('rsiPeriod').value = '14';
+  document.getElementById('rsiLevel').value = '40';
+  document.getElementById('stopLoss').value = '0.5';
+  document.getElementById('takeProfit').value = '1.5';
+  document.getElementById('accountSize').value = '100000';
+  document.getElementById('riskPercent').value = '1';
+}
+
 function deleteStrategy(id) {
   if (!confirm('Pakka delete karna hai?')) return;
   strategies = strategies.filter(st => st.id!== id);
@@ -502,6 +520,10 @@ function openAISuggester() {
   document.getElementById('aiResults').innerHTML = '';
 }
 
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
 function generateAIStrategy() {
   const mood = document.getElementById('aiMarketMood').value;
   const risk = document.getElementById('aiRisk').value;
@@ -514,3 +536,5 @@ function generateAIStrategy() {
     suggestions.push({ name: 'NIFTY Range Master Pro', desc: 'Sideways market mein range trade. Daily dono TF. EMA200 filter.', tfSignal: '1d', tfEntry: '1d', emaFast: 13, emaSlow: 34, ema200: 'none', vwap: false, rsi: 45, sl: 0.5, tp: 0.5 });
   } else if (mood === 'bearish') {
     suggestions.push({ name: 'Bear Market Short Pro', desc: 'Girte market mein pullback. 1h signal, 5m entry. EMA200 below.', tfSignal: '1h', tfEntry: '5m', emaFast: 13, emaSlow: 34, ema200: 'below', vwap: true, rsi: 35, sl: 0.5, tp: 1.5 });
+  }
+  suggestions.push({ name: 'NIFTY Balanced Pro', desc: 'Har market mein kaam karegi. Moderate risk. VWAP +
