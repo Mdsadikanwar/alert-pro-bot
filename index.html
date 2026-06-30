@@ -1,70 +1,84 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AlertPro - Main Terminal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlertPro Terminal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Arial; background: #0a0e1a; color: #e2e8f0; padding: 20px; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-    .container { max-width: 400px; width: 100%; }
-    .header { text-align: center; margin-bottom: 40px; }
-    .header h1 { font-size: 32px; margin-bottom: 8px; }
-    .header p { color: #64748b; font-size: 14px; }
-    .market-btn { background: #131b2e; border: 2px solid #1e293b; padding: 30px 20px; border-radius: 16px; margin-bottom: 20px; cursor: pointer; transition: all 0.3s; text-align: center; text-decoration: none; display: block; }
-    .market-btn:hover { border-color: #3b82f6; transform: translateY(-5px); background: #1a2540; }
-    .market-btn h2 { font-size: 24px; margin-bottom: 8px; }
-    .market-btn p { color: #94a3b8; font-size: 13px; }
-    .crypto-btn h2 { color: #f59e0b; }
-    .stock-btn h2 { color: #10b981; }
-    .backtest-btn h2 { color: #8b5cf6; }
-    .stats { display: flex; justify-content: space-around; margin-top: 30px; text-align: center; }
-    .stat { font-size: 12px; color: #64748b; }
-    .stat strong { display: block; font-size: 20px; color: #3b82f6; margin-bottom: 4px; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: #0a0e1a; 
+      color: #e2e8f0; 
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container { max-width: 480px; width: 100%; }
+    .header { text-align: center; margin-bottom: 30px; }
+    .logo { font-size: 28px; margin-bottom: 8px; }
+    .subtitle { color: #94a3b8; font-size: 14px; }
+    .market-card { 
+      background: rgba(19, 27, 46, 0.8); 
+      border: 1px solid rgba(30, 41, 59, 0.6); 
+      border-radius: 16px; padding: 24px; margin-bottom: 16px;
+      text-decoration: none; display: block;
+      transition: all 0.3s ease;
+    }
+    .market-card:hover { 
+      border-color: #10b981; 
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+    }
+    .market-title { 
+      font-size: 22px; font-weight: 700; 
+      margin-bottom: 8px; display: flex; 
+      align-items: center; justify-content: center; gap: 10px;
+    }
+    .market-desc { 
+      text-align: center; color: #94a3b8; 
+      font-size: 13px; 
+    }
+    .crypto .market-title { color: #f59e0b; }
+    .stock .market-title { color: #10b981; }
+    .stats { 
+      display: grid; grid-template-columns: 1fr 1fr; 
+      gap: 16px; margin-top: 24px; text-align: center;
+    }
+    .stat-num { font-size: 24px; font-weight: 700; color: #10b981; }
+    .stat-label { font-size: 12px; color: #94a3b8; margin-top: 4px; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>🚨 AlertPro Terminal</h1>
-      <p>Select Market to Manage Strategies</p>
+      <div class="logo">🚨 AlertPro Terminal</div>
+      <div class="subtitle">Select Market to Manage Strategies</div>
     </div>
 
-    <a href="/crypto.html" class="market-btn crypto-btn">
-      <h2>₿ CRYPTO</h2>
-      <p>BTC, ETH, Altcoins Signal Strategies</p>
+    <a href="/crypto.html" class="market-card crypto">
+      <div class="market-title">₿ CRYPTO</div>
+      <div class="market-desc">BTC, ETH, Altcoins Signal Strategies</div>
     </a>
 
-    <a href="/stocks.html" class="market-btn stock-btn">
-      <h2>📈 SHARE MARKET</h2>
-      <p>Nifty 50, Stocks Signal Strategies</p>
-    </a>
-
-    <a href="/backtest.html" class="market-btn backtest-btn">
-      <h2>🔬 BACKTEST LAB</h2>
-      <p>Strategy ka profit/loss test karo</p>
-    </a>
+    <a href="/stock.html" class="market-card stock">
+      <div class="market-title">📈 SHARE MARKET</div>
+      <div class="market-desc">Nifty 50, Stocks Signal Strategies</div>
+    </div>
 
     <div class="stats">
-      <div class="stat">
-        <strong id="cryptoCount">0</strong>
-        Crypto Strategies
+      <div>
+        <div class="stat-num" id="cryptoCount">0</div>
+        <div class="stat-label">Crypto Strategies</div>
       </div>
-      <div class="stat">
-        <strong id="stockCount">0</strong>
-        Stock Strategies
+      <div>
+        <div class="stat-num" id="stockCount">0</div>
+        <div class="stat-label">Stock Strategies</div>
       </div>
     </div>
   </div>
-
-<script>
-function updateCounts() {
-  const crypto = JSON.parse(localStorage.getItem('strategies_crypto') || '[]');
-  const stocks = JSON.parse(localStorage.getItem('strategies_stocks') || '[]');
-  document.getElementById('cryptoCount').innerText = crypto.length;
-  document.getElementById('stockCount').innerText = stocks.length;
-}
-updateCounts();
-</script>
-
 </body>
 </html>
