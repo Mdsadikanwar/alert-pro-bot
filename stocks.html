@@ -193,6 +193,11 @@ let strategies = JSON.parse(localStorage.getItem('strategies_stock_promax') || '
 let editingId = null;
 let chartInstance = null;
 
+window.onload = function() {
+  renderStrategies();
+  updateRegimeDisplay('NIFTY', '1d');
+};
+
 function detectMarketRegime(candles) {
   if (!candles || candles.length < 50) return { regime: 'UNKNOWN', confidence: 0 };
   let adx = calculateADX(candles, 14);
@@ -280,7 +285,7 @@ async function updateRegimeDisplay(symbol, interval = '1d') {
     if (symbol === 'BANKNIFTY') yahooSymbol = '^NSEBANK';
     if (symbol === 'FINNIFTY') yahooSymbol = 'NIFTY_FIN_SERVICE.NS';
     if (symbol === 'MIDCPNIFTY') yahooSymbol = 'NIFTY_MIDCAP_50.NS';
-    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+    const proxyUrl = 'https://corsproxy.io/?';
     const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?interval=${interval}&range=1y`;
     const res = await fetch(proxyUrl + encodeURIComponent(yahooUrl));
     if (!res.ok) throw new Error('NSE API Fail');
@@ -318,6 +323,7 @@ async function updateRegimeDisplay(symbol, interval = '1d') {
       <div style="background:#0f172a; padding:15px; border-radius:8px; border-left:4px solid #ef4444">
         <h3 style="color:#ef4444; margin:0 0 8px 0; font-size:16px;">❌ NSE DATA FAIL</h3>
         <p style="font-size:12px; color:#94a3b8;">Yahoo Finance se data nahi aaya. Market close ho sakta hai ya net issue.</p>
+        <p style="font-size:11px; color:#64748b; margin-top:8px;">Refresh Regime button dabao.</p>
       </div>
     `;
   }
@@ -533,8 +539,4 @@ function generateAIStrategy() {
   } else if (mood === 'bullish' && risk === 'aggressive') {
     suggestions.push({ name: 'BANKNIFTY Rocket Pro', desc: 'Aggressive bull run. 1h signal, 5m entry. VWAP bounce.', tfSignal: '1h', tfEntry: '5m', emaFast: 5, emaSlow: 13, ema200: 'above', vwap: true, rsi: 40, sl: 0.6, tp: 1.8 });
   } else if (mood === 'sideways') {
-    suggestions.push({ name: 'NIFTY Range Master Pro', desc: 'Sideways market mein range trade. Daily dono TF. EMA200 filter.', tfSignal: '1d', tfEntry: '1d', emaFast: 13, emaSlow: 34, ema200: 'none', vwap: false, rsi: 45, sl: 0.5, tp: 0.5 });
-  } else if (mood === 'bearish') {
-    suggestions.push({ name: 'Bear Market Short Pro', desc: 'Girte market mein pullback. 1h signal, 5m entry. EMA200 below.', tfSignal: '1h', tfEntry: '5m', emaFast: 13, emaSlow: 34, ema200: 'below', vwap: true, rsi: 35, sl: 0.5, tp: 1.5 });
-  }
-  suggestions.push({ name: 'NIFTY Balanced Pro', desc: 'Har market mein kaam karegi. Moderate risk. VWAP +
+    suggestions.push({ name: 'NIFTY Range Master Pro', desc: 'Sideways market mein range trade. Daily dono TF. EMA200 filter.', tfSignal: '1d', tfEntry: '1d', emaFast: 13, emaSlow: 34,
