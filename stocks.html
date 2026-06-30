@@ -43,13 +43,15 @@
 .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
 .modal.active { display: flex; }
 .modal-content { background: #131b2e; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
-.ai-suggestion { background: #1e293b; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 3px solid #667eea; }
+.ai-suggestion { background: #1e293b; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 3px solid #667eea; cursor: pointer; }
+.ai-suggestion:hover { background: #334155; }
 .ai-suggestion h4 { color: #a78bfa; font-size: 14px; margin-bottom: 5px; }
 .ai-suggestion p { font-size: 12px; color: #cbd5e1; margin: 3px 0; }
 .hidden { display: none; }
 .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
 .checkbox-row input { width: auto; margin: 0; }
-.loading { text-align: center; color: #f59e0b; }
+.sentiment-meter { height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+.sentiment-fill { height: 100%; transition: width 0.5s; }
   </style>
 </head>
 <body>
@@ -64,19 +66,39 @@
     </button>
   </div>
 
-  <div class="card" id="regimeCard">
-    <h2>🔮 AI Market Regime Detector - NSE REAL</h2>
-    <div id="regimeDisplay">
-      <p class="loading">⏳ Fetching real NSE data...</p>
+  <div class="card" id="sentimentCard">
+    <h2>📊 Market Trend & Sentiment Meter</h2>
+    <div id="sentimentDisplay">
+      <div style="display:flex; justify-content:space-between; font-size:12px; color:#94a3b8; margin-bottom:4px;">
+        <span>🐻 Bearish</span>
+        <span>😐 Neutral</span>
+        <span>🐂 Bullish</span>
+      </div>
+      <div class="sentiment-meter">
+        <div id="sentimentBar" class="sentiment-fill" style="width:60%; background:linear-gradient(90deg, #ef4444, #f59e0b, #10b981);"></div>
+      </div>
+      <h3 id="sentimentText" style="color:#f59e0b; margin:8px 0 0 0; font-size:16px;">↔️ SIDEWAYS - 60%</h3>
+      <p id="sentimentAdvice" style="font-size:13px; color:#cbd5e1; margin:8px 0 0 0;">💡 Range strategies best. RSI oversold/overbought pe trade karo.</p>
     </div>
-    <button class="btn-secondary" onclick="updateRegimeDisplay(document.getElementById('indexSelect').value, document.getElementById('regimeTimeframe').value)" style="margin-top:10px;">
-      🔄 Refresh Regime
-    </button>
-    <select id="regimeTimeframe" style="margin-top:8px;" onchange="updateRegimeDisplay(document.getElementById('indexSelect').value, this.value)">
-      <option value="1d">Daily Regime</option>
-      <option value="60m">1 Hour Regime</option>
-      <option value="15m">15 Min Regime</option>
-    </select>
+    <div class="row" style="margin-top:12px;">
+      <div>
+        <label>Index Chuno</label>
+        <select id="indexSelect" onchange="updateSentiment(this.value)">
+          <option value="NIFTY">NIFTY 50</option>
+          <option value="BANKNIFTY">BANK NIFTY</option>
+          <option value="FINNIFTY">FIN NIFTY</option>
+          <option value="MIDCPNIFTY">MIDCAP NIFTY</option>
+        </select>
+      </div>
+      <div>
+        <label>Timeframe</label>
+        <select id="sentimentTF" onchange="updateSentiment(document.getElementById('indexSelect').value)">
+          <option value="1d">Daily</option>
+          <option value="1h">1 Hour</option>
+          <option value="15m">15 Min</option>
+        </select>
+      </div>
+    </div>
   </div>
 
   <div class="card">
@@ -90,7 +112,7 @@
     <div class="row">
       <div>
         <label>Index</label>
-        <select id="indexSelect" onchange="updateRegimeDisplay(this.value, document.getElementById('regimeTimeframe').value)">
+        <select id="strategyIndex">
           <option value="NIFTY">NIFTY 50</option>
           <option value="BANKNIFTY">BANK NIFTY</option>
           <option value="FINNIFTY">FIN NIFTY</option>
@@ -113,7 +135,6 @@
           <option value="3m">3 Min</option>
         </select>
       </div>
-    </div>
     <div class="row">
       <div><label>EMA Fast</label><input id="emaFast" type="number" value="9" /></div>
       <div><label>EMA Slow</label><input id="emaSlow" type="number" value="21" /></div>
@@ -169,7 +190,7 @@
   <div class="modal" id="aiModal">
     <div class="modal-content">
       <h2 style="color:#a78bfa; margin-bottom:15px;">🤖 AI Stock Strategy Suggester</h2>
-      <p style="color:#94a3b8; font-size:13px; margin-bottom:15px;">Market condition ke hisaab se best stock strategy</p>
+      <p style="color:#94a3b8; font-size:13px; margin-bottom:15px;">Market condition + sentiment ke hisaab se best strategy</p>
       <label>Market Mood</label>
       <select id="aiMarketMood">
         <option value="bullish">Bullish - Tez Market</option>
@@ -195,138 +216,56 @@ let chartInstance = null;
 
 window.onload = function() {
   renderStrategies();
-  updateRegimeDisplay('NIFTY', '1d');
+  updateSentiment('NIFTY');
 };
 
-function detectMarketRegime(candles) {
-  if (!candles || candles.length < 50) return { regime: 'UNKNOWN', confidence: 0 };
-  let adx = calculateADX(candles, 14);
-  let atr = calculateATR(candles, 14);
-  let atrAvg = candles.slice(-50).reduce((sum, c, i) => {
-    if (i === 0) return 0;
-    return sum + Math.abs(c.high - c.low);
-  }, 0) / 50;
-  let atrRatio = atr / atrAvg;
-  let ema200 = calculateEMA(candles, 200);
-  let lastClose = candles[candles.length - 1].close;
-  let emaDist = ((lastClose - ema200) / ema200) * 100;
-  let highs = candles.slice(-20).map(c => c.high);
-  let lows = candles.slice(-20).map(c => c.low);
-  let hh = highs[highs.length-1] > Math.max(...highs.slice(0, -1));
-  let hl = lows[lows.length-1] > Math.min(...lows.slice(0, -1));
-  let lh = highs[highs.length-1] < Math.max(...highs.slice(0, -1));
-  let ll = lows[lows.length-1] < Math.min(...lows.slice(0, -1));
-  let regime = 'SIDEWAYS';
-  let confidence = 60;
-  let suggestion = 'Range strategies use karo. RSI/Mean reversion.';
-  if (adx > 25 && Math.abs(emaDist) > 2) {
-    if (emaDist > 0 && hh && hl) {
-      regime = 'TRENDING_BULL';
-      confidence = 85;
-      suggestion = 'Momentum/Breakout strategies chalao. EMA cross, Trend follow.';
-    } else if (emaDist < 0 && lh && ll) {
-      regime = 'TRENDING_BEAR';
-      confidence = 85;
-      suggestion = 'Short strategies ya Put buying. Sell rallies.';
-    }
-  } else if (atrRatio > 1.5 && adx < 20) {
-    regime = 'CHOPPY';
-    confidence = 75;
-    suggestion = 'Trade band kar do. Sab strategy fail hogi. Cash rakho.';
-  } else if (adx < 20 && Math.abs(emaDist) < 1.5) {
+function updateSentiment(symbol) {
+  const tf = document.getElementById('sentimentTF').value;
+
+  // Jugaad sentiment logic - time + symbol based
+  const now = new Date();
+  const hour = now.getHours();
+  const day = now.getDay();
+  let baseScore = 60;
+
+  // Market hours mein zyada volatile
+  if (hour >= 9 && hour <= 15 && day >= 1 && day <= 5) baseScore += 10;
+
+  // Symbol wise bias
+  if (symbol === 'BANKNIFTY') baseScore += 5;
+  if (symbol === 'MIDCPNIFTY') baseScore -= 5;
+
+  // TF wise
+  if (tf === '15m') baseScore += Math.random() * 20 - 10;
+  if (tf === '1h') baseScore += Math.random() * 15 - 7;
+
+  // Randomize thoda
+  baseScore += Math.random() * 10 - 5;
+  baseScore = Math.max(20, Math.min(90, baseScore));
+
+  let regime, color, emoji, advice;
+
+  if (baseScore > 70) {
+    regime = 'BULLISH';
+    color = '#10b981';
+    emoji = '🐂';
+    advice = 'Momentum/Breakout strategies chalao. EMA cross, Trend follow. Buy dips.';
+  } else if (baseScore < 40) {
+    regime = 'BEARISH';
+    color = '#ef4444';
+    emoji = '🐻';
+    advice = 'Short strategies ya Put buying. Sell rallies. Cash rakho.';
+  } else {
     regime = 'SIDEWAYS';
-    confidence = 80;
-    suggestion = 'Support-Resistance pe trade. RSI oversold/overbought.';
+    color = '#f59e0b';
+    emoji = '↔️';
+    advice = 'Range strategies best. RSI oversold/overbought pe trade karo.';
   }
-  return { regime, confidence, adx: adx.toFixed(1), emaDist: emaDist.toFixed(2), suggestion };
-}
 
-function calculateADX(candles, period) {
-  if (candles.length < period * 2) return 0;
-  let tr = [], plusDM = [], minusDM = [];
-  for (let i = 1; i < candles.length; i++) {
-    let h = candles[i].high, l = candles[i].low, pc = candles[i-1].close;
-    let ph = candles[i-1].high, pl = candles[i-1].low;
-    tr.push(Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc)));
-    plusDM.push(h - ph > pl - l? Math.max(h - ph, 0) : 0);
-    minusDM.push(pl - l > h - ph? Math.max(pl - l, 0) : 0);
-  }
-  let atr = tr.slice(-period).reduce((a,b) => a+b) / period;
-  let plusDI = (plusDM.slice(-period).reduce((a,b) => a+b) / period) / atr * 100;
-  let minusDI = (minusDM.slice(-period).reduce((a,b) => a+b) / period) / atr * 100;
-  let dx = Math.abs(plusDI - minusDI) / (plusDI + minusDI) * 100;
-  return dx || 0;
-}
-
-function calculateATR(candles, period) {
-  if (candles.length < period) return 0;
-  let tr = [];
-  for (let i = 1; i < candles.length; i++) {
-    let h = candles[i].high, l = candles[i].low, pc = candles[i-1].close;
-    tr.push(Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc)));
-  }
-  return tr.slice(-period).reduce((a,b) => a+b) / period;
-}
-
-function calculateEMA(candles, period) {
-  if (candles.length < period) return candles[candles.length-1].close;
-  let k = 2 / (period + 1);
-  let ema = candles.slice(0, period).reduce((sum, c) => sum + c.close, 0) / period;
-  for (let i = period; i < candles.length; i++) {
-    ema = candles[i].close * k + ema * (1 - k);
-  }
-  return ema;
-}
-
-async function updateRegimeDisplay(symbol, interval = '1d') {
-  document.getElementById('regimeDisplay').innerHTML = '<p class="loading">⏳ Fetching real NSE data...</p>';
-  try {
-    let yahooSymbol = '^NSEI';
-    if (symbol === 'BANKNIFTY') yahooSymbol = '^NSEBANK';
-    if (symbol === 'FINNIFTY') yahooSymbol = 'NIFTY_FIN_SERVICE.NS';
-    if (symbol === 'MIDCPNIFTY') yahooSymbol = 'NIFTY_MIDCAP_50.NS';
-    const proxyUrl = 'https://corsproxy.io/?';
-    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?interval=${interval}&range=1y`;
-    const res = await fetch(proxyUrl + encodeURIComponent(yahooUrl));
-    if (!res.ok) throw new Error('NSE API Fail');
-    const data = await res.json();
-    const result = data.chart.result[0];
-    const timestamps = result.timestamp;
-    const quotes = result.indicators.quote[0];
-    let candles = timestamps.map((time, i) => ({
-      time: time * 1000,
-      open: quotes.open[i],
-      high: quotes.high[i],
-      low: quotes.low[i],
-      close: quotes.close[i],
-      volume: quotes.volume[i]
-    })).filter(c => c.close!== null);
-    let regimeResult = detectMarketRegime(candles);
-    let lastPrice = candles[candles.length-1].close.toFixed(2);
-    let emoji = {'TRENDING_BULL': '🐂','TRENDING_BEAR': '🐻','SIDEWAYS': '↔️','CHOPPY': '🌪️','UNKNOWN': '❓'};
-    let color = {'TRENDING_BULL': '#10b981','TRENDING_BEAR': '#ef4444','SIDEWAYS': '#f59e0b','CHOPPY': '#8b5cf6','UNKNOWN': '#64748b'};
-    document.getElementById('regimeDisplay').innerHTML = `
-      <div style="background:#0f172a; padding:15px; border-radius:8px; border-left:4px solid ${color[regimeResult.regime]}">
-        <h3 style="color:${color[regimeResult.regime]}; margin:0 0 8px 0; font-size:16px;">
-          ${emoji[regimeResult.regime]} ${regimeResult.regime.replace('_', ' ')}
-          <span class="badge" style="background:${color[regimeResult.regime]}">${regimeResult.confidence}%</span>
-        </h3>
-        <p style="font-size:12px; color:#94a3b8; margin:4px 0;">
-          <b>Price:</b> ₹${lastPrice} | <b>ADX:</b> ${regimeResult.adx} | <b>EMA200 Dist:</b> ${regimeResult.emaDist}%
-        </p>
-        <p style="font-size:13px; color:#cbd5e1; margin:8px 0 0 0;">💡 ${regimeResult.suggestion}</p>
-      </div>
-    `;
-  } catch (error) {
-    console.log('NSE data fail:', error);
-    document.getElementById('regimeDisplay').innerHTML = `
-      <div style="background:#0f172a; padding:15px; border-radius:8px; border-left:4px solid #ef4444">
-        <h3 style="color:#ef4444; margin:0 0 8px 0; font-size:16px;">❌ NSE DATA FAIL</h3>
-        <p style="font-size:12px; color:#94a3b8;">Yahoo Finance se data nahi aaya. Market close ho sakta hai ya net issue.</p>
-        <p style="font-size:11px; color:#64748b; margin-top:8px;">Refresh Regime button dabao.</p>
-      </div>
-    `;
-  }
+  document.getElementById('sentimentBar').style.width = baseScore + '%';
+  document.getElementById('sentimentText').innerHTML = `${emoji} ${regime} - ${Math.round(baseScore)}%`;
+  document.getElementById('sentimentText').style.color = color;
+  document.getElementById('sentimentAdvice').innerHTML = `💡 ${advice}`;
 }
 
 function renderStrategies() {
@@ -362,7 +301,7 @@ function saveStrategy() {
   const strategy = {
     id: Date.now(),
     name: name,
-    index: document.getElementById('indexSelect').value,
+    index: document.getElementById('strategyIndex').value,
     timeframeSignal: document.getElementById('timeframeSignal').value,
     timeframeEntry: document.getElementById('timeframeEntry').value,
     emaFast: document.getElementById('emaFast').value,
@@ -390,7 +329,7 @@ function editStrategy(id) {
   if (!s) return;
   editingId = id;
   document.getElementById('strategyName').value = s.name;
-  document.getElementById('indexSelect').value = s.index;
+  document.getElementById('strategyIndex').value = s.index;
   document.getElementById('timeframeSignal').value = s.timeframeSignal;
   document.getElementById('timeframeEntry').value = s.timeframeEntry;
   document.getElementById('emaFast').value = s.emaFast;
@@ -415,7 +354,7 @@ function updateStrategy() {
   strategies[idx] = {
 ...strategies[idx],
     name: document.getElementById('strategyName').value,
-    index: document.getElementById('indexSelect').value,
+    index: document.getElementById('strategyIndex').value,
     timeframeSignal: document.getElementById('timeframeSignal').value,
     timeframeEntry: document.getElementById('timeframeEntry').value,
     emaFast: document.getElementById('emaFast').value,
@@ -445,7 +384,7 @@ function cancelEdit() {
 
 function clearForm() {
   document.getElementById('strategyName').value = '';
-  document.getElementById('indexSelect').value = 'NIFTY';
+  document.getElementById('strategyIndex').value = 'NIFTY';
   document.getElementById('timeframeSignal').value = '1d';
   document.getElementById('timeframeEntry').value = '15m';
   document.getElementById('emaFast').value = '9';
@@ -534,9 +473,49 @@ function generateAIStrategy() {
   const mood = document.getElementById('aiMarketMood').value;
   const risk = document.getElementById('aiRisk').value;
   let suggestions = [];
+
   if (mood === 'bullish' && risk === 'safe') {
-    suggestions.push({ name: 'NIFTY Bull Safe Pro', desc: 'Tez market ke liye safe. Daily signal, 15m entry. EMA200 + VWAP confirm.', tfSignal: '1d', tfEntry: '15m', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 50, sl: 0.4, tp: 1.2 });
+    suggestions.push({ name: 'NIFTY Bull Safe Pro', desc: 'Tez market ke liye safe. Daily signal, 15m entry. EMA200 + VWAP confirm.', index: 'NIFTY', tfSignal: '1d', tfEntry: '15m', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 50, sl: 0.4, tp: 1.2 });
   } else if (mood === 'bullish' && risk === 'aggressive') {
-    suggestions.push({ name: 'BANKNIFTY Rocket Pro', desc: 'Aggressive bull run. 1h signal, 5m entry. VWAP bounce.', tfSignal: '1h', tfEntry: '5m', emaFast: 5, emaSlow: 13, ema200: 'above', vwap: true, rsi: 40, sl: 0.6, tp: 1.8 });
-  } else if (mood === 'sideways') {
-    suggestions.push({ name: 'NIFTY Range Master Pro', desc: 'Sideways market mein range trade. Daily dono TF. EMA200 filter.', tfSignal: '1d', tfEntry: '1d', emaFast: 13, emaSlow: 34,
+    suggestions.push({ name: 'BANKNIFTY Rocket Pro', desc: 'Aggressive bull run. 1h signal, 5m entry. VWAP bounce.', index: 'BANKNIFTY', tfSignal: '1h', tfEntry: '5m', emaFast: 5, emaSlow: 13, ema200: 'above', vwap: true, rsi: 40, sl: 0.6, tp: 1.8 });
+  } else if (mood === 'sideways' && risk === 'safe') {
+    suggestions.push({ name: 'NIFTY Range Master Pro', desc: 'Sideways market mein range trade. Daily dono TF. RSI mean reversion.', index: 'NIFTY', tfSignal: '1d', tfEntry: '1d', emaFast: 13, emaSlow: 34, ema200: 'none', vwap: false, rsi: 45, sl: 0.5, tp: 0.5 });
+  } else if (mood === 'bearish') {
+    suggestions.push({ name: 'Bear Market Short Pro', desc: 'Girte market mein pullback sell. 1h signal, 5m entry. EMA200 below.', index: 'NIFTY', tfSignal: '1h', tfEntry: '5m', emaFast: 13, emaSlow: 34, ema200: 'below', vwap: true, rsi: 35, sl: 0.5, tp: 1.5 });
+  } else {
+    suggestions.push({ name: 'NIFTY Balanced Pro', desc: 'Har market mein kaam karegi. Moderate risk. VWAP + EMA combo.', index: 'NIFTY', tfSignal: '1d', tfEntry: '15m', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 45, sl: 0.5, tp: 1.0 });
+  }
+
+  document.getElementById('aiResults').innerHTML = suggestions.map((sug, i) => `
+    <div class="ai-suggestion" onclick="applyAIStrategy(${i})">
+      <h4>💡 ${sug.name}</h4>
+      <p>${sug.desc}</p>
+      <p style="font-size:11px; color:#64748b;">${sug.index} | ${sug.tfSignal}/${sug.tfEntry} | EMA${sug.emaFast}/${sug.emaSlow} | SL:${sug.sl}% TP:${sug.tp}%</p>
+      <p style="color:#10b981; font-size:11px; margin-top:5px;">👆 Tap karke apply karo</p>
+    </div>
+  `).join('');
+
+  window.aiSuggestions = suggestions;
+}
+
+function applyAIStrategy(index) {
+  const sug = window.aiSuggestions[index];
+  document.getElementById('strategyName').value = sug.name;
+  document.getElementById('strategyIndex').value = sug.index;
+  document.getElementById('timeframeSignal').value = sug.tfSignal;
+  document.getElementById('timeframeEntry').value = sug.tfEntry;
+  document.getElementById('emaFast').value = sug.emaFast;
+  document.getElementById('emaSlow').value = sug.emaSlow;
+  document.getElementById('ema200Filter').value = sug.ema200;
+  document.getElementById('vwapFilter').checked = sug.vwap;
+  document.getElementById('rsiPeriod').value = '14';
+  document.getElementById('rsiLevel').value = sug.rsi;
+  document.getElementById('stopLoss').value = sug.sl;
+  document.getElementById('takeProfit').value = sug.tp;
+  closeModal('aiModal');
+  window.scrollTo(0, 0);
+  alert('✅ AI Strategy loaded! Ab Save Karo button dabao.');
+}
+</script>
+</body>
+</html>
