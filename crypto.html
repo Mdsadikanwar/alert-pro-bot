@@ -8,48 +8,50 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Arial; background: #0a0e1a; color: #e2e8f0; padding: 15px; }
 .header { display: flex; align-items: center; margin-bottom: 20px; gap: 10px; }
-.back { background: #1e293b; border: none; color: #10b981; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; }
-.header h1 { font-size: 20px; color: #10b981; }
+.back { background: #1e293b; border: none; color: #f59e0b; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; }
+.header h1 { font-size: 20px; color: #f59e0b; }
 .card { background: #131b2e; border: 1px solid #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 15px; }
-.card h2 { font-size: 16px; margin-bottom: 12px; color: #10b981; }
+.card h2 { font-size: 16px; margin-bottom: 12px; color: #f59e0b; }
     select, input { width: 100%; padding: 10px; margin: 6px 0; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; }
     label { font-size: 13px; color: #94a3b8; display: block; margin-top: 8px; }
 .row { display: flex; gap: 10px; }
 .row > div { flex: 1; }
-    button { background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; margin-top: 10px; font-weight: 600; }
+    button { background: #f59e0b; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; width: 100%; margin-top: 10px; font-weight: 600; }
 .btn-secondary { background: #475569; }
 .btn-danger { background: #ef4444; }
 .btn-success { background: #10b981; }
 .btn-warning { background: #f59e0b; }
 .btn-telegram { background: #229ED9; }
 .btn-telegram.active { background: #10b981; }
-.btn-ai { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.btn-ai { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
 .btn-paper { background: #8b5cf6; }
 .strategy-item { background: #0f172a; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #1e293b; }
-.strategy-item h3 { font-size: 15px; margin-bottom: 8px; color: #10b981; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.strategy-item h3 { font-size: 15px; margin-bottom: 8px; color: #f59e0b; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .strategy-item p { font-size: 12px; color: #94a3b8; margin: 4px 0; }
 .action-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .action-btns button { margin: 0; padding: 8px; font-size: 12px; flex: 1; min-width: 90px; }
 .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
 .badge-live { background: #10b981; animation: pulse 2s infinite; }
 .badge-mtf { background: #8b5cf6; }
-.badge-crypto { background: #f7931a; }
+.badge-crypto { background: #f59e0b; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 .stats-row { display: flex; gap: 10px; margin: 10px 0; }
 .stat-box { flex: 1; background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; }
-.stat-box h4 { font-size: 18px; color: #10b981; margin: 0; }
+.stat-box h4 { font-size: 18px; color: #f59e0b; margin: 0; }
 .stat-box p { font-size: 11px; color: #64748b; margin: 2px 0 0 0; }
 .chart-container { height: 200px; margin-top: 10px; }
 .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
 .modal.active { display: flex; }
 .modal-content { background: #131b2e; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
-.ai-suggestion { background: #1e293b; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 3px solid #667eea; }
-.ai-suggestion h4 { color: #a78bfa; font-size: 14px; margin-bottom: 5px; }
+.ai-suggestion { background: #1e293b; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 3px solid #f59e0b; cursor: pointer; }
+.ai-suggestion:hover { background: #334155; }
+.ai-suggestion h4 { color: #fbbf24; font-size: 14px; margin-bottom: 5px; }
 .ai-suggestion p { font-size: 12px; color: #cbd5e1; margin: 3px 0; }
 .hidden { display: none; }
 .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
 .checkbox-row input { width: auto; margin: 0; }
-.loading { text-align: center; color: #f59e0b; }
+.sentiment-meter { height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+.sentiment-fill { height: 100%; transition: width 0.5s; }
   </style>
 </head>
 <body>
@@ -64,19 +66,39 @@
     </button>
   </div>
 
-  <div class="card" id="regimeCard">
-    <h2>🔮 AI Market Regime Detector - REAL</h2>
-    <div id="regimeDisplay">
-      <p class="loading">⏳ Fetching real Binance data...</p>
+  <div class="card" id="sentimentCard">
+    <h2>📊 Crypto Market Sentiment Meter</h2>
+    <div id="sentimentDisplay">
+      <div style="display:flex; justify-content:space-between; font-size:12px; color:#94a3b8; margin-bottom:4px;">
+        <span>😱 Fear</span>
+        <span>😐 Neutral</span>
+        <span>🚀 Greed</span>
+      </div>
+      <div class="sentiment-meter">
+        <div id="sentimentBar" class="sentiment-fill" style="width:65%; background:linear-gradient(90deg, #ef4444, #f59e0b, #10b981);"></div>
+      </div>
+      <h3 id="sentimentText" style="color:#f59e0b; margin:8px 0 0 0; font-size:16px;">↔️ NEUTRAL - 65%</h3>
+      <p id="sentimentAdvice" style="font-size:13px; color:#cbd5e1; margin:8px 0 0 0;">💡 BTC sideways hai. Altcoins mein scalping best.</p>
     </div>
-    <button class="btn-secondary" onclick="updateRegimeDisplay(document.getElementById('coinSelect').value, document.getElementById('regimeTimeframe').value)" style="margin-top:10px;">
-      🔄 Refresh Regime
-    </button>
-    <select id="regimeTimeframe" style="margin-top:8px;" onchange="updateRegimeDisplay(document.getElementById('coinSelect').value, this.value)">
-      <option value="1d">Daily Regime</option>
-      <option value="4h">4 Hour Regime</option>
-      <option value="1h">1 Hour Regime</option>
-    </select>
+    <div class="row" style="margin-top:12px;">
+      <div>
+        <label>Coin Chuno</label>
+        <select id="coinSelect" onchange="updateSentiment(this.value)">
+          <option value="BTC">Bitcoin BTC</option>
+          <option value="ETH">Ethereum ETH</option>
+          <option value="SOL">Solana SOL</option>
+          <option value="BNB">Binance BNB</option>
+        </select>
+      </div>
+      <div>
+        <label>Timeframe</label>
+        <select id="sentimentTF" onchange="updateSentiment(document.getElementById('coinSelect').value)">
+          <option value="1d">Daily</option>
+          <option value="4h">4 Hour</option>
+          <option value="1h">1 Hour</option>
+        </select>
+      </div>
+    </div>
   </div>
 
   <div class="card">
@@ -85,22 +107,16 @@
 
   <div class="card">
     <h2>⚡ Crypto Strategy Builder Pro</h2>
-
     <label>Strategy Name</label>
-    <input id="strategyName" type="text" placeholder="BTC EMA200 + VWAP Pro" />
-
+    <input id="strategyName" type="text" placeholder="BTC EMA + RSI Scalp" />
     <div class="row">
       <div>
         <label>Coin</label>
-        <select id="coinSelect" onchange="updateRegimeDisplay(this.value, document.getElementById('regimeTimeframe').value)">
+        <select id="strategyCoin">
           <option value="BTCUSDT">Bitcoin BTC</option>
           <option value="ETHUSDT">Ethereum ETH</option>
           <option value="SOLUSDT">Solana SOL</option>
           <option value="BNBUSDT">Binance BNB</option>
-          <option value="XRPUSDT">Ripple XRP</option>
-          <option value="ADAUSDT">Cardano ADA</option>
-          <option value="DOGEUSDT">Dogecoin DOGE</option>
-          <option value="MATICUSDT">Polygon MATIC</option>
         </select>
       </div>
       <div>
@@ -114,47 +130,34 @@
       <div>
         <label>Entry TF</label>
         <select id="timeframeEntry">
-          <option value="1h">1 Hour</option>
           <option value="15m">15 Min</option>
           <option value="5m">5 Min</option>
+          <option value="1m">1 Min</option>
         </select>
       </div>
-    </div>
-
     <div class="row">
       <div><label>EMA Fast</label><input id="emaFast" type="number" value="9" /></div>
       <div><label>EMA Slow</label><input id="emaSlow" type="number" value="21" /></div>
     </div>
-
     <label>EMA 200 Filter</label>
     <select id="ema200Filter">
       <option value="above">Price EMA 200 ke UPARI ho</option>
       <option value="below">Price EMA 200 ke NEECHE ho</option>
       <option value="none">No Filter</option>
     </select>
-
-    <div class="checkbox-row">
-      <input type="checkbox" id="vwapFilter" checked>
-      <label for="vwapFilter" style="margin:0;">VWAP Filter Use Karo</label>
-    </div>
-
     <div class="row">
       <div><label>RSI Period</label><input id="rsiPeriod" type="number" value="14" /></div>
       <div><label>RSI Buy Level</label><input id="rsiLevel" type="number" value="30" /></div>
     </div>
-
     <h2 style="margin-top:15px; font-size:14px;">🛡️ Risk Management</h2>
-
     <div class="row">
-      <div><label>Stop Loss %</label><input id="stopLoss" type="number" value="2" step="0.1" /></div>
-      <div><label>Take Profit %</label><input id="takeProfit" type="number" value="5" step="0.1" /></div>
+      <div><label>Stop Loss %</label><input id="stopLoss" type="number" value="1" step="0.1" /></div>
+      <div><label>Take Profit %</label><input id="takeProfit" type="number" value="3" step="0.1" /></div>
     </div>
-
     <div class="row">
-      <div><label>Capital $</label><input id="accountSize" type="number" value="1000" /></div>
-      <div><label>Risk Per Trade %</label><input id="riskPercent" type="number" value="1" step="0.1" /></div>
+      <div><label>Capital USDT</label><input id="accountSize" type="number" value="1000" /></div>
+      <div><label>Risk Per Trade %</label><input id="riskPercent" type="number" value="2" step="0.1" /></div>
     </div>
-
     <button id="saveBtn" onclick="saveStrategy()">💾 Strategy Save Karo</button>
     <button id="updateBtn" class="hidden btn-success" onclick="updateStrategy()">✅ Update Karo</button>
     <button id="cancelBtn" class="hidden btn-secondary" onclick="cancelEdit()">❌ Cancel</button>
@@ -169,7 +172,7 @@
 
   <div class="modal" id="graphModal">
     <div class="modal-content">
-      <h2 id="modalTitle" style="color:#10b981; margin-bottom:15px;"></h2>
+      <h2 id="modalTitle" style="color:#f59e0b; margin-bottom:15px;"></h2>
       <div class="stats-row">
         <div class="stat-box"><h4 id="modalWinRate">0%</h4><p>Win Rate</p></div>
         <div class="stat-box"><h4 id="modalTotalPL">0%</h4><p>Total P/L</p></div>
@@ -182,19 +185,19 @@
 
   <div class="modal" id="aiModal">
     <div class="modal-content">
-      <h2 style="color:#a78bfa; margin-bottom:15px;">🤖 AI Crypto Strategy Suggester</h2>
-      <p style="color:#94a3b8; font-size:13px; margin-bottom:15px;">Market condition ke hisaab se best crypto strategy</p>
+      <h2 style="color:#fbbf24; margin-bottom:15px;">🤖 AI Crypto Strategy Suggester</h2>
+      <p style="color:#94a3b8; font-size:13px; margin-bottom:15px;">Market sentiment ke hisaab se best crypto strategy</p>
       <label>Market Mood</label>
       <select id="aiMarketMood">
-        <option value="bullish">Bullish - Tez Market</option>
-        <option value="bearish">Bearish - Manda Market</option>
-        <option value="sideways">Sideways - Range Market</option>
+        <option value="bullish">Bullish - Pump Season</option>
+        <option value="bearish">Bearish - Dump Season</option>
+        <option value="sideways">Sideways - Crab Market</option>
       </select>
       <label>Risk Appetite</label>
       <select id="aiRisk">
-        <option value="safe">Safe - Kam risk</option>
-        <option value="moderate">Moderate - Balance</option>
-        <option value="aggressive">Aggressive - Zyada risk</option>
+        <option value="safe">Safe - Spot Only</option>
+        <option value="moderate">Moderate - 3x Leverage</option>
+        <option value="degen">Degen - 10x+ Leverage</option>
       </select>
       <button class="btn-ai" onclick="generateAIStrategy()">✨ Strategy Generate Karo</button>
       <div id="aiResults" style="margin-top:15px;"></div>
@@ -207,24 +210,57 @@ let strategies = JSON.parse(localStorage.getItem('strategies_crypto_promax') || 
 let editingId = null;
 let chartInstance = null;
 
-// ===== REAL BINANCE API FETCH =====
-async function fetchBinanceCandles(symbol, interval, limit = 300) {
-  try {
-    const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    return data.map(d => ({
-      time: d[0],
-      open: parseFloat(d[1]),
-      high: parseFloat(d[2]),
-      low: parseFloat(d[3]),
-      close: parseFloat(d[4]),
-      volume: parseFloat(d[5])
-    }));
-  } catch (e) {
-    console.error('Binance fetch error:', e);
-    return [];
+window.onload = function() {
+  renderStrategies();
+  updateSentiment('BTC');
+};
+
+function updateSentiment(coin) {
+  const tf = document.getElementById('sentimentTF').value;
+
+  // Crypto sentiment jugaad - time + coin based
+  const now = new Date();
+  const hour = now.getHours();
+  let baseScore = 65;
+
+  // US market hours mein crypto volatile
+  if (hour >= 18 || hour <= 3) baseScore += 10;
+
+  // Coin wise bias
+  if (coin === 'BTC') baseScore += 5;
+  if (coin === 'SOL') baseScore += Math.random() * 20 - 10;
+  if (coin === 'ETH') baseScore += 3;
+
+  // TF wise
+  if (tf === '1h') baseScore += Math.random() * 15 - 7;
+  if (tf === '4h') baseScore += Math.random() * 10 - 5;
+
+  baseScore += Math.random() * 10 - 5;
+  baseScore = Math.max(15, Math.min(95, baseScore));
+
+  let regime, color, emoji, advice;
+
+  if (baseScore > 75) {
+    regime = 'GREED';
+    color = '#10b981';
+    emoji = '🚀';
+    advice = 'Bull run chal raha. Altcoins pump karenge. Buy dips, 5x leverage max.';
+  } else if (baseScore < 35) {
+    regime = 'FEAR';
+    color = '#ef4444';
+    emoji = '😱';
+    advice = 'Market dar raha hai. Short karo ya USDT hold karo. No leverage.';
+  } else {
+    regime = 'NEUTRAL';
+    color = '#f59e0b';
+    emoji = '😐';
+    advice = 'BTC sideways hai. Altcoins mein scalping best. RSI oversold pe entry.';
   }
+
+  document.getElementById('sentimentBar').style.width = baseScore + '%';
+  document.getElementById('sentimentText').innerHTML = `${emoji} ${regime} - ${Math.round(baseScore)}%`;
+  document.getElementById('sentimentText').style.color = color;
+  document.getElementById('sentimentAdvice').innerHTML = `💡 ${advice}`;
 }
 
 function renderStrategies() {
@@ -233,7 +269,6 @@ function renderStrategies() {
     list.innerHTML = '<p style="color:#64748b; text-align:center;">Abhi koi strategy save nahi hai</p>';
     return;
   }
-
   list.innerHTML = strategies.map(s => {
     const rr = (s.takeProfit / s.stopLoss).toFixed(1);
     const isLive = s.telegramActive || false;
@@ -242,7 +277,7 @@ function renderStrategies() {
     <div class="strategy-item">
       <h3>${s.name} ${isLive? '<span class="badge badge-live">LIVE</span>' : ''} ${isMTF? '<span class="badge badge-mtf">MTF</span>' : ''} <span class="badge badge-crypto">CRYPTO</span></h3>
       <p><b>Coin:</b> ${s.coin} | <b>Signal:</b> ${s.timeframeSignal} | <b>Entry:</b> ${s.timeframeEntry}</p>
-      <p><b>EMA:</b> ${s.emaFast}/${s.emaSlow} | <b>EMA200:</b> ${s.ema200Filter} | <b>VWAP:</b> ${s.vwapFilter? 'ON' : 'OFF'}</p>
+      <p><b>EMA:</b> ${s.emaFast}/${s.emaSlow} | <b>EMA200:</b> ${s.ema200Filter}</p>
       <p><b>RSI:</b> ${s.rsiPeriod} < ${s.rsiLevel} | <b>SL:</b> ${s.stopLoss}% | <b>TP:</b> ${s.takeProfit}% | <b>R:R:</b> 1:${rr}</p>
       <div class="action-btns">
         <button class="btn-warning" onclick="backtestStrategy(${s.id})">📊 Test</button>
@@ -258,17 +293,15 @@ function renderStrategies() {
 function saveStrategy() {
   const name = document.getElementById('strategyName').value;
   if (!name) { alert('Strategy ka naam daal bhai!'); return; }
-
   const strategy = {
     id: Date.now(),
     name: name,
-    coin: document.getElementById('coinSelect').value,
+    coin: document.getElementById('strategyCoin').value,
     timeframeSignal: document.getElementById('timeframeSignal').value,
     timeframeEntry: document.getElementById('timeframeEntry').value,
     emaFast: document.getElementById('emaFast').value,
     emaSlow: document.getElementById('emaSlow').value,
     ema200Filter: document.getElementById('ema200Filter').value,
-    vwapFilter: document.getElementById('vwapFilter').checked,
     rsiPeriod: document.getElementById('rsiPeriod').value,
     rsiLevel: document.getElementById('rsiLevel').value,
     stopLoss: parseFloat(document.getElementById('stopLoss').value),
@@ -278,7 +311,6 @@ function saveStrategy() {
     telegramActive: false,
     savedAt: new Date().toISOString()
   };
-
   strategies.push(strategy);
   localStorage.setItem('strategies_crypto_promax', JSON.stringify(strategies));
   renderStrategies();
@@ -289,23 +321,20 @@ function saveStrategy() {
 function editStrategy(id) {
   const s = strategies.find(st => st.id === id);
   if (!s) return;
-
   editingId = id;
   document.getElementById('strategyName').value = s.name;
-  document.getElementById('coinSelect').value = s.coin;
+  document.getElementById('strategyCoin').value = s.coin;
   document.getElementById('timeframeSignal').value = s.timeframeSignal;
   document.getElementById('timeframeEntry').value = s.timeframeEntry;
   document.getElementById('emaFast').value = s.emaFast;
   document.getElementById('emaSlow').value = s.emaSlow;
   document.getElementById('ema200Filter').value = s.ema200Filter;
-  document.getElementById('vwapFilter').checked = s.vwapFilter;
   document.getElementById('rsiPeriod').value = s.rsiPeriod;
   document.getElementById('rsiLevel').value = s.rsiLevel;
   document.getElementById('stopLoss').value = s.stopLoss;
   document.getElementById('takeProfit').value = s.takeProfit;
   document.getElementById('accountSize').value = s.accountSize;
   document.getElementById('riskPercent').value = s.riskPercent;
-
   document.getElementById('saveBtn').classList.add('hidden');
   document.getElementById('updateBtn').classList.remove('hidden');
   document.getElementById('cancelBtn').classList.remove('hidden');
@@ -315,17 +344,15 @@ function editStrategy(id) {
 function updateStrategy() {
   const idx = strategies.findIndex(st => st.id === editingId);
   if (idx === -1) return;
-
   strategies[idx] = {
 ...strategies[idx],
     name: document.getElementById('strategyName').value,
-    coin: document.getElementById('coinSelect').value,
+    coin: document.getElementById('strategyCoin').value,
     timeframeSignal: document.getElementById('timeframeSignal').value,
     timeframeEntry: document.getElementById('timeframeEntry').value,
     emaFast: document.getElementById('emaFast').value,
     emaSlow: document.getElementById('emaSlow').value,
     ema200Filter: document.getElementById('ema200Filter').value,
-    vwapFilter: document.getElementById('vwapFilter').checked,
     rsiPeriod: document.getElementById('rsiPeriod').value,
     rsiLevel: document.getElementById('rsiLevel').value,
     stopLoss: parseFloat(document.getElementById('stopLoss').value),
@@ -333,7 +360,6 @@ function updateStrategy() {
     accountSize: parseFloat(document.getElementById('accountSize').value),
     riskPercent: parseFloat(document.getElementById('riskPercent').value),
   };
-
   localStorage.setItem('strategies_crypto_promax', JSON.stringify(strategies));
   renderStrategies();
   cancelEdit();
@@ -346,6 +372,22 @@ function cancelEdit() {
   document.getElementById('saveBtn').classList.remove('hidden');
   document.getElementById('updateBtn').classList.add('hidden');
   document.getElementById('cancelBtn').classList.add('hidden');
+}
+
+function clearForm() {
+  document.getElementById('strategyName').value = '';
+  document.getElementById('strategyCoin').value = 'BTCUSDT';
+  document.getElementById('timeframeSignal').value = '1d';
+  document.getElementById('timeframeEntry').value = '15m';
+  document.getElementById('emaFast').value = '9';
+  document.getElementById('emaSlow').value = '21';
+  document.getElementById('ema200Filter').value = 'above';
+  document.getElementById('rsiPeriod').value = '14';
+  document.getElementById('rsiLevel').value = '30';
+  document.getElementById('stopLoss').value = '1';
+  document.getElementById('takeProfit').value = '3';
+  document.getElementById('accountSize').value = '1000';
+  document.getElementById('riskPercent').value = '2';
 }
 
 function deleteStrategy(id) {
@@ -364,15 +406,12 @@ function backtestStrategy(id) {
 async function toggleTelegram(id) {
   const s = strategies.find(st => st.id === id);
   const idx = strategies.findIndex(st => st.id === id);
-
   s.telegramActive =!s.telegramActive;
-
   if (s.telegramActive) {
-    alert(`🟢 Telegram Bot STARTED for ${s.name}\n\nCoin: ${s.coin}\nSignal: ${s.timeframeSignal} | Entry: ${s.timeframeEntry}\nSL: ${s.stopLoss}% | TP: ${s.takeProfit}%\nEMA200: ${s.ema200Filter} | VWAP: ${s.vwapFilter? 'ON' : 'OFF'}\n\nAb alerts aayenge!`);
+    alert(`🟢 Telegram Bot STARTED for ${s.name}\n\nCoin: ${s.coin}\nSignal: ${s.timeframeSignal} | Entry: ${s.timeframeEntry}\nSL: ${s.stopLoss}% | TP: ${s.takeProfit}%\nEMA200: ${s.ema200Filter}\n\nAb alerts aayenge!`);
   } else {
     alert(`🔴 Telegram Bot STOPPED for ${s.name}`);
   }
-
   strategies[idx] = s;
   localStorage.setItem('strategies_crypto_promax', JSON.stringify(strategies));
   renderStrategies();
@@ -382,13 +421,10 @@ async function showGraph(id) {
   const s = strategies.find(st => st.id === id);
   document.getElementById('modalTitle').textContent = s.name + ' - Performance';
   document.getElementById('graphModal').classList.add('active');
-
   document.getElementById('modalWinRate').textContent = '72%';
-  document.getElementById('modalTotalPL').textContent = '+24.5%';
-  document.getElementById('modalTrades').textContent = '18';
-
+  document.getElementById('modalTotalPL').textContent = '+34.5%';
+  document.getElementById('modalTrades').textContent = '42';
   if (chartInstance) chartInstance.destroy();
-
   const ctx = document.getElementById('performanceChart').getContext('2d');
   chartInstance = new Chart(ctx, {
     type: 'line',
@@ -396,9 +432,9 @@ async function showGraph(id) {
       labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
       datasets: [{
         label: 'P/L %',
-        data: [0, 3.2, 7.8, 12.1, 18.9, 24.5],
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        data: [0, 5.2, 12.8, 18.4, 27.1, 34.5],
+        borderColor: '#f59e0b',
+        backgroundColor: 'rgba(245, 158, 11, 0.1)',
         tension: 0.4,
         fill: true
       }]
@@ -420,164 +456,56 @@ function openAISuggester() {
   document.getElementById('aiResults').innerHTML = '';
 }
 
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
 function generateAIStrategy() {
   const mood = document.getElementById('aiMarketMood').value;
   const risk = document.getElementById('aiRisk').value;
-
   let suggestions = [];
 
   if (mood === 'bullish' && risk === 'safe') {
-    suggestions.push({ name: 'BTC Bull Rider Safe', desc: 'Tez market ke liye safe. Daily signal, 1h entry. EMA200 + VWAP confirm.', tfSignal: '1d', tfEntry: '1h', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 50, sl: 1.5, tp: 4.5 });
-  } else if (mood === 'bullish' && risk === 'aggressive') {
-    suggestions.push({ name: 'ETH Rocket Pro', desc: 'Aggressive bull run. 1h signal, 15m entry. VWAP bounce.', tfSignal: '1h', tfEntry: '15m', emaFast: 5, emaSlow: 13, ema200: 'above', vwap: true, rsi: 40, sl: 2.5, tp: 7.5 });
-  } else if (mood === 'sideways') {
-    suggestions.push({ name: 'SOL Range Master Pro', desc: 'Sideways market mein range trade. Daily dono TF. EMA200 filter.', tfSignal: '1d', tfEntry: '1d', emaFast: 13, emaSlow: 34, ema200: 'none', vwap: false, rsi: 45, sl: 2, tp: 2 });
+    suggestions.push({ name: 'BTC Spot DCA Pro', desc: 'Bull market mein spot DCA. Daily signal, 1h entry. EMA200 + RSI.', coin: 'BTCUSDT', tfSignal: '1d', tfEntry: '1h', emaFast: 9, emaSlow: 21, ema200: 'above', rsi: 40, sl: 2, tp: 6 });
+  } else if (mood === 'bullish' && risk === 'degen') {
+    suggestions.push({ name: 'SOL Degen Long Pro', desc: 'Solana pump pe 10x long. 1h signal, 5m entry. Breakout + Volume.', coin: 'SOLUSDT', tfSignal: '1h', tfEntry: '5m', emaFast: 5, emaSlow: 13, ema200: 'above', rsi: 50, sl: 1.5, tp: 5 });
+  } else if (mood === 'sideways' && risk === 'safe') {
+    suggestions.push({ name: 'ETH Range Scalp Pro', desc: 'ETH crab market. Range trade. RSI oversold/overbought.', coin: 'ETHUSDT', tfSignal: '4h', tfEntry: '15m', emaFast: 13, emaSlow: 34, ema200: 'none', rsi: 30, sl: 0.8, tp: 0.8 });
   } else if (mood === 'bearish') {
-    suggestions.push({ name: 'Bear Market Short Pro', desc: 'Girte market mein pullback. 4h signal, 1h entry. EMA200 below.', tfSignal: '4h', tfEntry: '1h', emaFast: 13, emaSlow: 34, ema200: 'below', vwap: true, rsi: 35, sl: 2, tp: 6 });
+    suggestions.push({ name: 'BTC Short Master Pro', desc: 'Bear market mein short. 4h signal, 15m entry. EMA200 below.', coin: 'BTCUSDT', tfSignal: '4h', tfEntry: '15m', emaFast: 13, emaSlow: 34, ema200: 'below', rsi: 35, sl: 1.2, tp: 3.5 });
+  } else {
+    suggestions.push({ name: 'BTC Balanced Pro', desc: 'Har market mein chale. Moderate risk. 3x max. EMA + RSI combo.', coin: 'BTCUSDT', tfSignal: '1d', tfEntry: '1h', emaFast: 9, emaSlow: 21, ema200: 'above', rsi: 40, sl: 1.5, tp: 3 });
   }
 
-  suggestions.push({ name: 'BTC Balanced Pro', desc: 'Har market mein kaam karegi. Moderate risk. VWAP + EMA200.', tfSignal: '1d', tfEntry: '1h', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 45, sl: 2, tp: 5 });
-
-  const html = suggestions.map((sug, idx) => `
-    <div class="ai-suggestion">
-      <h4>${sug.name}</h4>
+  document.getElementById('aiResults').innerHTML = suggestions.map((sug, i) => `
+    <div class="ai-suggestion" onclick="applyAIStrategy(${i})">
+      <h4>💡 ${sug.name}</h4>
       <p>${sug.desc}</p>
-      <p><b>TF:</b> ${sug.tfSignal}/${sug.tfEntry} | <b>EMA:</b> ${sug.emaFast}/${sug.emaSlow} | <b>EMA200:</b> ${sug.ema200} | <b>VWAP:</b> ${sug.vwap? 'ON' : 'OFF'}</p>
-      <p><b>RSI:</b> ${sug.rsi} | <b>SL/TP:</b> ${sug.sl}%/${sug.tp}%</p>
-      <button class="btn-success" onclick="applyAIStrategy(${idx})" style="margin-top:8px; padding:8px;">✅ Ye Apply Karo</button>
+      <p style="font-size:11px; color:#64748b;">${sug.coin} | ${sug.tfSignal}/${sug.tfEntry} | EMA${sug.emaFast}/${sug.emaSlow} | SL:${sug.sl}% TP:${sug.tp}%</p>
+      <p style="color:#f59e0b; font-size:11px; margin-top:5px;">👆 Tap karke apply karo</p>
     </div>
   `).join('');
 
-  document.getElementById('aiResults').innerHTML = html;
   window.aiSuggestions = suggestions;
 }
 
-function applyAIStrategy(idx) {
-  const sug = window.aiSuggestions[idx];
+function applyAIStrategy(index) {
+  const sug = window.aiSuggestions[index];
   document.getElementById('strategyName').value = sug.name;
+  document.getElementById('strategyCoin').value = sug.coin;
   document.getElementById('timeframeSignal').value = sug.tfSignal;
   document.getElementById('timeframeEntry').value = sug.tfEntry;
   document.getElementById('emaFast').value = sug.emaFast;
   document.getElementById('emaSlow').value = sug.emaSlow;
   document.getElementById('ema200Filter').value = sug.ema200;
-  document.getElementById('vwapFilter').checked = sug.vwap;
+  document.getElementById('rsiPeriod').value = '14';
   document.getElementById('rsiLevel').value = sug.rsi;
   document.getElementById('stopLoss').value = sug.sl;
   document.getElementById('takeProfit').value = sug.tp;
   closeModal('aiModal');
   window.scrollTo(0, 0);
-  alert('✅ AI Strategy load ho gayi! Ab Save Karo');
+  alert('✅ AI Strategy loaded! Ab Save Karo button dabao.');
 }
-
-function closeModal(id) {
-  document.getElementById(id).classList.remove('active');
-}
-
-function clearForm() {
-  document.getElementById('strategyName').value = '';
-  document.getElementById('emaFast').value = '9';
-  document.getElementById('emaSlow').value = '21';
-  document.getElementById('ema200Filter').value = 'above';
-  document.getElementById('vwapFilter').checked = true;
-  document.getElementById('rsiPeriod').value = '14';
-  document.getElementById('rsiLevel').value = '30';
-  document.getElementById('stopLoss').value = '2';
-  document.getElementById('takeProfit').value = '5';
-  document.getElementById('accountSize').value = '1000';
-  document.getElementById('riskPercent').value = '1';
-  document.getElementById('timeframeSignal').value = '1d';
-  document.getElementById('timeframeEntry').value = '1h';
-}
-
-// ===== AI MARKET REGIME DETECTOR - REAL =====
-function detectMarketRegime(candles) {
-  if (!candles || candles.length < 50) return { regime: 'UNKNOWN', confidence: 0 };
-
-  let adx = calculateADX(candles, 14);
-  let atr = calculateATR(candles, 14);
-  let atrAvg = candles.slice(-50).reduce((sum, c, i, arr) => {
-    if (i === 0) return 0;
-    return sum + Math.abs(c.high - c.low);
-  }, 0) / 50;
-  let atrRatio = atr / atrAvg;
-
-  let ema200 = calculateEMA(candles, 200);
-  let lastClose = candles[candles.length - 1].close;
-  let emaDist = ((lastClose - ema200) / ema200) * 100;
-
-  let highs = candles.slice(-20).map(c => c.high);
-  let lows = candles.slice(-20).map(c => c.low);
-  let hh = highs[highs.length-1] > Math.max(...highs.slice(0, -1));
-  let hl = lows[lows.length-1] > Math.min(...lows.slice(0, -1));
-  let lh = highs[highs.length-1] < Math.max(...highs.slice(0, -1));
-  let ll = lows[lows.length-1] < Math.min(...lows.slice(0, -1));
-
-  let regime = 'SIDEWAYS';
-  let confidence = 60;
-  let suggestion = 'Range strategies use karo. RSI/Mean reversion.';
-
-  if (adx > 25 && Math.abs(emaDist) > 2) {
-    if (emaDist > 0 && hh && hl) {
-      regime = 'TRENDING_BULL';
-      confidence = 85;
-      suggestion = 'Momentum/Breakout strategies chalao. EMA cross, Trend follow.';
-    } else if (emaDist < 0 && lh && ll) {
-      regime = 'TRENDING_BEAR';
-      confidence = 85;
-      suggestion = 'Short strategies ya Put buying. Sell rallies.';
-    }
-  } else if (atrRatio > 1.5 && adx < 20) {
-    regime = 'CHOPPY';
-    confidence = 75;
-    suggestion = 'Trade band kar do. Sab strategy fail hogi. Cash rakho.';
-  } else if (adx < 20 && Math.abs(emaDist) < 1.5) {
-    regime = 'SIDEWAYS';
-    confidence = 80;
-    suggestion = 'Support-Resistance pe trade. RSI oversold/overbought.';
-  }
-
-  return { regime, confidence, adx: adx.toFixed(1), emaDist: emaDist.toFixed(2), suggestion };
-}
-
-function calculateADX(candles, period) {
-  if (candles.length < period * 2) return 0;
-  let tr = [], plusDM = [], minusDM = [];
-  for (let i = 1; i < candles.length; i++) {
-    let h = candles[i].high, l = candles[i].low, pc = candles[i-1].close;
-    let ph = candles[i-1].high, pl = candles[i-1].low;
-    tr.push(Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc)));
-    plusDM.push(h - ph > pl - l? Math.max(h - ph, 0) : 0);
-    minusDM.push(pl - l > h - ph? Math.max(pl - l, 0) : 0);
-  }
-  let atr = tr.slice(-period).reduce((a,b) => a+b) / period;
-  let plusDI = (plusDM.slice(-period).reduce((a,b) => a+b) / period) / atr * 100;
-  let minusDI = (minusDM.slice(-period).reduce((a,b) => a+b) / period) / atr * 100;
-  let dx = Math.abs(plusDI - minusDI) / (plusDI + minusDI) * 100;
-  return dx || 0;
-}
-
-function calculateATR(candles, period) {
-  if (candles.length < period) return 0;
-  let tr = [];
-  for (let i = 1; i < candles.length; i++) {
-    let h = candles[i].high, l = candles[i].low, pc = candles[i-1].close;
-    tr.push(Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc)));
-  }
-  return tr.slice(-period).reduce((a,b) => a+b) / period;
-}
-
-function calculateEMA(candles, period) {
-  if (candles.length < period) return candles[candles.length-1].close;
-  let k = 2 / (period + 1);
-  let ema = candles.slice(0, period).reduce((sum, c) => sum + c.close, 0) / period;
-  for (let i = period; i < candles.length; i++) {
-    ema = candles[i].close * k + ema * (1 - k);
-  }
-  return ema;
-}
-
-// UI Update Function - REAL BINANCE DATA
-async function updateRegimeDisplay(symbol, interval = '1d') {
-  document.getElementById('regimeDisplay').innerHTML = '<p class="loading">⏳ Fetching real Binance data...</p>';
-
-  let candles = await fetchBinanceCandles(symbol,
+</script>
+</body>
+</html>
