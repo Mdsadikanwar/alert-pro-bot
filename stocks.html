@@ -7,9 +7,14 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Arial; background: #0a0e1a; color: #e2e8f0; padding: 15px; }
-.header { display: flex; align-items: center; margin-bottom: 20px; gap: 10px; }
+.header { display: flex; align-items: center; margin-bottom: 15px; gap: 10px; }
 .back { background: #1e293b; border: none; color: #10b981; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px; }
 .header h1 { font-size: 20px; color: #10b981; }
+.main-tabs { display: flex; gap: 8px; margin-bottom: 15px; background: #131b2e; padding: 8px; border-radius: 12px; }
+.main-tab { flex: 1; padding: 12px; background: #1e293b; border: none; color: #94a3b8; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; }
+.main-tab.active { background: #10b981; color: white; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
 .card { background: #131b2e; border: 1px solid #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 15px; }
 .card h2 { font-size: 16px; margin-bottom: 12px; color: #10b981; }
     select, input { width: 100%; padding: 10px; margin: 6px 0; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 6px; }
@@ -23,7 +28,6 @@
 .btn-warning { background: #f59e0b; }
 .btn-telegram { background: #229ED9; }
 .btn-telegram.active { background: #10b981; }
-.btn-ai { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
 .btn-paper { background: #8b5cf6; }
 .strategy-item { background: #0f172a; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #1e293b; }
 .strategy-item h3 { font-size: 15px; margin-bottom: 8px; color: #10b981; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -43,9 +47,9 @@
 .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
 .modal.active { display: flex; }
 .modal-content { background: #131b2e; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
-.ai-suggestion { background: #1e293b; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 3px solid #667eea; cursor: pointer; }
+.ai-suggestion { background: #1e293b; padding: 12px; border-radius: 8px; margin: 8px 0; border-left: 3px solid #10b981; cursor: pointer; }
 .ai-suggestion:hover { background: #334155; }
-.ai-suggestion h4 { color: #a78bfa; font-size: 14px; margin-bottom: 5px; }
+.ai-suggestion h4 { color: #34d399; font-size: 14px; margin-bottom: 5px; }
 .ai-suggestion p { font-size: 12px; color: #cbd5e1; margin: 3px 0; }
 .hidden { display: none; }
 .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
@@ -60,117 +64,156 @@
     <h1>📈 Stock Strategies Pro Max</h1>
   </div>
 
-  <div class="card">
-    <button class="btn-paper" onclick="window.location.href='/paper-trade.html'">
-      📝 Paper Trading Dashboard Kholo
-    </button>
+  <div class="main-tabs">
+    <button class="main-tab active" onclick="switchTab('sentiment')">📊 Sentiment</button>
+    <button class="main-tab" onclick="switchTab('strategy')">⚡ Strategy</button>
+    <button class="main-tab" onclick="switchTab('ai')">🤖 AI Suggest</button>
+    <button class="main-tab" onclick="switchTab('paper')">📝 Paper</button>
   </div>
 
-  <div class="card" id="sentimentCard">
-    <h2>📊 Market Trend & Sentiment Meter</h2>
-    <div id="sentimentDisplay">
-      <div style="display:flex; justify-content:space-between; font-size:12px; color:#94a3b8; margin-bottom:4px;">
-        <span>🐻 Bearish</span>
-        <span>😐 Neutral</span>
-        <span>🐂 Bullish</span>
+  <!-- TAB 1: SENTIMENT -->
+  <div id="sentimentTab" class="tab-content active">
+    <div class="card">
+      <h2>📊 Market Trend & Sentiment Meter</h2>
+      <div id="sentimentDisplay">
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:#94a3b8; margin-bottom:4px;">
+          <span>🐻 Bearish</span>
+          <span>😐 Neutral</span>
+          <span>🐂 Bullish</span>
+        </div>
+        <div class="sentiment-meter">
+          <div id="sentimentBar" class="sentiment-fill" style="width:60%; background:linear-gradient(90deg, #ef4444, #f59e0b, #10b981);"></div>
+        </div>
+        <h3 id="sentimentText" style="color:#f59e0b; margin:8px 0 0 0; font-size:16px;">↔️ SIDEWAYS - 60%</h3>
+        <p id="sentimentAdvice" style="font-size:13px; color:#cbd5e1; margin:8px 0 0 0;">💡 Range strategies best. RSI oversold/overbought pe trade karo.</p>
       </div>
-      <div class="sentiment-meter">
-        <div id="sentimentBar" class="sentiment-fill" style="width:60%; background:linear-gradient(90deg, #ef4444, #f59e0b, #10b981);"></div>
-      </div>
-      <h3 id="sentimentText" style="color:#f59e0b; margin:8px 0 0 0; font-size:16px;">↔️ SIDEWAYS - 60%</h3>
-      <p id="sentimentAdvice" style="font-size:13px; color:#cbd5e1; margin:8px 0 0 0;">💡 Range strategies best. RSI oversold/overbought pe trade karo.</p>
-    </div>
-    <div class="row" style="margin-top:12px;">
-      <div>
-        <label>Index Chuno</label>
-        <select id="indexSelect" onchange="updateSentiment(this.value)">
-          <option value="NIFTY">NIFTY 50</option>
-          <option value="BANKNIFTY">BANK NIFTY</option>
-          <option value="FINNIFTY">FIN NIFTY</option>
-          <option value="MIDCPNIFTY">MIDCAP NIFTY</option>
-        </select>
-      </div>
-      <div>
-        <label>Timeframe</label>
-        <select id="sentimentTF" onchange="updateSentiment(document.getElementById('indexSelect').value)">
-          <option value="1d">Daily</option>
-          <option value="1h">1 Hour</option>
-          <option value="15m">15 Min</option>
-        </select>
+      <div class="row" style="margin-top:12px;">
+        <div>
+          <label>Index Chuno</label>
+          <select id="indexSelect" onchange="updateSentiment(this.value)">
+            <option value="NIFTY">NIFTY 50</option>
+            <option value="BANKNIFTY">BANK NIFTY</option>
+            <option value="FINNIFTY">FIN NIFTY</option>
+            <option value="MIDCPNIFTY">MIDCAP NIFTY</option>
+          </select>
+        </div>
+        <div>
+          <label>Timeframe</label>
+          <select id="sentimentTF" onchange="updateSentiment(document.getElementById('indexSelect').value)">
+            <option value="1d">Daily</option>
+            <option value="1h">1 Hour</option>
+            <option value="15m">15 Min</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <button class="btn-ai" onclick="openAISuggester()">🤖 AI Stock Strategy Suggester</button>
+  <!-- TAB 2: STRATEGY -->
+  <div id="strategyTab" class="tab-content">
+    <div class="card">
+      <h2>⚡ Stock Strategy Builder Pro</h2>
+      <label>Strategy Name</label>
+      <input id="strategyName" type="text" placeholder="NIFTY EMA200 + VWAP Pro" />
+      <div class="row">
+        <div>
+          <label>Index</label>
+          <select id="strategyIndex">
+            <option value="NIFTY">NIFTY 50</option>
+            <option value="BANKNIFTY">BANK NIFTY</option>
+            <option value="FINNIFTY">FIN NIFTY</option>
+            <option value="MIDCPNIFTY">MIDCAP NIFTY</option>
+          </select>
+        </div>
+        <div>
+          <label>Signal TF</label>
+          <select id="timeframeSignal">
+            <option value="1d">Daily</option>
+            <option value="1h">1 Hour</option>
+            <option value="15m">15 Min</option>
+          </select>
+        </div>
+        <div>
+          <label>Entry TF</label>
+          <select id="timeframeEntry">
+            <option value="15m">15 Min</option>
+            <option value="5m">5 Min</option>
+            <option value="3m">3 Min</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div><label>EMA Fast</label><input id="emaFast" type="number" value="9" /></div>
+        <div><label>EMA Slow</label><input id="emaSlow" type="number" value="21" /></div>
+      </div>
+      <label>EMA 200 Filter</label>
+      <select id="ema200Filter">
+        <option value="above">Price EMA 200 ke UPARI ho</option>
+        <option value="below">Price EMA 200 ke NEECHE ho</option>
+        <option value="none">No Filter</option>
+      </select>
+      <div class="checkbox-row">
+        <input type="checkbox" id="vwapFilter" checked>
+        <label for="vwapFilter" style="margin:0;">VWAP Filter Use Karo</label>
+      </div>
+      <div class="row">
+        <div><label>RSI Period</label><input id="rsiPeriod" type="number" value="14" /></div>
+        <div><label>RSI Buy Level</label><input id="rsiLevel" type="number" value="40" /></div>
+      </div>
+      <h2 style="margin-top:15px; font-size:14px;">🛡️ Risk Management</h2>
+      <div class="row">
+        <div><label>Stop Loss %</label><input id="stopLoss" type="number" value="0.5" step="0.1" /></div>
+        <div><label>Take Profit %</label><input id="takeProfit" type="number" value="1.5" step="0.1" /></div>
+      </div>
+      <div class="row">
+        <div><label>Capital ₹</label><input id="accountSize" type="number" value="100000" /></div>
+        <div><label>Risk Per Trade %</label><input id="riskPercent" type="number" value="1" step="0.1" /></div>
+      </div>
+      <button id="saveBtn" onclick="saveStrategy()">💾 Strategy Save Karo</button>
+      <button id="updateBtn" class="hidden btn-success" onclick="updateStrategy()">✅ Update Karo</button>
+      <button id="cancelBtn" class="hidden btn-secondary" onclick="cancelEdit()">❌ Cancel</button>
+    </div>
+
+    <div class="card">
+      <h2>📁 Meri Stock Strategies</h2>
+      <div id="strategiesList">
+        <p style="color:#64748b; text-align:center;">Abhi koi strategy save nahi hai</p>
+      </div>
+    </div>
   </div>
 
-  <div class="card">
-    <h2>⚡ Stock Strategy Builder Pro</h2>
-    <label>Strategy Name</label>
-    <input id="strategyName" type="text" placeholder="NIFTY EMA200 + VWAP Pro" />
-    <div class="row">
-      <div>
-        <label>Index</label>
-        <select id="strategyIndex">
-          <option value="NIFTY">NIFTY 50</option>
-          <option value="BANKNIFTY">BANK NIFTY</option>
-          <option value="FINNIFTY">FIN NIFTY</option>
-          <option value="MIDCPNIFTY">MIDCAP NIFTY</option>
-        </select>
-      </div>
-      <div>
-        <label>Signal TF</label>
-        <select id="timeframeSignal">
-          <option value="1d">Daily</option>
-          <option value="1h">1 Hour</option>
-          <option value="15m">15 Min</option>
-        </select>
-      </div>
-      <div>
-        <label>Entry TF</label>
-        <select id="timeframeEntry">
-          <option value="15m">15 Min</option>
-          <option value="5m">5 Min</option>
-          <option value="3m">3 Min</option>
-        </select>
-      </div>
-    <div class="row">
-      <div><label>EMA Fast</label><input id="emaFast" type="number" value="9" /></div>
-      <div><label>EMA Slow</label><input id="emaSlow" type="number" value="21" /></div>
+  <!-- TAB 3: AI SUGGEST -->
+  <div id="aiTab" class="tab-content">
+    <div class="card">
+      <h2>🤖 AI Stock Strategy Suggester</h2>
+      <p style="color:#94a3b8; font-size:13px; margin-bottom:15px;">Market condition + sentiment ke hisaab se best strategy</p>
+      <label>Market Mood</label>
+      <select id="aiMarketMood">
+        <option value="bullish">Bullish - Tez Market</option>
+        <option value="bearish">Bearish - Manda Market</option>
+        <option value="sideways">Sideways - Range Market</option>
+      </select>
+      <label>Risk Appetite</label>
+      <select id="aiRisk">
+        <option value="safe">Safe - Kam risk</option>
+        <option value="moderate">Moderate - Balance</option>
+        <option value="aggressive">Aggressive - Zyada risk</option>
+      </select>
+      <button onclick="generateAIStrategy()">✨ Strategy Generate Karo</button>
+      <div id="aiResults" style="margin-top:15px;"></div>
     </div>
-    <label>EMA 200 Filter</label>
-    <select id="ema200Filter">
-      <option value="above">Price EMA 200 ke UPARI ho</option>
-      <option value="below">Price EMA 200 ke NEECHE ho</option>
-      <option value="none">No Filter</option>
-    </select>
-    <div class="checkbox-row">
-      <input type="checkbox" id="vwapFilter" checked>
-      <label for="vwapFilter" style="margin:0;">VWAP Filter Use Karo</label>
-    </div>
-    <div class="row">
-      <div><label>RSI Period</label><input id="rsiPeriod" type="number" value="14" /></div>
-      <div><label>RSI Buy Level</label><input id="rsiLevel" type="number" value="40" /></div>
-    </div>
-    <h2 style="margin-top:15px; font-size:14px;">🛡️ Risk Management</h2>
-    <div class="row">
-      <div><label>Stop Loss %</label><input id="stopLoss" type="number" value="0.5" step="0.1" /></div>
-      <div><label>Take Profit %</label><input id="takeProfit" type="number" value="1.5" step="0.1" /></div>
-    </div>
-    <div class="row">
-      <div><label>Capital ₹</label><input id="accountSize" type="number" value="100000" /></div>
-      <div><label>Risk Per Trade %</label><input id="riskPercent" type="number" value="1" step="0.1" /></div>
-    </div>
-    <button id="saveBtn" onclick="saveStrategy()">💾 Strategy Save Karo</button>
-    <button id="updateBtn" class="hidden btn-success" onclick="updateStrategy()">✅ Update Karo</button>
-    <button id="cancelBtn" class="hidden btn-secondary" onclick="cancelEdit()">❌ Cancel</button>
   </div>
 
-  <div class="card">
-    <h2>📁 Meri Stock Strategies</h2>
-    <div id="strategiesList">
-      <p style="color:#64748b; text-align:center;">Abhi koi strategy save nahi hai</p>
+  <!-- TAB 4: PAPER -->
+  <div id="paperTab" class="tab-content">
+    <div class="card">
+      <h2>📝 Paper Trading</h2>
+      <button class="btn-paper" onclick="window.location.href='/paper-trade.html'">
+        Paper Trading Dashboard Kholo
+      </button>
+      <p style="color:#94a3b8; font-size:12px; margin-top:10px; text-align:center;">
+        Real market mein bina paise lagaye practice karo
+      </p>
     </div>
   </div>
 
@@ -187,28 +230,6 @@
     </div>
   </div>
 
-  <div class="modal" id="aiModal">
-    <div class="modal-content">
-      <h2 style="color:#a78bfa; margin-bottom:15px;">🤖 AI Stock Strategy Suggester</h2>
-      <p style="color:#94a3b8; font-size:13px; margin-bottom:15px;">Market condition + sentiment ke hisaab se best strategy</p>
-      <label>Market Mood</label>
-      <select id="aiMarketMood">
-        <option value="bullish">Bullish - Tez Market</option>
-        <option value="bearish">Bearish - Manda Market</option>
-        <option value="sideways">Sideways - Range Market</option>
-      </select>
-      <label>Risk Appetite</label>
-      <select id="aiRisk">
-        <option value="safe">Safe - Kam risk</option>
-        <option value="moderate">Moderate - Balance</option>
-        <option value="aggressive">Aggressive - Zyada risk</option>
-      </select>
-      <button class="btn-ai" onclick="generateAIStrategy()">✨ Strategy Generate Karo</button>
-      <div id="aiResults" style="margin-top:15px;"></div>
-      <button class="btn-secondary" onclick="closeModal('aiModal')" style="margin-top:15px;">Close</button>
-    </div>
-  </div>
-
 <script>
 let strategies = JSON.parse(localStorage.getItem('strategies_stock_promax') || '[]');
 let editingId = null;
@@ -219,32 +240,28 @@ window.onload = function() {
   updateSentiment('NIFTY');
 };
 
+function switchTab(tab) {
+  document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(tab + 'Tab').classList.add('active');
+}
+
 function updateSentiment(symbol) {
   const tf = document.getElementById('sentimentTF').value;
-
-  // Jugaad sentiment logic - time + symbol based
   const now = new Date();
   const hour = now.getHours();
   const day = now.getDay();
   let baseScore = 60;
-
-  // Market hours mein zyada volatile
   if (hour >= 9 && hour <= 15 && day >= 1 && day <= 5) baseScore += 10;
-
-  // Symbol wise bias
   if (symbol === 'BANKNIFTY') baseScore += 5;
   if (symbol === 'MIDCPNIFTY') baseScore -= 5;
-
-  // TF wise
   if (tf === '15m') baseScore += Math.random() * 20 - 10;
   if (tf === '1h') baseScore += Math.random() * 15 - 7;
-
-  // Randomize thoda
   baseScore += Math.random() * 10 - 5;
   baseScore = Math.max(20, Math.min(90, baseScore));
 
   let regime, color, emoji, advice;
-
   if (baseScore > 70) {
     regime = 'BULLISH';
     color = '#10b981';
@@ -328,6 +345,7 @@ function editStrategy(id) {
   const s = strategies.find(st => st.id === id);
   if (!s) return;
   editingId = id;
+  switchTab('strategy');
   document.getElementById('strategyName').value = s.name;
   document.getElementById('strategyIndex').value = s.index;
   document.getElementById('timeframeSignal').value = s.timeframeSignal;
@@ -460,11 +478,6 @@ async function showGraph(id) {
   });
 }
 
-function openAISuggester() {
-  document.getElementById('aiModal').classList.add('active');
-  document.getElementById('aiResults').innerHTML = '';
-}
-
 function closeModal(id) {
   document.getElementById(id).classList.remove('active');
 }
@@ -483,7 +496,7 @@ function generateAIStrategy() {
   } else if (mood === 'bearish') {
     suggestions.push({ name: 'Bear Market Short Pro', desc: 'Girte market mein pullback sell. 1h signal, 5m entry. EMA200 below.', index: 'NIFTY', tfSignal: '1h', tfEntry: '5m', emaFast: 13, emaSlow: 34, ema200: 'below', vwap: true, rsi: 35, sl: 0.5, tp: 1.5 });
   } else {
-    suggestions.push({ name: 'NIFTY Balanced Pro', desc: 'Har market mein kaam karegi. Moderate risk. VWAP + EMA combo.', index: 'NIFTY', tfSignal: '1d', tfEntry: '15m', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 45, sl: 0.5, tp: 1.0 });
+    suggestions.push({ name: 'NIFTY Balanced Pro', desc: 'Har market mein chale. Moderate risk. VWAP + EMA combo.', index: 'NIFTY', tfSignal: '1d', tfEntry: '15m', emaFast: 9, emaSlow: 21, ema200: 'above', vwap: true, rsi: 45, sl: 0.5, tp: 1.0 });
   }
 
   document.getElementById('aiResults').innerHTML = suggestions.map((sug, i) => `
@@ -500,6 +513,7 @@ function generateAIStrategy() {
 
 function applyAIStrategy(index) {
   const sug = window.aiSuggestions[index];
+  switchTab('strategy');
   document.getElementById('strategyName').value = sug.name;
   document.getElementById('strategyIndex').value = sug.index;
   document.getElementById('timeframeSignal').value = sug.tfSignal;
@@ -512,7 +526,6 @@ function applyAIStrategy(index) {
   document.getElementById('rsiLevel').value = sug.rsi;
   document.getElementById('stopLoss').value = sug.sl;
   document.getElementById('takeProfit').value = sug.tp;
-  closeModal('aiModal');
   window.scrollTo(0, 0);
   alert('✅ AI Strategy loaded! Ab Save Karo button dabao.');
 }
