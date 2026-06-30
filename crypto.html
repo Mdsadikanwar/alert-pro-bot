@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AlertPro - Crypto Pro Max</title>
+  <title>AlphaTerminal - Crypto Pro Max</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -54,12 +54,13 @@
 .hidden { display: none; }
 .sentiment-meter { height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden; margin: 8px 0; }
 .sentiment-fill { height: 100%; transition: width 0.5s; }
+.last-update { font-size: 10px; color: #64748b; text-align: right; margin-top: 5px; }
   </style>
 </head>
 <body>
   <div class="header">
     <a href="/" class="back">← Back</a>
-    <h1>₿ Crypto Strategies Pro Max</h1>
+    <h1>₿ AlphaTerminal Crypto</h1>
   </div>
 
   <div class="main-tabs">
@@ -72,7 +73,7 @@
   <!-- TAB 1: SENTIMENT -->
   <div id="sentimentTab" class="tab-content active">
     <div class="card">
-      <h2>📊 Crypto Market Sentiment Meter</h2>
+      <h2>📊 Real Market Sentiment - CoinGecko</h2>
       <div id="sentimentDisplay">
         <div style="display:flex; justify-content:space-between; font-size:12px; color:#94a3b8; margin-bottom:4px;">
           <span>😱 Fear</span>
@@ -80,10 +81,11 @@
           <span>🚀 Greed</span>
         </div>
         <div class="sentiment-meter">
-          <div id="sentimentBar" class="sentiment-fill" style="width:65%; background:linear-gradient(90deg, #ef4444, #f59e0b, #10b981);"></div>
+          <div id="sentimentBar" class="sentiment-fill" style="width:50%; background:linear-gradient(90deg, #ef4444, #f59e0b, #10b981);"></div>
         </div>
-        <h3 id="sentimentText" style="color:#f59e0b; margin:8px 0 0 0; font-size:16px;">↔️ NEUTRAL - 65%</h3>
-        <p id="sentimentAdvice" style="font-size:13px; color:#cbd5e1; margin:8px 0 0 0;">💡 BTC sideways hai. Altcoins mein scalping best.</p>
+        <h3 id="sentimentText" style="color:#f59e0b; margin:8px 0 0 0; font-size:16px;">⏳ Loading Real Data...</h3>
+        <p id="sentimentAdvice" style="font-size:13px; color:#cbd5e1; margin:8px 0 0 0;">CoinGecko se live market data la raha hun...</p>
+        <div id="lastUpdate" class="last-update"></div>
       </div>
       <div class="row" style="margin-top:12px;">
         <div>
@@ -96,12 +98,7 @@
           </select>
         </div>
         <div>
-          <label>Timeframe</label>
-          <select id="sentimentTF" onchange="updateSentiment(document.getElementById('coinSelect').value)">
-            <option value="1d">Daily</option>
-            <option value="4h">4 Hour</option>
-            <option value="1h">1 Hour</option>
-          </select>
+          <button onclick="updateSentiment(document.getElementById('coinSelect').value)" style="margin-top:20px;">🔄 Refresh</button>
         </div>
       </div>
     </div>
@@ -225,6 +222,10 @@
   </div>
 
 <script>
+// Login Check
+const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+if (!user) window.location.href = '/login.html';
+
 let strategies = JSON.parse(localStorage.getItem('strategies_crypto_promax') || '[]');
 let editingId = null;
 let chartInstance = null;
@@ -232,6 +233,8 @@ let chartInstance = null;
 window.onload = function() {
   renderStrategies();
   updateSentiment('BTC');
+  // Auto refresh har 60 sec
+  setInterval(() => updateSentiment(document.getElementById('coinSelect').value), 60000);
 };
 
 function switchTab(tab) {
@@ -241,42 +244,63 @@ function switchTab(tab) {
   document.getElementById(tab + 'Tab').classList.add('active');
 }
 
-function updateSentiment(coin) {
-  const tf = document.getElementById('sentimentTF').value;
-  const now = new Date();
-  const hour = now.getHours();
-  let baseScore = 65;
-  if (hour >= 18 || hour <= 3) baseScore += 10;
-  if (coin === 'BTC') baseScore += 5;
-  if (coin === 'SOL') baseScore += Math.random() * 20 - 10;
-  if (coin === 'ETH') baseScore += 3;
-  if (tf === '1h') baseScore += Math.random() * 15 - 7;
-  if (tf === '4h') baseScore += Math.random() * 10 - 5;
-  baseScore += Math.random() * 10 - 5;
-  baseScore = Math.max(15, Math.min(95, baseScore));
+async function updateSentiment(coin) {
+  document.getElementById('sentimentText').innerHTML = '⏳ CoinGecko se real data...';
+  document.getElementById('sentimentAdvice').innerHTML = 'Live market data fetch ho raha...';
 
-  let regime, color, emoji, advice;
-  if (baseScore > 75) {
-    regime = 'GREED';
-    color = '#10b981';
-    emoji = '🚀';
-    advice = 'Bull run chal raha. Altcoins pump karenge. Buy dips, 5x leverage max.';
-  } else if (baseScore < 35) {
-    regime = 'FEAR';
-    color = '#ef4444';
-    emoji = '😱';
-    advice = 'Market dar raha hai. Short karo ya USDT hold karo. No leverage.';
-  } else {
-    regime = 'NEUTRAL';
-    color = '#f59e0b';
-    emoji = '😐';
-    advice = 'BTC sideways hai. Altcoins mein scalping best. RSI oversold pe entry.';
+  try {
+    const coinMap = {
+      'BTC': 'bitcoin',
+      'ETH': 'ethereum',
+      'SOL': 'solana',
+      'BNB': 'binancecoin'
+    };
+    const coinId = coinMap || 'bitcoin';
+
+    const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}?localization=false&tickers=false&community_data=false&developer_data=false`);
+    if (!res.ok) throw new Error('API Error');
+    const data = await res.json();
+
+    const price = data.market_data.current_price.usd;
+    const change24h = data.market_data.price_change_percentage_24h;
+    const high24 = data.market_data.high_24h.usd;
+    const low24 = data.market_data.low_24h.usd;
+    const volume = data.market_data.total_volume.usd;
+    const marketCap = data.market_data.market_cap.usd;
+
+    let baseScore = 50 + (change24h * 3);
+    baseScore = Math.max(5, Math.min(95, baseScore));
+
+    let regime, color, emoji, advice;
+    if (change24h > 7) {
+      regime = 'EXTREME GREED'; color = '#10b981'; emoji = '🚀';
+      advice = `Real: ${change24h.toFixed(2)}% up 24h. MCap: $${(marketCap/1e9).toFixed(1)}B. Strong pump. 3x max.`;
+    } else if (change24h > 3) {
+      regime = 'GREED'; color = '#34d399'; emoji = '📈';
+      advice = `Real: ${change24h.toFixed(2)}% up 24h. Bullish. Buy dips, SL tight.`;
+    } else if (change24h < -7) {
+      regime = 'EXTREME FEAR'; color = '#ef4444'; emoji = '💀';
+      advice = `Real: ${change24h.toFixed(2)}% down 24h. Crash mode. Short ya USDT hold. No long.`;
+    } else if (change24h < -3) {
+      regime = 'FEAR'; color = '#f87171'; emoji = '😱';
+      advice = `Real: ${change24h.toFixed(2)}% down 24h. Bearish. Short rally pe.`;
+    } else {
+      regime = 'NEUTRAL'; color = '#f59e0b'; emoji = '😐';
+      advice = `Real: ${change24h.toFixed(2)}% 24h. Range: $${low24.toFixed(0)}-$${high24.toFixed(0)}. Scalp only.`;
+    }
+
+    document.getElementById('sentimentBar').style.width = baseScore + '%';
+    document.getElementById('sentimentText').innerHTML = `${emoji} ${regime} - ${Math.round(baseScore)}%`;
+    document.getElementById('sentimentText').style.color = color;
+    document.getElementById('sentimentAdvice').innerHTML = `💡 ${advice}<br><b>Price:</b> $${price.toLocaleString()} | <b>Vol:</b> $${(volume/1e6).toFixed(0)}M`;
+    document.getElementById('lastUpdate').textContent = `Last update: ${new Date().toLocaleTimeString()}`;
+
+  } catch (error) {
+    console.error(error);
+    document.getElementById('sentimentText').innerHTML = '❌ API Fail';
+    document.getElementById('sentimentText').style.color = '#ef4444';
+    document.getElementById('sentimentAdvice').innerHTML = 'CoinGecko down ya net issue. 1 min baad refresh kar.';
   }
-
-  document.getElementById('sentimentBar').style.width = baseScore + '%';
-  document.getElementById('sentimentText').innerHTML = `${emoji} ${regime} - ${Math.round(baseScore)}%`;
-  document.getElementById('sentimentText').style.color = color;
-  document.getElementById('sentimentAdvice').innerHTML = `💡 ${advice}`;
 }
 
 function renderStrategies() {
@@ -331,7 +355,7 @@ function saveStrategy() {
   localStorage.setItem('strategies_crypto_promax', JSON.stringify(strategies));
   renderStrategies();
   clearForm();
-  alert('✅ Crypto Strategy save ho gayi Pro Max mein!');
+  alert('✅ Crypto Strategy save ho gayi!');
 }
 
 function editStrategy(id) {
