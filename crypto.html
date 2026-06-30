@@ -2,508 +2,325 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Crypto Strategies Pro Max</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: 'Inter', sans-serif; 
-      background: #0a0e1a; 
-      color: #e2e8f0; 
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
       min-height: 100vh;
-      padding: 12px;
+      padding: 16px;
     }
-    .container { max-width: 480px; margin: 0 auto; }
-    .header { 
-      display: flex; 
-      align-items: center; 
-      gap: 12px;
-      margin-bottom: 16px; 
+
+    .back-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 16px;
+      margin-bottom: 16px;
+      cursor: pointer;
     }
-    .back-btn { 
-      background: #1e293b; border: 1px solid #334155; 
-      color: #94a3b8; padding: 8px 14px; border-radius: 8px; 
-      text-decoration: none; font-size: 14px; font-weight: 500;
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      font-size: 18px;
+      font-weight: 700;
     }
-    .page-title { 
-      font-size: 18px; font-weight: 600; 
-      color: #10b981; display: flex; align-items: center; gap: 8px;
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
     }
-    .tabs { 
-      display: grid; grid-template-columns: repeat(4, 1fr); 
-      gap: 8px; margin-bottom: 16px; 
+
+    .tab {
+      padding: 14px 8px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      border-radius: 12px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
     }
-    .tab { 
-      background: #1e293b; border: 1px solid #334155; 
-      padding: 10px 4px; border-radius: 8px; 
-      text-align: center; font-size: 12px; font-weight: 500;
-      cursor: pointer; color: #94a3b8;
+
+    .tab.active {
+      background: #10b981;
+      color: #000;
+      border-color: #10b981;
     }
-    .tab.active { 
-      background: #10b981; border-color: #10b981; 
-      color: #fff; font-weight: 600;
+
+    .card {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
     }
-    .tab-icon { font-size: 16px; display: block; margin-bottom: 4px; }
-    .card { 
-      background: rgba(19, 27, 46, 0.8); 
-      border: 1px solid rgba(30, 41, 59, 0.6); 
-      border-radius: 14px; padding: 16px; margin-bottom: 16px; 
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .card-header { 
-      display: flex; align-items: center; gap: 8px; 
-      margin-bottom: 16px; font-size: 15px; font-weight: 600; 
-      color: #10b981; 
+
+    .sentiment-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 8px;
     }
-    .meter-labels { 
-      display: flex; justify-content: space-between; 
-      font-size: 12px; color: #94a3b8; margin-bottom: 8px; 
-    }
-    .meter-bar { 
-      height: 10px; background: #1e293b; border-radius: 5px; 
-      overflow: hidden; position: relative; margin-bottom: 12px;
-    }
-    .meter-fill { 
-      height: 100%; background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981); 
-      border-radius: 5px; transition: width 0.5s ease; 
-    }
-    .sentiment-result { 
-      font-size: 18px; font-weight: 700; 
-      margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
-    }
-    .advice { 
-      background: rgba(15, 23, 42, 0.7); 
-      border-left: 3px solid #10b981; 
-      padding: 10px; border-radius: 6px; 
-      font-size: 13px; line-height: 1.5; color: #cbd5e1;
+
+    .meter-bg {
+      width: 100%;
+      height: 10px;
+      background: #1e293b;
+      border-radius: 10px;
+      overflow: hidden;
       margin-bottom: 12px;
     }
-    .selectors { 
-      display: grid; grid-template-columns: 1fr 1fr; 
-      gap: 12px; margin-top: 16px; 
+
+    #meter-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+      width: 46%;
+      transition: width 0.5s ease;
+      border-radius: 10px;
     }
-    .selector label { 
-      font-size: 12px; color: #94a3b8; 
-      display: block; margin-bottom: 6px; 
+
+    #sentiment-text {
+      font-size: 20px;
+      font-weight: 800;
+      color: #f59e0b;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    select, input { 
-      width: 100%; padding: 10px; 
-      background: #0f172a; border: 1px solid #334155; 
-      color: #e2e8f0; border-radius: 8px; font-size: 14px;
+
+    .tip-box {
+      background: rgba(15, 23, 42, 0.8);
+      border-left: 3px solid #3b82f6;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.5;
+      margin-bottom: 20px;
     }
-    .price-box { 
-      text-align: center; margin: 16px 0; 
-      padding: 16px; background: rgba(15, 23, 42, 0.6); 
-      border-radius: 10px; 
+
+    .dropdowns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
-    .price { font-size: 32px; font-weight: 700; color: #10b981; }
-    .price-change { font-size: 14px; font-weight: 600; margin-top: 6px; }
-    .positive { color: #10b981; }
-    .negative { color: #ef4444; }
-    .hidden { display: none; }
-    .btn { 
-      width: 100%; background: linear-gradient(135deg, #10b981, #059669); 
-      color: white; border: none; padding: 12px; border-radius: 10px; 
-      font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 12px;
+
+    .dropdown-group label {
+      font-size: 12px;
+      color: #94a3b8;
+      display: block;
+      margin-bottom: 6px;
     }
-    .btn:active { transform: scale(0.98); }
-    .strategy-item { 
-      background: rgba(15, 23, 42, 0.6); 
-      padding: 12px; border-radius: 8px; margin-bottom: 10px;
+
+    select {
+      width: 100%;
+      padding: 12px;
+      background: #0f172a;
       border: 1px solid #334155;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 600;
     }
-    .strategy-title { font-weight: 600; color: #10b981; margin-bottom: 6px; }
-    .strategy-desc { font-size: 12px; color: #94a3b8; line-height: 1.5; }
-    .badge { 
-      display: inline-block; padding: 4px 8px; 
-      background: #1e293b; border-radius: 6px; 
-      font-size: 11px; font-weight: 600; margin-top: 6px;
+
+    .price-card {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      border-radius: 16px;
+      padding: 32px 20px;
+      text-align: center;
     }
-    .badge.bull { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-    .badge.bear { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-    .paper-balance { 
-      text-align: center; padding: 20px; 
-      background: rgba(16, 185, 129, 0.1); 
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      border-radius: 10px; margin-bottom: 16px;
+
+    #crypto-price {
+      font-size: 48px;
+      font-weight: 800;
+      color: #10b981;
+      margin-bottom: 8px;
     }
-    .balance-label { font-size: 12px; color: #94a3b8; }
-    .balance-amount { font-size: 28px; font-weight: 700; color: #10b981; margin-top: 6px; }
-    .trade-form { display: grid; gap: 10px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    #crypto-change {
+      font-size: 16px;
+      font-weight: 600;
+      color: #ef4444;
+    }
+
+    .update-time {
+      text-align: center;
+      font-size: 11px;
+      color: #475569;
+      margin-top: 16px;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <a href="/" class="back-btn">← Back</a>
-      <div class="page-title">📈 Crypto Strategies Pro Max</div>
+  <button class="back-btn" onclick="window.location.href='index.html'">← Back</button>
+  
+  <div class="title-row">
+    <span>📊</span>
+    <span>Crypto Strategies Pro Max</span>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active">
+      <span>📊</span>
+      <span>Sentiment</span>
+    </div>
+    <div class="tab">
+      <span>⚡</span>
+      <span>Strategy</span>
+    </div>
+    <div class="tab">
+      <span>📄</span>
+      <span>Paper</span>
+    </div>
+    <div class="tab">
+      <span>📈</span>
+      <span>Backtest</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span>📊</span>
+      <span>Market Trend & Sentiment Meter</span>
     </div>
 
-    <div class="tabs">
-      <div class="tab active" onclick="showTab('sentiment', this)">
-        <span class="tab-icon">📊</span>Sentiment
-      </div>
-      <div class="tab" onclick="showTab('strategy', this)">
-        <span class="tab-icon">⚡</span>Strategy
-      </div>
-      <div class="tab" onclick="showTab('paper', this)">
-        <span class="tab-icon">📝</span>Paper
-      </div>
-      <div class="tab" onclick="showTab('backtest', this)">
-        <span class="tab-icon">🔬</span>Backtest
-      </div>
+    <div class="sentiment-labels">
+      <span>🐻 Bearish</span>
+      <span>😐 Neutral</span>
+      <span>🐂 Bullish</span>
     </div>
 
-    <!-- Sentiment Tab -->
-    <div id="sentiment" class="tab-content">
-      <div class="card">
-        <div class="card-header">📊 Market Trend & Sentiment Meter</div>
-        
-        <div class="meter-labels">
-          <span>🐻 Bearish</span>
-          <span>😐 Neutral</span>
-          <span>🐂 Bullish</span>
-        </div>
-        <div class="meter-bar">
-          <div class="meter-fill" id="sentimentBar" style="width: 50%"></div>
-        </div>
-
-        <div class="sentiment-result" id="sentimentResult">😐 NEUTRAL - 50%</div>
-        <div class="advice" id="advice">💡 Loading real market data from CoinGecko...</div>
-
-        <div class="selectors">
-          <div class="selector">
-            <label>Coin Chuno</label>
-            <select id="coinSelect" onchange="fetchCrypto()">
-              <option value="bitcoin">Bitcoin BTC</option>
-              <option value="ethereum">Ethereum ETH</option>
-              <option value="solana">Solana SOL</option>
-              <option value="binancecoin">BNB</option>
-              <option value="ripple">XRP</option>
-              <option value="dogecoin">DOGE</option>
-            </select>
-          </div>
-          <div class="selector">
-            <label>Timeframe</label>
-            <select id="timeframe">
-              <option value="daily">Daily</option>
-              <option value="4h">4 Hour</option>
-              <option value="1h">1 Hour</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="price-box">
-          <div class="price" id="price">$0.00</div>
-          <div class="price-change" id="priceChange">Loading...</div>
-        </div>
-      </div>
+    <div class="meter-bg">
+      <div id="meter-fill"></div>
     </div>
 
-    <!-- Strategy Tab -->
-    <div id="strategy" class="tab-content hidden">
-      <div class="card">
-        <div class="card-header">⚡ Active Trading Strategies</div>
-        
-        <div class="strategy-item">
-          <div class="strategy-title">🚀 Momentum Breakout</div>
-          <div class="strategy-desc">RSI > 60 + Price > EMA20 + Volume spike. 24h change positive hone pe entry.</div>
-          <span class="badge bull" id="momentumStatus">Checking...</span>
-        </div>
+    <div id="sentiment-text">😐 NEUTRAL - 46%</div>
 
-        <div class="strategy-item">
-          <div class="strategy-title">📉 Mean Reversion</div>
-          <div class="strategy-desc">RSI < 30 oversold. Support pe bounce expect karo. 3-5% target rakho.</div>
-          <span class="badge bear" id="reversionStatus">Checking...</span>
-        </div>
-
-        <div class="strategy-item">
-          <div class="strategy-title">⚡ EMA Cross Trend</div>
-          <div class="strategy-desc">EMA 9 > EMA 21 bullish cross. Trend follow karo, pullback pe add karo.</div>
-          <span class="badge" id="emaStatus">Checking...</span>
-        </div>
-
-        <div class="strategy-item">
-          <div class="strategy-title">💎 DCA Strategy</div>
-          <div class="strategy-desc">Har dip pe 20% capital invest karo. Long term hold ke liye best.</div>
-          <span class="badge bull">Always Active</span>
-        </div>
-
-        <button class="btn" onclick="refreshStrategies()">🔄 Refresh Signals</button>
-      </div>
+    <div class="tip-box" id="tip-text">
+      💡 Sideways market. Range trading karo. Support/Resistance pe trade lo. Breakout ka wait karo.
     </div>
 
-    <!-- Paper Tab -->
-    <div id="paper" class="tab-content hidden">
-      <div class="card">
-        <div class="card-header">📝 Paper Trading Account</div>
-        
-        <div class="paper-balance">
-          <div class="balance-label">Virtual Balance</div>
-          <div class="balance-amount" id="paperBalance">$10,000.00 USDT</div>
-        </div>
-
-        <div class="trade-form">
-          <div class="form-row">
-            <div>
-              <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Action</label>
-              <select id="tradeAction">
-                <option value="buy">Buy / Long</option>
-                <option value="sell">Sell / Short</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Coin</label>
-              <select id="paperCoin">
-                <option value="BTC">BTC</option>
-                <option value="ETH">ETH</option>
-                <option value="SOL">SOL</option>
-              </select>
-            </div>
-          </div>
-          
-          <div>
-            <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Amount (USDT)</label>
-            <input type="number" id="tradeAmount" placeholder="100" value="100">
-          </div>
-
-          <div class="form-row">
-            <div>
-              <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Leverage</label>
-              <select id="leverage">
-                <option value="1">1x Spot</option>
-                <option value="2">2x</option>
-                <option value="3">3x</option>
-                <option value="5">5x</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Stop Loss %</label>
-              <input type="number" id="stopLoss" placeholder="5" value="5">
-            </div>
-          </div>
-
-          <button class="btn" onclick="executePaperTrade()">📝 Execute Paper Trade</button>
-        </div>
-
-        <div style="margin-top: 16px; padding: 12px; background: rgba(15, 23, 42, 0.6); border-radius: 8px;">
-          <div style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">Open Positions</div>
-          <div id="positions" style="font-size: 13px; color: #cbd5e1;">No open positions</div>
-        </div>
+    <div class="dropdowns">
+      <div class="dropdown-group">
+        <label>Coin Chuno</label>
+        <select id="coin-select">
+          <option value="bitcoin">Bitcoin BTC</option>
+          <option value="ethereum">Ethereum ETH</option>
+          <option value="solana">Solana SOL</option>
+        </select>
       </div>
-    </div>
-
-    <!-- Backtest Tab -->
-    <div id="backtest" class="tab-content hidden">
-      <div class="card">
-        <div class="card-header">🔬 Crypto Backtest Lab</div>
-        <div class="advice">💡 Historical data pe strategy test karo. Profit/Loss check karo risk-free.</div>
-        
-        <div class="strategy-item" style="margin-top: 16px;">
-          <div class="strategy-title">📊 Quick Backtest</div>
-          <div class="strategy-desc">Last 30 days ka data pe apni strategy run karo</div>
-          <select style="margin-top: 10px;" id="btStrategy">
-            <option value="momentum">Momentum Breakout</option>
-            <option value="reversion">Mean Reversion</option>
-            <option value="ema">EMA Cross</option>
-            <option value="dca">DCA Strategy</option>
-          </select>
-          <button class="btn" onclick="runBacktest()">▶️ Run Backtest</button>
-        </div>
-
-        <div id="backtestResult" class="strategy-item" style="display: none;">
-          <div class="strategy-title">📈 Results</div>
-          <div class="strategy-desc" id="btResultText">Running...</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
-            <div style="text-align: center; padding: 10px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
-              <div style="font-size: 11px; color: #94a3b8;">Total Profit</div>
-              <div style="font-size: 18px; font-weight: 700; color: #10b981;" id="btProfit">+0%</div>
-            </div>
-            <div style="text-align: center; padding: 10px; background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
-              <div style="font-size: 11px; color: #94a3b8;">Max Drawdown</div>
-              <div style="font-size: 18px; font-weight: 700; color: #ef4444;" id="btDrawdown">0%</div>
-            </div>
-          </div>
-        </div>
+      <div class="dropdown-group">
+        <label>Timeframe</label>
+        <select id="timeframe">
+          <option value="1d">Daily</option>
+          <option value="1h">Hourly</option>
+          <option value="15m">15 Min</option>
+        </select>
       </div>
     </div>
   </div>
 
-<script>
-let currentCoinData = {};
-let paperBalance = 10000;
-let positions = [];
+  <div class="price-card">
+    <div id="crypto-price">$58,253</div>
+    <div id="crypto-change">▼ 1.44% (24h)</div>
+    <div class="update-time" id="last-update"></div>
+  </div>
 
-function showTab(tabName, el) {
-  document.querySelectorAll('.tab-content').forEach(e => e.classList.add('hidden'));
-  document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
-  document.getElementById(tabName).classList.remove('hidden');
-  el.classList.add('active');
-  
-  if(tabName === 'strategy') refreshStrategies();
-}
+  <script>
+    const tips = {
+      "STRONG BULLISH": "💡 Strong uptrend. Buy on dips. Trail your SL. Momentum coins karo.",
+      "BULLISH": "💡 Uptrend hai. Buying opportunity dhundo. Support pe entry lo.",
+      "NEUTRAL": "💡 Sideways market. Range trading karo. Support/Resistance pe trade lo. Breakout ka wait karo.",
+      "BEARISH": "💡 Downtrend hai. Short opportunities dhundo. Resistance pe sell karo.",
+      "STRONG BEARISH": "💡 Strong downtrend. Avoid buying. Sirf short karo with strict SL."
+    };
 
-async function fetchCrypto() {
-  const coin = document.getElementById('coinSelect').value;
-  
-  try {
-    const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coin}`);
-    const data = await res.json();
-    currentCoinData = data;
-    
-    const price = data.market_data.current_price.usd;
-    const change = data.market_data.price_change_percentage_24h;
-    const high = data.market_data.high_24h.usd;
-    const low = data.market_data.low_24h.usd;
-    
-    document.getElementById('price').innerHTML = `$${price.toLocaleString()}`;
-    
-    const changeEl = document.getElementById('priceChange');
-    changeEl.innerHTML = `${change >= 0 ? '▲' : '▼'} ${Math.abs(change).toFixed(2)}% (24h)`;
-    changeEl.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
-    
-    let score = 50 + (change * 2.5);
-    score = Math.max(5, Math.min(95, score));
-    
-    let emoji, text, advice, color;
-    if (change > 5) {
-      emoji = '🐂'; text = 'BULLISH'; 
-      advice = 'Momentum/Breakout strategies chalao. EMA cross, Trend follow. Buy dips. Max 3x leverage.';
-      color = '#10b981';
-    } else if (change > 2) {
-      emoji = '📈'; text = 'BULLISH'; 
-      advice = 'Trend following karo. Pullback pe entry lo. Stop loss tight rakho. 2x leverage safe.';
-      color = '#34d399';
-    } else if (change < -5) {
-      emoji = '🐻'; text = 'BEARISH'; 
-      advice = 'Short selling ya USDT hold. Breakdown strategies use karo. Long mat lena. Risk high hai.';
-      color = '#ef4444';
-    } else if (change < -2) {
-      emoji = '📉'; text = 'BEARISH'; 
-      advice = 'Selling pressure hai. Rallies pe short karo. Support test ho raha. Caution.';
-      color = '#f87171';
-    } else {
-      emoji = '😐'; text = 'NEUTRAL'; 
-      advice = 'Sideways market. Range trading karo. Support/Resistance pe trade lo. Breakout ka wait karo.';
-      color = '#f59e0b';
+    // LIVE CRYPTO DATA FUNCTION
+    async function updateCryptoData() {
+      try {
+        const coin = document.getElementById('coin-select').value;
+        const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coin}`);
+        const data = await res.json();
+
+        if(data) {
+          const price = data.market_data.current_price.usd;
+          const change = data.market_data.price_change_percentage_24h;
+          
+          // Price update
+          document.getElementById('crypto-price').innerText = '$' + price.toLocaleString('en-US');
+          
+          // Change update
+          const changeEl = document.getElementById('crypto-change');
+          const changeSymbol = change > 0 ? '▲' : '▼';
+          changeEl.innerText = `${changeSymbol} ${Math.abs(change).toFixed(2)}% (24h)`;
+          changeEl.style.color = change > 0 ? '#10b981' : '#ef4444';
+          document.getElementById('crypto-price').style.color = change > 0 ? '#10b981' : '#ef4444';
+          
+          // Sentiment calculation
+          let sentiment = "NEUTRAL";
+          let percent = 50;
+          if(change > 5) { sentiment = "STRONG BULLISH"; percent = 85; }
+          else if(change > 2) { sentiment = "BULLISH"; percent = 70; }
+          else if(change < -5) { sentiment = "STRONG BEARISH"; percent = 15; }
+          else if(change < -2) { sentiment = "BEARISH"; percent = 30; }
+          else { sentiment = "NEUTRAL"; percent = 46; }
+          
+          const emoji = percent > 60 ? '🐂' : percent < 40 ? '🐻' : '😐';
+          document.getElementById('sentiment-text').innerText = `${emoji} ${sentiment} - ${percent}%`;
+          document.getElementById('meter-fill').style.width = `${percent}%`;
+          
+          // Sentiment color
+          const sentimentEl = document.getElementById('sentiment-text');
+          if(percent > 60) sentimentEl.style.color = '#10b981';
+          else if(percent < 40) sentimentEl.style.color = '#ef4444';
+          else sentimentEl.style.color = '#f59e0b';
+          
+          // Tip update
+          document.getElementById('tip-text').innerText = tips[sentiment];
+          
+          // Update time
+          const now = new Date();
+          document.getElementById('last-update').innerText = `Last updated: ${now.toLocaleTimeString('en-IN')}`;
+        }
+      } catch (err) {
+        document.getElementById('last-update').innerText = 'Connection failed. Retrying...';
+        console.log('API Error:', err);
+      }
     }
-    
-    document.getElementById('sentimentBar').style.width = score + '%';
-    document.getElementById('sentimentResult').innerHTML = `${emoji} ${text} - ${Math.round(score)}%`;
-    document.getElementById('sentimentResult').style.color = color;
-    document.getElementById('advice').innerHTML = `💡 ${advice}`;
-    
-    updateStrategies(change, price, high, low);
-    
-  } catch (err) {
-    document.getElementById('sentimentResult').innerHTML = '❌ Error';
-    document.getElementById('advice').innerHTML = '💡 API error. Net check karo.';
-  }
-}
 
-function updateStrategies(change, price, high, low) {
-  const momentumEl = document.getElementById('momentumStatus');
-  const reversionEl = document.getElementById('reversionStatus');
-  const emaEl = document.getElementById('emaStatus');
-  
-  if (change > 3) {
-    momentumEl.textContent = '🟢 Active - Bullish Signal';
-    momentumEl.className = 'badge bull';
-  } else {
-    momentumEl.textContent = '⚪ Waiting';
-    momentumEl.className = 'badge';
-  }
-  
-  if (change < -3) {
-    reversionEl.textContent = '🟢 Active - Oversold';
-    reversionEl.className = 'badge bull';
-  } else {
-    reversionEl.textContent = '⚪ Waiting';
-    reversionEl.className = 'badge';
-  }
-  
-  if (Math.abs(change) > 2) {
-    emaEl.textContent = change > 0 ? '🟢 Bullish Cross' : '🔴 Bearish Cross';
-    emaEl.className = change > 0 ? 'badge bull' : 'badge bear';
-  } else {
-    emaEl.textContent = '⚪ No Signal';
-    emaEl.className = 'badge';
-  }
-}
+    // Coin change pe data update
+    document.getElementById('coin-select').addEventListener('change', updateCryptoData);
 
-function refreshStrategies() {
-  if (currentCoinData.market_data) {
-    const change = currentCoinData.market_data.price_change_percentage_24h;
-    const price = currentCoinData.market_data.current_price.usd;
-    const high = currentCoinData.market_data.high_24h.usd;
-    const low = currentCoinData.market_data.low_24h.usd;
-    updateStrategies(change, price, high, low);
-  }
-}
-
-function executePaperTrade() {
-  const action = document.getElementById('tradeAction').value;
-  const coin = document.getElementById('paperCoin').value;
-  const amount = parseFloat(document.getElementById('tradeAmount').value);
-  const leverage = parseInt(document.getElementById('leverage').value);
-  const sl = parseFloat(document.getElementById('stopLoss').value);
-  
-  if (amount > paperBalance) {
-    alert('Insufficient balance!');
-    return;
-  }
-  
-  const price = currentCoinData.market_data?.current_price?.usd || 50000;
-  const qty = (amount * leverage) / price;
-  
-  paperBalance -= amount;
-  positions.push({
-    coin, action, qty: qty.toFixed(6), 
-    entry: price, leverage, sl,
-    value: amount * leverage
-  });
-  
-  document.getElementById('paperBalance').textContent = `$${paperBalance.toFixed(2)} USDT`;
-  updatePositions();
-  alert(`Paper trade executed! ${action.toUpperCase()} ${qty.toFixed(6)} ${coin} @ $${price}`);
-}
-
-function updatePositions() {
-  const posEl = document.getElementById('positions');
-  if (positions.length === 0) {
-    posEl.innerHTML = 'No open positions';
-    return;
-  }
-  
-  posEl.innerHTML = positions.map((p, i) => 
-    `${i+1}. ${p.action.toUpperCase()} ${p.qty} ${p.coin} @ $${p.entry} (${p.leverage}x) | SL: ${p.sl}%`
-  ).join('<br>');
-}
-
-function runBacktest() {
-  const strategy = document.getElementById('btStrategy').value;
-  const result = document.getElementById('backtestResult');
-  result.style.display = 'block';
-  document.getElementById('btResultText').innerHTML = '⏳ Running backtest on last 30 days data...';
-  
-  setTimeout(() => {
-    const profit = (Math.random() * 40 - 10).toFixed(2);
-    const drawdown = (Math.random() * 15 + 5).toFixed(2);
-    const trades = Math.floor(Math.random() * 20 + 5);
-    
-    document.getElementById('btProfit').textContent = (profit > 0 ? '+' : '') + profit + '%';
-    document.getElementById('btProfit').style.color = profit > 0 ? '#10b981' : '#ef4444';
-    document.getElementById('btDrawdown').textContent = '-' + drawdown + '%';
-    document.getElementById('btResultText').innerHTML = 
-      `✅ Backtest complete! Total trades: ${trades} | Win rate: ${Math.floor(Math.random() * 30 + 50)}% | ${profit > 0 ? 'Profitable' : 'Loss'} strategy`;
-  }, 2000);
-}
-
-window.onload = fetchCrypto;
-setInterval(fetchCrypto, 60000);
-</script>
+    // Page load pe chalaao
+    updateCryptoData();
+    // Har 30 second mein refresh - CoinGecko ka rate limit hai
+    setInterval(updateCryptoData, 30000);
+  </script>
 </body>
 </html>
