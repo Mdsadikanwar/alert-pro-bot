@@ -2,86 +2,265 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Stock Strategies Pro Max</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: 'Inter', sans-serif; 
-      background: #0a0e1a; 
-      color: #e2e8f0; 
-      padding: 20px;
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 16px;
     }
-    .container { max-width: 500px; margin: 0 auto; }
-    .card { 
-      background: rgba(19, 27, 46, 0.6); 
-      border: 1px solid rgba(30, 41, 59, 0.8); 
-      border-radius: 16px; 
-      padding: 20px; 
+
+    .back-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 16px;
+      margin-bottom: 16px;
+      cursor: pointer;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 14px 8px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      border-radius: 12px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab.active {
+      background: #10b981;
+      color: #000;
+      border-color: #10b981;
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      border-radius: 16px;
+      padding: 20px;
       margin-bottom: 16px;
     }
-    .title { font-size: 24px; font-weight: 800; margin-bottom: 16px; text-align: center; }
-    .price-box { text-align: center; margin-bottom: 20px; }
-    #nifty-price { font-size: 36px; font-weight: 800; color: #10b981; }
-    #nifty-change { font-size: 16px; font-weight: 600; margin-top: 4px; }
-    .high-low { display: flex; justify-content: space-around; margin: 16px 0; font-size: 14px; }
-    .sentiment-box { margin-top: 20px; }
-    #sentiment-text { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 12px; }
-    .meter { 
-      width: 100%; 
-      height: 12px; 
-      background: #1e293b; 
-      border-radius: 10px; 
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sentiment-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+
+    .meter-bg {
+      width: 100%;
+      height: 10px;
+      background: #1e293b;
+      border-radius: 10px;
       overflow: hidden;
+      margin-bottom: 12px;
     }
-    #meter-fill { 
-      height: 100%; 
-      background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981); 
-      width: 50%; 
+
+    #meter-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+      width: 50%;
       transition: width 0.5s ease;
+      border-radius: 10px;
     }
-    .loading { text-align: center; color: #64748b; font-size: 12px; margin-top: 10px; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
-    .tab { flex: 1; padding: 10px; background: #1e293b; border-radius: 8px; text-align: center; font-size: 14px; }
-    .tab.active { background: #10b981; color: #000; font-weight: 600; }
+
+    #sentiment-text {
+      font-size: 20px;
+      font-weight: 800;
+      color: #f59e0b;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tip-box {
+      background: rgba(15, 23, 42, 0.8);
+      border-left: 3px solid #3b82f6;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .dropdowns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .dropdown-group label {
+      font-size: 12px;
+      color: #94a3b8;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .price-card {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      border-radius: 16px;
+      padding: 32px 20px;
+      text-align: center;
+    }
+
+    #nifty-price {
+      font-size: 48px;
+      font-weight: 800;
+      color: #10b981;
+      margin-bottom: 8px;
+    }
+
+    #nifty-change {
+      font-size: 16px;
+      font-weight: 600;
+      color: #ef4444;
+    }
+
+    .update-time {
+      text-align: center;
+      font-size: 11px;
+      color: #475569;
+      margin-top: 16px;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="title">📈 Stock Strategies Pro Max</div>
-    
-    <div class="tabs">
-      <div class="tab active">Live</div>
-      <div class="tab">Strategy</div>
-      <div class="tab">Backtest</div>
-      <div class="tab">Paper</div>
+  <button class="back-btn" onclick="window.location.href='index.html'">← Back</button>
+  
+  <div class="title-row">
+    <span>📊</span>
+    <span>Stock Strategies Pro Max</span>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active">
+      <span>📊</span>
+      <span>Sentiment</span>
     </div>
-
-    <div class="card">
-      <div class="price-box">
-        <div>NIFTY 50</div>
-        <div id="nifty-price">--,---.--</div>
-        <div id="nifty-change">Loading...</div>
-      </div>
-      
-      <div class="high-low">
-        <div>High: <span id="nifty-high">--,---</span></div>
-        <div>Low: <span id="nifty-low">--,---</span></div>
-      </div>
-
-      <div class="sentiment-box">
-        <div id="sentiment-text">Calculating...</div>
-        <div class="meter">
-          <div id="meter-fill"></div>
-        </div>
-      </div>
-      
-      <div class="loading" id="last-update">Fetching live data...</div>
+    <div class="tab">
+      <span>⚡</span>
+      <span>Strategy</span>
+    </div>
+    <div class="tab">
+      <span>📄</span>
+      <span>Paper</span>
+    </div>
+    <div class="tab">
+      <span>📈</span>
+      <span>Backtest</span>
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-title">
+      <span>📊</span>
+      <span>Market Trend & Sentiment Meter</span>
+    </div>
+
+    <div class="sentiment-labels">
+      <span>🐻 Bearish</span>
+      <span>😐 Neutral</span>
+      <span>🐂 Bullish</span>
+    </div>
+
+    <div class="meter-bg">
+      <div id="meter-fill"></div>
+    </div>
+
+    <div id="sentiment-text">😐 NEUTRAL - 50%</div>
+
+    <div class="tip-box" id="tip-text">
+      💡 Connecting to live NIFTY 50 data...
+    </div>
+
+    <div class="dropdowns">
+      <div class="dropdown-group">
+        <label>Stock Chuno</label>
+        <select id="stock-select">
+          <option value="NIFTY50">NIFTY 50</option>
+          <option value="BANKNIFTY" disabled>BANK NIFTY - Coming Soon</option>
+        </select>
+      </div>
+      <div class="dropdown-group">
+        <label>Timeframe</label>
+        <select id="timeframe">
+          <option value="1d">Daily</option>
+          <option value="1h" disabled>Hourly - Coming Soon</option>
+          <option value="15m" disabled>15 Min - Coming Soon</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="price-card">
+    <div id="nifty-price">--,---.--</div>
+    <div id="nifty-change">Loading live data...</div>
+    <div class="update-time" id="last-update"></div>
+  </div>
+
   <script>
-    // LIVE DATA FETCH KARNE KA CODE
+    const tips = {
+      "STRONG BULLISH": "💡 Strong uptrend. Buy on dips. Trail your SL. Momentum stocks karo.",
+      "BULLISH": "💡 Uptrend hai. Buying opportunity dhundo. Support pe entry lo.",
+      "NEUTRAL": "💡 Sideways market. Range trading karo. Support/Resistance pe trade lo. Breakout ka wait karo.",
+      "BEARISH": "💡 Downtrend hai. Short opportunities dhundo. Resistance pe sell karo.",
+      "STRONG BEARISH": "💡 Strong downtrend. Avoid buying. Sirf short karo with strict SL."
+    };
+
+    // LIVE DATA FUNCTION - YE API CALL KAREGA
     async function updateLiveData() {
       try {
         const res = await fetch('/api/share');
@@ -89,38 +268,45 @@
 
         if(data.success) {
           // 1. Price update
-          document.getElementById('nifty-price').innerText = data.price.toLocaleString('en-IN');
+          document.getElementById('nifty-price').innerText = '₹' + data.price.toLocaleString('en-IN');
           
           // 2. Change update with color
           const changeEl = document.getElementById('nifty-change');
-          changeEl.innerText = `${data.change > 0 ? '▲' : '▼'} ${Math.abs(data.change).toFixed(2)}%`;
+          const changeSymbol = data.change > 0 ? '▲' : '▼';
+          changeEl.innerText = `${changeSymbol} ${Math.abs(data.change).toFixed(2)}% (24h)`;
           changeEl.style.color = data.change > 0 ? '#10b981' : '#ef4444';
           document.getElementById('nifty-price').style.color = data.change > 0 ? '#10b981' : '#ef4444';
           
-          // 3. High/Low update
-          document.getElementById('nifty-high').innerText = data.high.toLocaleString('en-IN');
-          document.getElementById('nifty-low').innerText = data.low.toLocaleString('en-IN');
-          
-          // 4. Sentiment update
-          document.getElementById('sentiment-text').innerText = `${data.sentiment} - ${data.percent}%`;
+          // 3. Sentiment update
+          const emoji = data.percent > 60 ? '🐂' : data.percent < 40 ? '🐻' : '😐';
+          document.getElementById('sentiment-text').innerText = `${emoji} ${data.sentiment} - ${data.percent}%`;
           document.getElementById('meter-fill').style.width = `${data.percent}%`;
           
-          // 5. Last update time
+          // 4. Sentiment color
+          const sentimentEl = document.getElementById('sentiment-text');
+          if(data.percent > 60) sentimentEl.style.color = '#10b981';
+          else if(data.percent < 40) sentimentEl.style.color = '#ef4444';
+          else sentimentEl.style.color = '#f59e0b';
+          
+          // 5. Tip update
+          document.getElementById('tip-text').innerText = tips[data.sentiment] || tips["NEUTRAL"];
+          
+          // 6. Update time
           const now = new Date();
-          document.getElementById('last-update').innerText = `Last updated: ${now.toLocaleTimeString()}`;
+          document.getElementById('last-update').innerText = `Last updated: ${now.toLocaleTimeString('en-IN')}`;
           
         } else {
           document.getElementById('last-update').innerText = 'Error: ' + data.message;
         }
       } catch (err) {
-        document.getElementById('last-update').innerText = 'Failed to fetch. Retrying...';
+        document.getElementById('last-update').innerText = 'Connection failed. Retrying...';
         console.log('API Error:', err);
       }
     }
 
-    // Page load hote hi chalaao
+    // PAGE LOAD PE CHALAAO
     updateLiveData();
-    // Har 15 second mein auto refresh
+    // HAR 15 SECOND MEIN REFRESH
     setInterval(updateLiveData, 15000);
   </script>
 </body>
