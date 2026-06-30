@@ -4,622 +4,124 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Stock Strategies Pro Max</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #0a0e1a;
-      color: #e2e8f0;
-      min-height: 100vh;
-      padding: 12px;
-      position: relative;
-      overflow-x: hidden;
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: #0a0e1a; 
+      color: #e2e8f0; 
+      padding: 20px;
     }
-
-    /* Animated background glow */
-    body::before {
-      content: '';
-      position: fixed;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle at 30% 40%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
-                  radial-gradient(circle at 70% 70%, rgba(59, 130, 246, 0.06) 0%, transparent 50%);
-      animation: rotate 25s linear infinite;
-      z-index: 0;
-    }
-
-    @keyframes rotate {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
- .container { max-width: 480px; margin: 0 auto; position: relative; z-index: 1; }
- .header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    .container { max-width: 500px; margin: 0 auto; }
+    .card { 
+      background: rgba(19, 27, 46, 0.6); 
+      border: 1px solid rgba(30, 41, 59, 0.8); 
+      border-radius: 16px; 
+      padding: 20px; 
       margin-bottom: 16px;
-      animation: fadeInDown 0.6s ease;
     }
-
-    @keyframes fadeInDown {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
- .back-btn {
-      background: rgba(30, 41, 59, 0.8);
-      backdrop-filter: blur(10px);
-      border: 1px solid #334155;
-      color: #94a3b8; padding: 8px 14px; border-radius: 10px;
-      text-decoration: none; font-size: 14px; font-weight: 600;
-      transition: all 0.3s ease;
-    }
-
- .back-btn:active { transform: scale(0.95); }
-
- .page-title {
-      font-size: 18px; font-weight: 800;
-      color: #10b981; display: flex; align-items: center; gap: 8px;
-      text-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
-    }
-
- .tabs {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 8px; margin-bottom: 16px;
-      animation: fadeInUp 0.6s ease 0.1s backwards;
-    }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
- .tab {
-      background: rgba(30, 41, 59, 0.6);
-      backdrop-filter: blur(10px);
-      border: 1px solid #334155;
-      padding: 12px 4px; border-radius: 12px;
-      text-align: center; font-size: 11px; font-weight: 600;
-      cursor: pointer; color: #94a3b8;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
+    .title { font-size: 24px; font-weight: 800; margin-bottom: 16px; text-align: center; }
+    .price-box { text-align: center; margin-bottom: 20px; }
+    #nifty-price { font-size: 36px; font-weight: 800; color: #10b981; }
+    #nifty-change { font-size: 16px; font-weight: 600; margin-top: 4px; }
+    .high-low { display: flex; justify-content: space-around; margin: 16px 0; font-size: 14px; }
+    .sentiment-box { margin-top: 20px; }
+    #sentiment-text { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 12px; }
+    .meter { 
+      width: 100%; 
+      height: 12px; 
+      background: #1e293b; 
+      border-radius: 10px; 
       overflow: hidden;
     }
-
-   .tab::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #10b981, #059669);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      z-index: -1;
+    #meter-fill { 
+      height: 100%; 
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981); 
+      width: 50%; 
+      transition: width 0.5s ease;
     }
-
- .tab.active::before { opacity: 1; }
-
- .tab.active {
-      border-color: #10b981;
-      color: #fff;
-      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
-      transform: translateY(-2px);
-    }
-
- .tab-icon { font-size: 18px; display: block; margin-bottom: 4px; }
-
- .card {
-      background: rgba(19, 27, 46, 0.6);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(30, 41, 59, 0.8);
-      border-radius: 16px; padding: 18px; margin-bottom: 16px;
-      animation: fadeInUp 0.6s ease 0.2s backwards;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    }
-
- .card-header {
-      display: flex; align-items: center; gap: 8px;
-      margin-bottom: 16px; font-size: 15px; font-weight: 700;
-      color: #10b981;
-    }
-
- .meter-labels {
-      display: flex; justify-content: space-between;
-      font-size: 12px; color: #94a3b8; margin-bottom: 8px;
-      font-weight: 600;
-    }
-
- .meter-bar {
-      height: 12px; background: rgba(30, 41, 59, 0.8); border-radius: 6px;
-      overflow: hidden; position: relative; margin-bottom: 12px;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
-
- .meter-fill {
-      height: 100%; background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
-      border-radius: 6px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
-    }
-
- .sentiment-result {
-      font-size: 20px; font-weight: 800;
-      margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
-    }
-
- .advice {
-      background: rgba(15, 23, 42, 0.8);
-      border-left: 3px solid #10b981;
-      padding: 12px; border-radius: 8px;
-      font-size: 13px; line-height: 1.6; color: #cbd5e1;
-      margin-bottom: 12px;
-      font-weight: 500;
-    }
-
- .selectors {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 12px; margin-top: 16px;
-    }
-
- .selector label {
-      font-size: 12px; color: #94a3b8;
-      display: block; margin-bottom: 6px;
-      font-weight: 600;
-    }
-
-    select, input {
-      width: 100%; padding: 12px;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid #334155;
-      color: #e2e8f0; border-radius: 10px; font-size: 14px;
-      font-weight: 500;
-      transition: all 0.3s ease;
-    }
-
-    select:focus, input:focus {
-      outline: none;
-      border-color: #10b981;
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-    }
-
- .price-box {
-      text-align: center; margin: 16px 0;
-      padding: 20px;
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6));
-      border-radius: 14px;
-      border: 1px solid rgba(16, 185, 129, 0.2);
-    }
-
- .price {
-      font-size: 36px; font-weight: 800; color: #10b981;
-      text-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
-    }
-
- .price-change { font-size: 14px; font-weight: 700; margin-top: 8px; }
- .positive { color: #10b981; }
- .negative { color: #ef4444; }
- .hidden { display: none; }
-
- .btn {
-      width: 100%;
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: white; border: none; padding: 14px; border-radius: 12px;
-      font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 12px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-    }
-
- .btn:active {
-      transform: scale(0.98);
-      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-    }
-
- .strategy-item {
-      background: rgba(15, 23, 42, 0.6);
-      padding: 14px; border-radius: 10px; margin-bottom: 10px;
-      border: 1px solid #334155;
-      transition: all 0.3s ease;
-    }
-
-   .strategy-item:hover {
-      border-color: rgba(16, 185, 129, 0.4);
-      transform: translateX(4px);
-    }
-
- .strategy-title { font-weight: 700; color: #10b981; margin-bottom: 6px; }
- .strategy-desc { font-size: 12px; color: #94a3b8; line-height: 1.6; }
-
- .badge {
-      display: inline-block; padding: 5px 10px;
-      background: rgba(30, 41, 59, 0.8); border-radius: 8px;
-      font-size: 11px; font-weight: 700; margin-top: 8px;
-    }
-
- .badge.bull { background: rgba(16, 185, 129, 0.2); color: #10b981; }
- .badge.bear { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-
- .paper-balance {
-      text-align: center; padding: 24px;
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      border-radius: 14px; margin-bottom: 16px;
-    }
-
- .balance-label { font-size: 12px; color: #94a3b8; font-weight: 600; }
- .balance-amount {
-      font-size: 32px; font-weight: 800; color: #10b981; margin-top: 8px;
-      text-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
-    }
-
- .trade-form { display: grid; gap: 12px; }
- .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .loading { text-align: center; color: #64748b; font-size: 12px; margin-top: 10px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .tab { flex: 1; padding: 10px; background: #1e293b; border-radius: 8px; text-align: center; font-size: 14px; }
+    .tab.active { background: #10b981; color: #000; font-weight: 600; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <a href="/" class="back-btn">← Back</a>
-      <div class="page-title">📈 Stock Strategies Pro Max</div>
-    </div>
-
+    <div class="title">📈 Stock Strategies Pro Max</div>
+    
     <div class="tabs">
-      <div class="tab active" onclick="showTab('sentiment', this)">
-        <span class="tab-icon">📊</span>Sentiment
-      </div>
-      <div class="tab" onclick="showTab('strategy', this)">
-        <span class="tab-icon">⚡</span>Strategy
-      </div>
-      <div class="tab" onclick="showTab('paper', this)">
-        <span class="tab-icon">📝</span>Paper
-      </div>
-      <div class="tab" onclick="showTab('backtest', this)">
-        <span class="tab-icon">🔬</span>Backtest
-      </div>
+      <div class="tab active">Live</div>
+      <div class="tab">Strategy</div>
+      <div class="tab">Backtest</div>
+      <div class="tab">Paper</div>
     </div>
 
-    <!-- Sentiment Tab -->
-    <div id="sentiment" class="tab-content">
-      <div class="card">
-        <div class="card-header">📊 Market Trend & Sentiment Meter</div>
-
-        <div class="meter-labels">
-          <span>🐻 Bearish</span>
-          <span>😐 Neutral</span>
-          <span>🐂 Bullish</span>
-        </div>
-        <div class="meter-bar">
-          <div class="meter-fill" id="sentimentBar" style="width: 50%"></div>
-        </div>
-
-        <div class="sentiment-result" id="sentimentResult">😐 NEUTRAL - 50%</div>
-        <div class="advice" id="advice">💡 Loading Nifty data...</div>
-
-        <div class="selectors">
-          <div class="selector">
-            <label>Index Chuno</label>
-            <select id="indexSelect" onchange="fetchStock()">
-              <option value="nifty">NIFTY 50</option>
-              <option value="banknifty">BANK NIFTY</option>
-              <option value="sensex">SENSEX</option>
-              <option value="finnifty">FIN NIFTY</option>
-            </select>
-          </div>
-          <div class="selector">
-            <label>Timeframe</label>
-            <select id="timeframe">
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
-          </div>
-        </div>
+    <div class="card">
+      <div class="price-box">
+        <div>NIFTY 50</div>
+        <div id="nifty-price">--,---.--</div>
+        <div id="nifty-change">Loading...</div>
+      </div>
+      
+      <div class="high-low">
+        <div>High: <span id="nifty-high">--,---</span></div>
+        <div>Low: <span id="nifty-low">--,---</span></div>
       </div>
 
-      <div class="card">
-        <div class="price-box">
-          <div class="price" id="price">0.00</div>
-          <div class="price-change" id="priceChange">Loading...</div>
+      <div class="sentiment-box">
+        <div id="sentiment-text">Calculating...</div>
+        <div class="meter">
+          <div id="meter-fill"></div>
         </div>
       </div>
-    </div>
-
-    <!-- Strategy Tab -->
-    <div id="strategy" class="tab-content hidden">
-      <div class="card">
-        <div class="card-header">⚡ Active Trading Strategies</div>
-
-        <div class="strategy-item">
-          <div class="strategy-title">🚀 Breakout Strategy</div>
-          <div class="strategy-desc">Price > 20 EMA + RSI > 55 + High Volume. Resistance break pe entry.</div>
-          <span class="badge bull" id="breakoutStatus">Checking...</span>
-        </div>
-
-        <div class="strategy-item">
-          <div class="strategy-title">📉 Pullback Strategy</div>
-          <div class="strategy-desc">Uptrend mein 9 EMA tak pullback. Support pe buy karo.</div>
-          <span class="badge bear" id="pullbackStatus">Checking...</span>
-        </div>
-
-        <div class="strategy-item">
-          <div class="strategy-title">⚡ Momentum Strategy</div>
-          <div class="strategy-desc">ADX > 25 + MACD bullish cross. Strong trend follow karo.</div>
-          <span class="badge" id="momentumStatus">Checking...</span>
-        </div>
-
-        <div class="strategy-item">
-          <div class="strategy-title">💎 Swing Trading</div>
-          <div class="strategy-desc">Weekly support/resistance pe position lo. 5-10% target.</div>
-          <span class="badge bull">Always Active</span>
-        </div>
-
-        <button class="btn" onclick="refreshStrategies()">🔄 Refresh Signals</button>
-      </div>
-    </div>
-
-    <!-- Paper Tab -->
-    <div id="paper" class="tab-content hidden">
-      <div class="card">
-        <div class="card-header">📝 Paper Trading Account</div>
-
-        <div class="paper-balance">
-          <div class="balance-label">Virtual Balance</div>
-          <div class="balance-amount" id="paperBalance">₹10,00,000.00</div>
-        </div>
-
-        <div class="trade-form">
-          <div class="form-row">
-            <div>
-              <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Action</label>
-              <select id="tradeAction">
-                <option value="buy">Buy</option>
-                <option value="sell">Sell</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Stock/Index</label>
-              <select id="paperStock">
-                <option value="NIFTY">NIFTY 50</option>
-                <option value="BANKNIFTY">BANK NIFTY</option>
-                <option value="RELIANCE">RELIANCE</option>
-                <option value="TCS">TCS</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Quantity</label>
-            <input type="number" id="tradeQty" placeholder="50" value="50">
-          </div>
-
-          <div class="form-row">
-            <div>
-              <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Order Type</label>
-              <select id="orderType">
-                <option value="market">Market</option>
-                <option value="limit">Limit</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; display: block;">Stop Loss %</label>
-              <input type="number" id="stopLoss" placeholder="2" value="2">
-            </div>
-          </div>
-
-          <button class="btn" onclick="executePaperTrade()">📝 Execute Paper Trade</button>
-        </div>
-
-        <div style="margin-top: 16px; padding: 14px; background: rgba(15, 23, 42, 0.6); border-radius: 10px;">
-          <div style="font-size: 12px; color: #94a3b8; margin-bottom: 8px; font-weight: 600;">Open Positions</div>
-          <div id="positions" style="font-size: 13px; color: #cbd5e1;">No open positions</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Backtest Tab -->
-    <div id="backtest" class="tab-content hidden">
-      <div class="card">
-        <div class="card-header">🔬 Stock Backtest Lab</div>
-        <div class="advice">💡 Historical NSE data pe strategy test karo. Profit/Loss check karo risk-free.</div>
-
-        <div class="strategy-item" style="margin-top: 16px;">
-          <div class="strategy-title">📊 Quick Backtest</div>
-          <div class="strategy-desc">Last 3 months ka data pe apni strategy run karo</div>
-          <select style="margin-top: 10px;" id="btStrategy">
-            <option value="breakout">Breakout Strategy</option>
-            <option value="pullback">Pullback Strategy</option>
-            <option value="momentum">Momentum Strategy</option>
-            <option value="swing">Swing Trading</option>
-          </select>
-          <button class="btn" onclick="runBacktest()">▶️ Run Backtest</button>
-        </div>
-
-        <div id="backtestResult" class="strategy-item" style="display: none;">
-          <div class="strategy-title">📈 Results</div>
-          <div class="strategy-desc" id="btResultText">Running...</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
-            <div style="text-align: center; padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 10px; border: 1px solid rgba(16, 185, 129, 0.2);">
-              <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">Total Return</div>
-              <div style="font-size: 20px; font-weight: 800; color: #10b981;" id="btProfit">+0%</div>
-            </div>
-            <div style="text-align: center; padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; border: 1px solid rgba(239, 68, 68, 0.2);">
-              <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">Max Drawdown</div>
-              <div style="font-size: 20px; font-weight: 800; color: #ef4444;" id="btDrawdown">0%</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      
+      <div class="loading" id="last-update">Fetching live data...</div>
     </div>
   </div>
 
-<script>
-let currentStockData = {};
-let paperBalance = 1000000;
-let positions = [];
+  <script>
+    // LIVE DATA FETCH KARNE KA CODE
+    async function updateLiveData() {
+      try {
+        const res = await fetch('/api/share');
+        const data = await res.json();
 
-function showTab(tabName, el) {
-  document.querySelectorAll('.tab-content').forEach(e => e.classList.add('hidden'));
-  document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
-  document.getElementById(tabName).classList.remove('hidden');
-  el.classList.add('active');
+        if(data.success) {
+          // 1. Price update
+          document.getElementById('nifty-price').innerText = data.price.toLocaleString('en-IN');
+          
+          // 2. Change update with color
+          const changeEl = document.getElementById('nifty-change');
+          changeEl.innerText = `${data.change > 0 ? '▲' : '▼'} ${Math.abs(data.change).toFixed(2)}%`;
+          changeEl.style.color = data.change > 0 ? '#10b981' : '#ef4444';
+          document.getElementById('nifty-price').style.color = data.change > 0 ? '#10b981' : '#ef4444';
+          
+          // 3. High/Low update
+          document.getElementById('nifty-high').innerText = data.high.toLocaleString('en-IN');
+          document.getElementById('nifty-low').innerText = data.low.toLocaleString('en-IN');
+          
+          // 4. Sentiment update
+          document.getElementById('sentiment-text').innerText = `${data.sentiment} - ${data.percent}%`;
+          document.getElementById('meter-fill').style.width = `${data.percent}%`;
+          
+          // 5. Last update time
+          const now = new Date();
+          document.getElementById('last-update').innerText = `Last updated: ${now.toLocaleTimeString()}`;
+          
+        } else {
+          document.getElementById('last-update').innerText = 'Error: ' + data.message;
+        }
+      } catch (err) {
+        document.getElementById('last-update').innerText = 'Failed to fetch. Retrying...';
+        console.log('API Error:', err);
+      }
+    }
 
-  if(tabName === 'strategy') refreshStrategies();
-}
-
-function fetchStock() {
-  const index = document.getElementById('indexSelect').value;
-
-  // Mock data - NSE API ke liye backend chahiye
-  const mockData = {
-    nifty: { price: 24567.80, change: 0.85 },
-    banknifty: { price: 51234.50, change: -0.42 },
-    sensex: { price: 80745.30, change: 1.12 },
-    finnifty: { price: 23456.70, change: 0.33 }
-  };
-
-  const data = mockData[index];
-  currentStockData = data;
-
-  document.getElementById('price').innerHTML = data.price.toLocaleString('en-IN');
-
-  const changeEl = document.getElementById('priceChange');
-  changeEl.innerHTML = `${data.change >= 0? '▲' : '▼'} ${Math.abs(data.change).toFixed(2)}%`;
-  changeEl.className = `price-change ${data.change >= 0? 'positive' : 'negative'}`;
-
-  let score = 50 + (data.change * 15);
-  score = Math.max(5, Math.min(95, score));
-
-  let emoji, text, advice, color;
-  if (data.change > 1) {
-    emoji = '🐂'; text = 'BULLISH';
-    advice = 'Breakout strategies chalao. Momentum strong hai. 20 EMA ke upar hold kar raha. Buy on dips.';
-    color = '#10b981';
-  } else if (data.change > 0.3) {
-    emoji = '📈'; text = 'BULLISH';
-    advice = 'Uptrend continue. Pullback pe entry lo. Stop loss 9 EMA ke neeche rakho.';
-    color = '#34d399';
-  } else if (data.change < -1) {
-    emoji = '🐻'; text = 'BEARISH';
-    advice = 'Selling pressure. Short selling ya cash hold karo. Support test ho raha hai.';
-    color = '#ef4444';
-  } else if (data.change < -0.3) {
-    emoji = '📉'; text = 'BEARISH';
-    advice = 'Weakness dikh rahi. Rallies pe sell karo. 20 EMA resistance ban gaya.';
-    color = '#f87171';
-  } else {
-    emoji = '😐'; text = 'NEUTRAL';
-    advice = 'Sideways market. Range: Support/Resistance pe trade lo. Breakout ka wait karo.';
-    color = '#f59e0b';
-  }
-
-  document.getElementById('sentimentBar').style.width = score + '%';
-  document.getElementById('sentimentResult').innerHTML = `${emoji} ${text} - ${Math.round(score)}%`;
-  document.getElementById('sentimentResult').style.color = color;
-  document.getElementById('advice').innerHTML = `💡 ${advice}`;
-
-  updateStrategies(data.change);
-}
-
-function updateStrategies(change) {
-  const breakoutEl = document.getElementById('breakoutStatus');
-  const pullbackEl = document.getElementById('pullbackStatus');
-  const momentumEl = document.getElementById('momentumStatus');
-
-  if (change > 0.5) {
-    breakoutEl.textContent = '🟢 Active - Breakout';
-    breakoutEl.className = 'badge bull';
-  } else {
-    breakoutEl.textContent = '⚪ Waiting';
-    breakoutEl.className = 'badge';
-  }
-
-  if (change < -0.3 && change > -1.5) {
-    pullbackEl.textContent = '🟢 Active - Pullback';
-    pullbackEl.className = 'badge bull';
-  } else {
-    pullbackEl.textContent = '⚪ Waiting';
-    pullbackEl.className = 'badge';
-  }
-
-  if (Math.abs(change) > 0.8) {
-    momentumEl.textContent = change > 0? '🟢 Bullish Momentum' : '🔴 Bearish Momentum';
-    momentumEl.className = change > 0? 'badge bull' : 'badge bear';
-  } else {
-    momentumEl.textContent = '⚪ No Signal';
-    momentumEl.className = 'badge';
-  }
-}
-
-function refreshStrategies() {
-  if (currentStockData.change!== undefined) {
-    updateStrategies(currentStockData.change);
-  }
-}
-
-function executePaperTrade() {
-  const action = document.getElementById('tradeAction').value;
-  const stock = document.getElementById('paperStock').value;
-  const qty = parseInt(document.getElementById('tradeQty').value);
-  const sl = parseFloat(document.getElementById('stopLoss').value);
-
-  const price = currentStockData.price || 25000;
-  const value = qty * price;
-
-  if (value > paperBalance && action === 'buy') {
-    alert('Insufficient balance!');
-    return;
-  }
-
-  if (action === 'buy') paperBalance -= value;
-  else paperBalance += value;
-
-  positions.push({
-    stock, action, qty,
-    entry: price, sl, value
-  });
-
-  document.getElementById('paperBalance').textContent = `₹${paperBalance.toLocaleString('en-IN')}`;
-  updatePositions();
-  alert(`Paper trade executed! ${action.toUpperCase()} ${qty} ${stock} @ ₹${price}`);
-}
-
-function updatePositions() {
-  const posEl = document.getElementById('positions');
-  if (positions.length === 0) {
-    posEl.innerHTML = 'No open positions';
-    return;
-  }
-
-  posEl.innerHTML = positions.map((p, i) =>
-    `${i+1}. ${p.action.toUpperCase()} ${p.qty} ${p.stock} @ ₹${p.entry} | SL: ${p.sl}%`
-  ).join('<br>');
-}
-
-function runBacktest() {
-  const strategy = document.getElementById('btStrategy').value;
-  const result = document.getElementById('backtestResult');
-  result.style.display = 'block';
-  document.getElementById('btResultText').innerHTML = '⏳ Running backtest on last 3 months NSE data...';
-
-  setTimeout(() => {
-    const profit = (Math.random() * 25 - 5).toFixed(2);
-    const drawdown = (Math.random() * 12 + 3).toFixed(2);
-    const trades = Math.floor(Math.random() * 15 + 8);
-
-    document.getElementById('btProfit').textContent = (profit > 0? '+' : '') + profit + '%';
-    document.getElementById('btProfit').style.color = profit > 0? '#10b981' : '#ef4444';
-    document.getElementById('btDrawdown').textContent = '-' + drawdown + '%';
-    document.getElementById('btResultText').innerHTML =
-      `✅ Backtest complete! Total trades: ${trades} | Win rate: ${Math.floor(Math.random() * 25 + 55)}% | ${profit > 0? 'Profitable' : 'Loss'} strategy`;
-  }, 2000);
-}
-
-window.onload = fetchStock;
-setInterval(fetchStock, 60000);
-</script>
+    // Page load hote hi chalaao
+    updateLiveData();
+    // Har 15 second mein auto refresh
+    setInterval(updateLiveData, 15000);
+  </script>
 </body>
 </html>
