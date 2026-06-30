@@ -1,35 +1,24 @@
 export default async function handler(req, res) {
   try {
-    // Step 1: Pehle NSE ka homepage hit karo cookie lene ke liye
-    await fetch('https://www.nseindia.com', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
-    });
+    // Yahoo Finance se NIFTY 50 ka data
+    const yahooRes = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?interval=1m&range=1d');
 
-    // Step 2: Ab real API call karo with proper headers
-    const nseResponse = await fetch('https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%2050', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'application/json, text/plain, */*',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Referer': 'https://www.nseindia.com/'
-      }
-    });
-
-    if (!nseResponse.ok) {
-      throw new Error('NSE API failed');
+    if (!yahooRes.ok) {
+      throw new Error('Yahoo API failed');
     }
 
-    const nseData = await nseResponse.json();
-    const nifty = nseData.data[0];
+    const yahooData = await yahooRes.json();
+    const result = yahooData.chart.result[0];
+    const meta = result.meta;
+    const quote = result.indicators.quote[0];
 
-    const price = parseFloat(nifty.lastPrice);
-    const change = parseFloat(nifty.pChange);
-    const high = parseFloat(nifty.dayHigh);
-    const low = parseFloat(nifty.dayLow);
+    const price = meta.regularMarketPrice;
+    const prevClose = meta.previousClose;
+    const change = ((price - prevClose) / prevClose) * 100;
+    const high = meta.regularMarketDayHigh;
+    const low = meta.regularMarketDayLow;
 
-    // Sentiment logic
+    // Sentiment calculate karo
     let sentiment = "NEUTRAL";
     let percent = 50;
 
@@ -49,14 +38,14 @@ export default async function handler(req, res) {
 
     percent = Math.min(95, Math.max(5, percent));
 
-    // JSON bhejo, HTML nahi
+    // JSON response bhejo
     res.setHeader('Content-Type', 'application/json');
     res.status(200).json({
       success: true,
-      price: price,
-      change: change,
-      high: high,
-      low: low,
+      price: parseFloat(price.toFixed(2)),
+      change: parseFloat(change.toFixed(2)),
+      high: parseFloat(high.toFixed(2)),
+      low: parseFloat(low.toFixed(2)),
       sentiment: sentiment,
       percent: percent
     });
@@ -65,7 +54,7 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', 'application/json');
     res.status(500).json({
       success: false,
-      error: 'NSE data fetch failed',
+      error: 'Data fetch failed',
       message: error.message
     });
   }
