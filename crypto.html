@@ -15,84 +15,84 @@
       color: #e2e8f0;
       padding: 16px;
     }
-   .container { max-width: 600px; width: 100%; margin: 0 auto; position: relative; z-index: 1; }
-   .header { text-align: center; margin-bottom: 24px; }
-   .logo {
+  .container { max-width: 600px; width: 100%; margin: 0 auto; position: relative; z-index: 1; }
+  .header { text-align: center; margin-bottom: 24px; }
+  .logo {
       font-size: 28px; font-weight: 800; margin-bottom: 8px;
       background: linear-gradient(135deg, #10b981, #34d399);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-   .subtitle { color: #94a3b8; font-size: 13px; font-weight: 500; }
-   .card {
+  .subtitle { color: #94a3b8; font-size: 13px; font-weight: 500; }
+  .card {
       background: rgba(19, 27, 46, 0.6); backdrop-filter: blur(20px);
       border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 16px;
       padding: 20px; margin-bottom: 16px;
     }
-   .price-box { text-align: center; }
-   .price-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
-   .price { font-size: 42px; font-weight: 800; color: #f59e0b; }
-   .price-change { font-size: 16px; margin-top: 8px; font-weight: 600; }
-   .green { color: #10b981; }
-   .red { color: #ef4444; }
-   .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
-   .stat { background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 12px; text-align: center; }
-   .stat-label { font-size: 11px; color: #64748b; margin-bottom: 6px; }
-   .stat-value { font-size: 20px; font-weight: 700; }
-   .signal-box { text-align: center; padding: 20px; border-radius: 12px; margin: 16px 0; }
-   .signal-BULLISH { background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; }
-   .signal-BEARISH { background: rgba(239, 68, 68, 0.15); border: 2px solid #ef4444; }
-   .signal-NEUTRAL { background: rgba(100, 116, 139, 0.15); border: 2px solid #64748b; }
-   .signal-text { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
-   .signal-reason { font-size: 13px; color: #94a3b8; }
-   .toggle-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
-   .toggle-label { font-size: 14px; font-weight: 600; }
-   .toggle {
+  .price-box { text-align: center; }
+  .price-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+  .price { font-size: 42px; font-weight: 800; color: #f59e0b; }
+  .price-change { font-size: 16px; margin-top: 8px; font-weight: 600; }
+  .green { color: #10b981; }
+  .red { color: #ef4444; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .stat { background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 12px; text-align: center; }
+  .stat-label { font-size: 11px; color: #64748b; margin-bottom: 6px; }
+  .stat-value { font-size: 20px; font-weight: 700; }
+  .signal-box { text-align: center; padding: 20px; border-radius: 12px; margin: 16px 0; }
+  .signal-BULLISH { background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; }
+  .signal-BEARISH { background: rgba(239, 68, 68, 0.15); border: 2px solid #ef4444; }
+  .signal-NEUTRAL { background: rgba(100, 116, 139, 0.15); border: 2px solid #64748b; }
+  .signal-text { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+  .signal-reason { font-size: 13px; color: #94a3b8; }
+  .toggle-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
+  .toggle-label { font-size: 14px; font-weight: 600; }
+  .toggle {
       width: 50px; height: 26px; background: #334155; border-radius: 13px;
       position: relative; cursor: pointer; transition: 0.3s;
     }
-   .toggle.active { background: #10b981; }
-   .toggle-dot {
+  .toggle.active { background: #10b981; }
+  .toggle-dot {
       width: 22px; height: 22px; background: white; border-radius: 50%;
       position: absolute; top: 2px; left: 2px; transition: 0.3s;
     }
-   .toggle.active .toggle-dot { left: 26px; }
-   .btn {
+  .toggle.active .toggle-dot { left: 26px; }
+  .btn {
       width: 100%; padding: 14px; border: none; border-radius: 12px;
       font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px;
     }
-   .btn-buy { background: #10b981; color: white; }
-   .btn-sell { background: #ef4444; color: white; }
-   .btn:active { transform: scale(0.98); }
-   .input {
+  .btn-buy { background: #10b981; color: white; }
+  .btn-sell { background: #ef4444; color: white; }
+  .btn:active { transform: scale(0.98); }
+  .input {
       width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.6);
       border: 1px solid #334155; border-radius: 10px; color: #e2e8f0;
       margin: 8px 0; font-size: 14px;
     }
-   .log {
+  .log {
       background: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 12px;
       max-height: 200px; overflow-y: auto; font-size: 11px; font-family: monospace;
     }
-   .log-item { padding: 4px 0; border-bottom: 1px solid #1e293b; }
-   .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-   .tab {
-      flex: 1; padding: 10px; background: rgba(15, 23, 42, 0.6);
+  .log-item { padding: 4px 0; border-bottom: 1px solid #1e293b; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab {
+      flex: 1; min-width: 80px; padding: 10px; background: rgba(15, 23, 42, 0.6);
       border: 1px solid #334155; border-radius: 10px; text-align: center;
-      font-size: 13px; font-weight: 600; cursor: pointer;
+      font-size: 12px; font-weight: 600; cursor: pointer;
     }
-   .tab.active { background: #10b981; border-color: #10b981; color: white; }
-   .hidden { display: none; }
-   .select-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .tab.active { background: #10b981; border-color: #10b981; color: white; }
+  .hidden { display: none; }
+  .select-row { display: flex; gap: 8px; margin-bottom: 12px; }
     select.input { flex: 1; }
-   .sentiment-meter {
+  .sentiment-meter {
       width: 100%; height: 8px; background: #334155; border-radius: 4px;
       margin: 12px 0; position: relative; overflow: hidden;
     }
-   .sentiment-fill {
+  .sentiment-fill {
       height: 100%; border-radius: 4px; transition: 0.5s;
     }
-   .sentiment-BULLISH { background: linear-gradient(90deg, #10b981, #34d399); }
-   .sentiment-BEARISH { background: linear-gradient(90deg, #ef4444, #f87171); }
-   .sentiment-NEUTRAL { background: linear-gradient(90deg, #64748b, #94a3b8); }
+  .sentiment-BULLISH { background: linear-gradient(90deg, #10b981, #34d399); }
+  .sentiment-BEARISH { background: linear-gradient(90deg, #ef4444, #f87171); }
+  .sentiment-NEUTRAL { background: linear-gradient(90deg, #64748b, #94a3b8); }
   </style>
 </head>
 <body>
@@ -104,8 +104,9 @@
 
     <div class="tabs">
       <div class="tab active" onclick="showTab('dashboard')">Dashboard</div>
-      <div class="tab" onclick="showTab('settings')">Settings</div>
+      <div class="tab" onclick="showTab('trading')">Paper Trading</div>
       <div class="tab" onclick="showTab('logs')">Logs</div>
+      <div class="tab" onclick="showTab('settings')">Settings</div>
     </div>
 
     <div id="dashboard">
@@ -180,8 +181,11 @@
           </div>
         </div>
       </div>
+    </div>
 
+    <div id="trading" class="hidden">
       <div class="card">
+        <h3 style="margin-bottom: 16px; text-align: center;">💰 Paper Trading Terminal</h3>
         <div class="toggle-row">
           <div class="toggle-label">Auto Trading</div>
           <div class="toggle" id="autoToggle" onclick="toggleAuto()"><div class="toggle-dot"></div></div>
@@ -204,8 +208,25 @@
             <div class="stat-value" id="trades">0</div>
           </div>
         </div>
+        <div class="stats" style="margin-top: 12px;">
+          <div class="stat">
+            <div class="stat-label">Current Price</div>
+            <div class="stat-value" id="tradingPrice">$0.00</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Selected Coin</div>
+            <div class="stat-value" id="tradingCoin">BTC</div>
+          </div>
+        </div>
         <button class="btn btn-buy" onclick="manualTrade('BUY')">Manual BUY</button>
         <button class="btn btn-sell" onclick="manualTrade('SELL')">Manual SELL</button>
+      </div>
+    </div>
+
+    <div id="logs" class="hidden">
+      <div class="card">
+        <h3 style="margin-bottom: 12px;">Trade Logs</h3>
+        <div class="log" id="logBox"></div>
       </div>
     </div>
 
@@ -222,13 +243,6 @@
         <input class="input" id="tgChat" placeholder="Chat ID">
         <button class="btn btn-buy" onclick="saveTelegram()">Save Telegram</button>
         <button class="btn btn-buy" onclick="testTelegram()">Test Alert</button>
-      </div>
-    </div>
-
-    <div id="logs" class="hidden">
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">Trade Logs</h3>
-        <div class="log" id="logBox"></div>
       </div>
     </div>
   </div>
@@ -251,15 +265,21 @@ function loadConfig() {
   STATE.autoTrade = localStorage.getItem('autoTrade') === 'true';
   STATE.coinName = localStorage.getItem('currentCoin') || 'BTCUSDT';
   STATE.timeframe = localStorage.getItem('timeframe') || '15m';
+  STATE.balance = parseFloat(localStorage.getItem('balance') || '10000');
+  STATE.coinHolding = parseFloat(localStorage.getItem('coinHolding') || '0');
+  STATE.trades = parseInt(localStorage.getItem('trades') || '0');
+  
   document.getElementById('coinSelect').value = STATE.coinName;
   document.getElementById('timeframeSelect').value = STATE.timeframe;
   document.getElementById('pairLabel').textContent = STATE.coinName.replace('USDT', '/USDT');
+  document.getElementById('tradingCoin').textContent = STATE.coinName.replace('USDT', '');
   document.getElementById('sbUrl').value = STATE.sbUrl;
   document.getElementById('sbKey').value = STATE.sbKey;
   document.getElementById('tgToken').value = STATE.tgToken;
   document.getElementById('tgChat').value = STATE.tgChat;
   if (STATE.autoTrade) document.getElementById('autoToggle').classList.add('active');
   if (STATE.sbUrl && STATE.sbKey) initSupabase();
+  updateUI();
 }
 
 function initSupabase() {
@@ -304,7 +324,9 @@ function changeCoin() {
   STATE.coinName = document.getElementById('coinSelect').value;
   localStorage.setItem('currentCoin', STATE.coinName);
   document.getElementById('pairLabel').textContent = STATE.coinName.replace('USDT', '/USDT');
+  document.getElementById('tradingCoin').textContent = STATE.coinName.replace('USDT', '');
   STATE.coinHolding = 0;
+  localStorage.setItem('coinHolding', '0');
   updateUI();
   fetchCoinData();
   updateSentiment();
@@ -317,7 +339,9 @@ function loadCustomCoin() {
   STATE.coinName = custom;
   localStorage.setItem('currentCoin', STATE.coinName);
   document.getElementById('pairLabel').textContent = STATE.coinName.replace('USDT', '/USDT');
+  document.getElementById('tradingCoin').textContent = STATE.coinName.replace('USDT', '');
   STATE.coinHolding = 0;
+  localStorage.setItem('coinHolding', '0');
   updateUI();
   fetchCoinData();
   updateSentiment();
@@ -336,6 +360,7 @@ async function fetchCoinData() {
     const change = parseFloat(data.priceChangePercent);
     
     document.getElementById('coinPrice').textContent = '$' + STATE.price.toFixed(2);
+    document.getElementById('tradingPrice').textContent = '$' + STATE.price.toFixed(2);
     document.getElementById('coinChange').textContent = (change >= 0? '▲ ' : '▼ ') + change.toFixed(2) + '% (24h)';
     document.getElementById('coinChange').className = 'price-change ' + (change >= 0? 'green' : 'red');
     document.getElementById('high24h').textContent = '$' + STATE.high24h.toFixed(2);
@@ -346,6 +371,7 @@ async function fetchCoinData() {
     const candles = await klines.json();
     const closes = candles.map(c => parseFloat(c[4]));
     calculateRSI(closes);
+    updateUI();
   } catch(e) { log('❌ Fetch error: ' + e.message); }
 }
 
@@ -365,7 +391,6 @@ async function updateSentiment() {
   localStorage.setItem('timeframe', STATE.timeframe);
   
   try {
-    // Get candles for selected timeframe
     const interval = STATE.timeframe;
     const klines = await fetch(`https://api.binance.com/api/v3/klines?symbol=${STATE.coinName}&interval=${interval}&limit=100`);
     const candles = await klines.json();
@@ -410,6 +435,9 @@ function executeTrade(type) {
     STATE.coinHolding += coinBuy;
     STATE.balance -= amount;
     STATE.trades++;
+    localStorage.setItem('balance', STATE.balance);
+    localStorage.setItem('coinHolding', STATE.coinHolding);
+    localStorage.setItem('trades', STATE.trades);
     log(`✅ BUY: ${coinBuy.toFixed(6)} ${STATE.coinName} @ $${STATE.price.toFixed(2)}`);
     sendTelegram(`✅ <b>BUY EXECUTED</b>\n${coinBuy.toFixed(6)} ${STATE.coinName} @ $${STATE.price.toFixed(2)}\nBalance: $${STATE.balance.toFixed(2)}`);
     saveToSupabase('BUY', coinBuy, STATE.price);
@@ -421,6 +449,9 @@ function executeTrade(type) {
     saveToSupabase('SELL', STATE.coinHolding, STATE.price);
     STATE.coinHolding = 0;
     STATE.trades++;
+    localStorage.setItem('balance', STATE.balance);
+    localStorage.setItem('coinHolding', '0');
+    localStorage.setItem('trades', STATE.trades);
   }
   updateUI();
 }
@@ -458,7 +489,7 @@ function updateUI() {
 
 function showTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('#dashboard, #settings, #logs').forEach(d => d.classList.add('hidden'));
+  document.querySelectorAll('#dashboard, #trading, #settings, #logs').forEach(d => d.classList.add('hidden'));
   event.target.classList.add('active');
   document.getElementById(tab).classList.remove('hidden');
 }
