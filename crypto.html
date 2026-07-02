@@ -118,7 +118,7 @@
 .heat-map { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
 .heat-item { padding: 16px; border-radius: 12px; text-align: center; border: 2px solid; }
 .heat-bullish { background: rgba(16, 185, 129, 0.15); border-color: #10b981; }
-.heat-bearish { background: rgba(239, 68, 0.15); border-color: #ef4444; }
+.heat-bearish { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; }
 .heat-sideways { background: rgba(251, 191, 36, 0.15); border-color: #fbbf24; }
 .heat-symbol { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
 .heat-change { font-size: 14px; font-weight: 700; }
@@ -147,10 +147,10 @@
     </div>
 
     <div class="tabs">
-      <div class="tab active" onclick="showTab('dashboard')">Dashboard</div>
-      <div class="tab" onclick="showTab('trading')">Paper Trading</div>
-      <div class="tab" onclick="showTab('logs')">Logs</div>
-      <div class="tab" onclick="showTab('settings')">Settings</div>
+      <div class="tab active" onclick="showTab('dashboard', event)">Dashboard</div>
+      <div class="tab" onclick="showTab('trading', event)">Paper Trading</div>
+      <div class="tab" onclick="showTab('logs', event)">Logs</div>
+      <div class="tab" onclick="showTab('settings', event)">Settings</div>
     </div>
 
     <div id="dashboard">
@@ -232,6 +232,7 @@
             <div class="stat-label">Smart Money</div>
             <div class="stat-value" id="smartMoney">Neutral</div>
           </div>
+        </div>
         <!-- VOLATILITY METER -->
         <div style="margin-top: 16px;">
           <div class="stat-label">Volatility Level</div>
@@ -355,6 +356,7 @@
             <div class="stat-label">Selected Coin</div>
             <div class="stat-value" id="tradingCoin">BTC</div>
           </div>
+        </div>
         <button class="btn btn-buy" onclick="manualTrade('BUY')">Manual BUY</button>
         <button class="btn btn-sell" onclick="manualTrade('SELL')">Manual SELL</button>
       </div>
@@ -407,6 +409,9 @@ const STATE = {
 };
 
 const COIN_RANKS = { 'BTCUSDT': 1, 'ETHUSDT': 2, 'BNBUSDT': 4 };
+// CORS PROXY - Binance direct block ho jata hai
+const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+const BINANCE_API = 'https://api.binance.com/api/v3';
 
 function loadConfig() {
   STATE.sbUrl = localStorage.getItem('sbUrl') || '';
@@ -438,6 +443,8 @@ function loadConfig() {
   fetchFearGreed();
   fetchHeatMap();
   updateConfluence();
+  fetchCoinData();
+  updateSentiment();
 }
 
 async function fetchUsdInrRate() {
@@ -477,7 +484,7 @@ async function fetchHeatMap() {
   const coins = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT'];
   for (let coin of coins) {
     try {
-      const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${coin}`);
+      const res = await fetch(CORS_PROXY + encodeURIComponent(`${BINANCE_API}/ticker/24hr?symbol=${coin}`));
       const data = await res.json();
       const change = parseFloat(data.priceChangePercent);
       const symbol = coin.replace('USDT', '');
@@ -486,7 +493,7 @@ async function fetchHeatMap() {
 
       changeElem.textContent = (change >= 0? '+' : '') + change.toFixed(2) + '%';
       elem.className = 'heat-item ' + (change > 2? 'heat-bullish' : change < -2? 'heat-bearish' : 'heat-sideways');
-    } catch(e) {}
+    } catch(e) { console.log('Heatmap error:', e); }
   }
 }
 
@@ -496,7 +503,7 @@ async function updateConfluence() {
 
   for (let tf of timeframes) {
     try {
-      const klines = await fetch(`https://api.binance.com/api/v3/klines?symbol=${STATE.coinName}&interval=${tf}&limit=50`);
+      const klines = await fetch(CORS_PROXY + encodeURIComponent(`${BINANCE_API}/klines?symbol=${STATE.coinName}&interval=${tf}&limit=50`));
       const candles = await klines.json();
 
       let bullish = 0, bearish = 0;
@@ -507,79 +514,3 @@ async function updateConfluence() {
       }
 
       const signal = bullish > bearish * 1.2? 'BULL' : bearish > bullish * 1.2? 'BEAR' : 'SIDE';
-      STATE.confluence[tf] = signal;
-      document.getElementById('tf' + tf).textContent = signal;
-      document.getElementById('tf' + tf).className = 'confluence-value ' +
-        (signal === 'BULL'? 'green' : signal === 'BEAR'? 'red' : 'orange');
-
-      if (signal === 'BULL') bullishCount++;
-      if (signal === 'BEAR') bearishCount++;
-    } catch(e) {}
-  }
-
-  let confText = 'Mixed Signals';
-  let confColor = '#fbbf24';
-  if (bullishCount >= 3) {
-    confText = '🚀 STRONG BUY - All TF Aligned';
-    confColor = '#10b981';
-  } else if (bearishCount >= 3) {
-    confText = '🔻 STRONG SELL - All TF Aligned';
-    confColor = '#ef4444';
-  }
-  document.getElementById('confluenceSignal').textContent = confText;
-  document.getElementById('confluenceSignal').style.color = confColor;
-
-  // AI Score calculation
-  calculateAIScore(bullishCount, bearishCount);
-}
-
-function calculateAIScore(bullishCount, bearishCount) {
-  let score = 50;
-  score += bullishCount * 10;
-  score -= bearishCount * 10;
-  score += (STATE.trendStrength / 2);
-  score += STATE.change24h > 0? STATE.change24h : STATE.change24h / 2;
-  score = Math.max(0, Math.min(100, score));
-
-  STATE.aiScore = score.toFixed(0);
-  document.getElementById('aiScore').textContent = STATE.aiScore;
-
-  let text = 'Neutral';
-  if (score >= 80) text = 'Very Strong Buy';
-  else if (score >= 65) text = 'Strong Buy';
-  else if (score >= 55) text = 'Buy';
-  else if (score <= 20) text = 'Very Strong Sell';
-  else if (score <= 35) text = 'Strong Sell';
-  else if (score <= 45) text = 'Sell';
-
-  document.getElementById('aiScoreText').textContent = text;
-}
-
-function initSupabase() {
-  try {
-    STATE.supabase = supabase.createClient(STATE.sbUrl, STATE.sbKey);
-    log('✅ Supabase connected');
-  } catch(e) { log('❌ Supabase error: ' + e.message); }
-}
-
-function saveSupabase() {
-  STATE.sbUrl = document.getElementById('sbUrl').value;
-  STATE.sbKey = document.getElementById('sbKey').value;
-  localStorage.setItem('sbUrl', STATE.sbUrl);
-  localStorage.setItem('sbKey', STATE.sbKey);
-  initSupabase();
-}
-
-function saveTelegram() {
-  STATE.tgToken = document.getElementById('tgToken').value;
-  STATE.tgChat = document.getElementById('tgChat').value;
-  localStorage.setItem('tgToken', STATE.tgToken);
-  localStorage.setItem('tgChat', STATE.tgChat);
-  log('✅ Telegram saved');
-}
-
-async function sendTelegram(msg) {
-  if (!STATE.tgToken ||!STATE.tgChat) return;
-  try {
-    await fetch(`https://api.telegram.org/bot${STATE.tgToken}/sendMessage`, {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
