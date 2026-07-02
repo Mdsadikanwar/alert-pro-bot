@@ -10,85 +10,87 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow-x: hidden; }
-    body { 
-      font-family: 'Inter', sans-serif; 
-      background: #0a0e1a; 
-      color: #e2e8f0; 
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0e1a;
+      color: #e2e8f0;
       padding: 16px;
     }
-    .container { max-width: 600px; width: 100%; margin: 0 auto; position: relative; z-index: 1; }
-    .header { text-align: center; margin-bottom: 24px; }
-    .logo { 
+   .container { max-width: 600px; width: 100%; margin: 0 auto; position: relative; z-index: 1; }
+   .header { text-align: center; margin-bottom: 24px; }
+   .logo {
       font-size: 28px; font-weight: 800; margin-bottom: 8px;
       background: linear-gradient(135deg, #10b981, #34d399);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .subtitle { color: #94a3b8; font-size: 13px; font-weight: 500; }
-    .card { 
+   .subtitle { color: #94a3b8; font-size: 13px; font-weight: 500; }
+   .card {
       background: rgba(19, 27, 46, 0.6); backdrop-filter: blur(20px);
-      border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 16px; 
+      border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 16px;
       padding: 20px; margin-bottom: 16px;
     }
-    .price-box { text-align: center; }
-    .price-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
-    .price { font-size: 36px; font-weight: 800; color: #f59e0b; }
-    .price-change { font-size: 14px; margin-top: 4px; }
-    .green { color: #10b981; }
-    .red { color: #ef4444; }
-    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
-    .stat { background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 12px; text-align: center; }
-    .stat-label { font-size: 10px; color: #64748b; margin-bottom: 4px; }
-    .stat-value { font-size: 18px; font-weight: 700; }
-    .signal-box { text-align: center; padding: 16px; border-radius: 12px; margin: 16px 0; }
-    .signal-BUY { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; }
-    .signal-SELL { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; }
-    .signal-HOLD { background: rgba(100, 116, 139, 0.15); border: 1px solid #64748b; }
-    .signal-text { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
-    .signal-reason { font-size: 12px; color: #94a3b8; }
-    .toggle-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
-    .toggle-label { font-size: 14px; font-weight: 600; }
-    .toggle { 
-      width: 50px; height: 26px; background: #334155; border-radius: 13px; 
+   .price-box { text-align: center; }
+   .price-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+   .price { font-size: 36px; font-weight: 800; color: #f59e0b; }
+   .price-change { font-size: 14px; margin-top: 4px; }
+   .green { color: #10b981; }
+   .red { color: #ef4444; }
+   .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+   .stat { background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 12px; text-align: center; }
+   .stat-label { font-size: 10px; color: #64748b; margin-bottom: 4px; }
+   .stat-value { font-size: 18px; font-weight: 700; }
+   .signal-box { text-align: center; padding: 16px; border-radius: 12px; margin: 16px 0; }
+   .signal-BUY { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; }
+   .signal-SELL { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; }
+   .signal-HOLD { background: rgba(100, 116, 139, 0.15); border: 1px solid #64748b; }
+   .signal-text { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+   .signal-reason { font-size: 12px; color: #94a3b8; }
+   .toggle-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
+   .toggle-label { font-size: 14px; font-weight: 600; }
+   .toggle {
+      width: 50px; height: 26px; background: #334155; border-radius: 13px;
       position: relative; cursor: pointer; transition: 0.3s;
     }
-    .toggle.active { background: #10b981; }
-    .toggle-dot { 
-      width: 22px; height: 22px; background: white; border-radius: 50%; 
+   .toggle.active { background: #10b981; }
+   .toggle-dot {
+      width: 22px; height: 22px; background: white; border-radius: 50%;
       position: absolute; top: 2px; left: 2px; transition: 0.3s;
     }
-    .toggle.active .toggle-dot { left: 26px; }
-    .btn { 
-      width: 100%; padding: 14px; border: none; border-radius: 12px; 
+   .toggle.active.toggle-dot { left: 26px; }
+   .btn {
+      width: 100%; padding: 14px; border: none; border-radius: 12px;
       font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px;
     }
-    .btn-buy { background: #10b981; color: white; }
-    .btn-sell { background: #ef4444; color: white; }
-    .btn:active { transform: scale(0.98); }
-    .input { 
-      width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.6); 
-      border: 1px solid #334155; border-radius: 10px; color: #e2e8f0; 
+   .btn-buy { background: #10b981; color: white; }
+   .btn-sell { background: #ef4444; color: white; }
+   .btn:active { transform: scale(0.98); }
+   .input {
+      width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.6);
+      border: 1px solid #334155; border-radius: 10px; color: #e2e8f0;
       margin: 8px 0; font-size: 14px;
     }
-    .log { 
-      background: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 12px; 
+   .log {
+      background: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 12px;
       max-height: 200px; overflow-y: auto; font-size: 11px; font-family: monospace;
     }
-    .log-item { padding: 4px 0; border-bottom: 1px solid #1e293b; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-    .tab { 
-      flex: 1; padding: 10px; background: rgba(15, 23, 42, 0.6); 
-      border: 1px solid #334155; border-radius: 10px; text-align: center; 
+   .log-item { padding: 4px 0; border-bottom: 1px solid #1e293b; }
+   .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+   .tab {
+      flex: 1; padding: 10px; background: rgba(15, 23, 42, 0.6);
+      border: 1px solid #334155; border-radius: 10px; text-align: center;
       font-size: 13px; font-weight: 600; cursor: pointer;
     }
-    .tab.active { background: #10b981; border-color: #10b981; color: white; }
-    .hidden { display: none; }
+   .tab.active { background: #10b981; border-color: #10b981; color: white; }
+   .hidden { display: none; }
+   .select-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    select.input { flex: 1; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <div class="logo">🚨 AlertPro Auto Bot</div>
-      <div class="subtitle">BTC Paper Trading + Live Signals</div>
+      <div class="subtitle">Multi-Crypto Paper Trading + Live Signals</div>
     </div>
 
     <div class="tabs">
@@ -98,8 +100,25 @@
     </div>
 
     <div id="trading">
+      <!-- COIN SELECTOR ADDED -->
+      <div class="card">
+        <div class="select-row">
+          <select class="input" id="coinSelect" onchange="changeCoin()">
+            <option value="BINANCE:BTCUSDT">BTC/USDT</option>
+            <option value="BINANCE:ETHUSDT">ETH/USDT</option>
+            <option value="BINANCE:BNBUSDT">BNB/USDT</option>
+            <option value="BINANCE:SOLUSDT">SOL/USDT</option>
+            <option value="BINANCE:XRPUSDT">XRP/USDT</option>
+            <option value="BINANCE:DOGEUSDT">DOGE/USDT</option>
+            <option value="BINANCE:ADAUSDT">ADA/USDT</option>
+            <option value="BINANCE:MATICUSDT">MATIC/USDT</option>
+          </select>
+        </div>
+        <input class="input" id="customSymbol" placeholder="Custom: BINANCE:AVAXUSDT" onkeypress="if(event.key==='Enter') loadCustomCoin()">
+      </div>
+
       <div class="card price-box">
-        <div class="price-label">BTC/USDT</div>
+        <div class="price-label" id="pairLabel">BTC/USDT</div>
         <div class="price" id="btcPrice">$0.00</div>
         <div class="price-change" id="btcChange">Loading...</div>
         <div class="stats">
@@ -114,8 +133,8 @@
         </div>
       </div>
 
-      <!-- TRADINGVIEW CHART ADDED -->
-      <div class="card" style="padding: 8px; height: 400px;">
+      <!-- TRADINGVIEW CHART - FULL WIDTH -->
+      <div class="card" style="padding: 8px; height: 500px;">
         <div id="tv_chart" style="height: 100%;"></div>
       </div>
 
@@ -134,7 +153,7 @@
             <div class="stat-value" id="balance">$10000</div>
           </div>
           <div class="stat">
-            <div class="stat-label">BTC Holdings</div>
+            <div class="stat-label">Holdings</div>
             <div class="stat-value" id="btcHold">0.0000</div>
           </div>
           <div class="stat">
@@ -189,10 +208,13 @@
 
 <script>
 const STATE = {
+  symbol: 'BINANCE:BTCUSDT',
+  coinName: 'BTCUSDT',
   price: 0, rsi: 50, ema9: 0, ema21: 0, signal: 'HOLD',
-  balance: 10000, btc: 0, trades: 0, autoTrade: false,
+  balance: 10000, coinHolding: 0, trades: 0, autoTrade: false,
   supabase: null, tgToken: '', tgChat: '',
-  rsiBuyLevel: 30, rsiSellLevel: 70
+  rsiBuyLevel: 30, rsiSellLevel: 70,
+  tvWidget: null
 };
 
 function loadConfig() {
@@ -237,7 +259,7 @@ function saveTelegram() {
 }
 
 async function sendTelegram(msg) {
-  if (!STATE.tgToken || !STATE.tgChat) return;
+  if (!STATE.tgToken ||!STATE.tgChat) return;
   try {
     await fetch(`https://api.telegram.org/bot${STATE.tgToken}/sendMessage`, {
       method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -259,16 +281,42 @@ function saveStrategy() {
   log('✅ Strategy saved');
 }
 
-async function fetchBTC() {
+// COIN CHANGE FUNCTIONS
+function changeCoin() {
+  STATE.symbol = document.getElementById('coinSelect').value;
+  STATE.coinName = STATE.symbol.split(':')[1];
+  document.getElementById('pairLabel').textContent = STATE.coinName;
+  STATE.coinHolding = 0;
+  updateUI();
+  loadTradingView();
+  fetchCoinData();
+  log(`🔄 Switched to ${STATE.coinName}`);
+}
+
+function loadCustomCoin() {
+  const custom = document.getElementById('customSymbol').value.trim().toUpperCase();
+  if (!custom) return;
+  STATE.symbol = custom;
+  STATE.coinName = custom.split(':')[1] || custom;
+  document.getElementById('pairLabel').textContent = STATE.coinName;
+  STATE.coinHolding = 0;
+  updateUI();
+  loadTradingView();
+  fetchCoinData();
+  log(`🔄 Loaded custom: ${STATE.coinName}`);
+  document.getElementById('customSymbol').value = '';
+}
+
+async function fetchCoinData() {
   try {
-    const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${STATE.coinName}`);
     const data = await res.json();
     STATE.price = parseFloat(data.lastPrice);
     const change = parseFloat(data.priceChangePercent);
     document.getElementById('btcPrice').textContent = '$' + STATE.price.toFixed(2);
-    document.getElementById('btcChange').textContent = (change >= 0 ? '▲ ' : '▼ ') + change.toFixed(2) + '% (24h)';
-    document.getElementById('btcChange').className = 'price-change ' + (change >= 0 ? 'green' : 'red');
-    const klines = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit=50');
+    document.getElementById('btcChange').textContent = (change >= 0? '▲ ' : '▼ ') + change.toFixed(2) + '% (24h)';
+    document.getElementById('btcChange').className = 'price-change ' + (change >= 0? 'green' : 'red');
+    const klines = await fetch(`https://api.binance.com/api/v3/klines?symbol=${STATE.coinName}&interval=5m&limit=50`);
     const candles = await klines.json();
     const closes = candles.map(c => parseFloat(c[4]));
     calculateIndicators(closes);
@@ -307,14 +355,14 @@ function updateSignal() {
     signal = 'SELL';
     reason = `RSI overbought (${STATE.rsi.toFixed(1)}) + EMA bearish`;
   }
-  if (signal !== STATE.signal) {
+  if (signal!== STATE.signal) {
     STATE.signal = signal;
     document.getElementById('signalText').textContent = signal;
     document.getElementById('signalReason').textContent = reason;
     document.getElementById('signalBox').className = 'signal-box signal-' + signal;
-    if (signal !== 'HOLD') {
+    if (signal!== 'HOLD') {
       log(`🎯 Signal: ${signal} - ${reason}`);
-      sendTelegram(`🎯 <b>${signal} SIGNAL</b>\nPrice: $${STATE.price.toFixed(2)}\nRSI: ${STATE.rsi.toFixed(1)}\n${reason}`);
+      sendTelegram(`🎯 <b>${signal} SIGNAL</b>\nPair: ${STATE.coinName}\nPrice: $${STATE.price.toFixed(2)}\nRSI: ${STATE.rsi.toFixed(1)}\n${reason}`);
       if (STATE.autoTrade) executeTrade(signal);
     }
   }
@@ -323,20 +371,20 @@ function updateSignal() {
 function executeTrade(type) {
   const amount = STATE.balance * 0.95;
   if (type === 'BUY' && STATE.balance > 10) {
-    const btcBuy = amount / STATE.price;
-    STATE.btc += btcBuy;
+    const coinBuy = amount / STATE.price;
+    STATE.coinHolding += coinBuy;
     STATE.balance -= amount;
     STATE.trades++;
-    log(`✅ BUY: ${btcBuy.toFixed(6)} BTC @ $${STATE.price.toFixed(2)}`);
-    sendTelegram(`✅ <b>BUY EXECUTED</b>\n${btcBuy.toFixed(6)} BTC @ $${STATE.price.toFixed(2)}\nBalance: $${STATE.balance.toFixed(2)}`);
-    saveToSupabase('BUY', btcBuy, STATE.price);
-  } else if (type === 'SELL' && STATE.btc > 0.00001) {
-    const usdtSell = STATE.btc * STATE.price;
+    log(`✅ BUY: ${coinBuy.toFixed(6)} ${STATE.coinName} @ $${STATE.price.toFixed(2)}`);
+    sendTelegram(`✅ <b>BUY EXECUTED</b>\n${coinBuy.toFixed(6)} ${STATE.coinName} @ $${STATE.price.toFixed(2)}\nBalance: $${STATE.balance.toFixed(2)}`);
+    saveToSupabase('BUY', coinBuy, STATE.price);
+  } else if (type === 'SELL' && STATE.coinHolding > 0.00001) {
+    const usdtSell = STATE.coinHolding * STATE.price;
     STATE.balance += usdtSell;
-    log(`✅ SELL: ${STATE.btc.toFixed(6)} BTC @ $${STATE.price.toFixed(2)}`);
-    sendTelegram(`✅ <b>SELL EXECUTED</b>\n${STATE.btc.toFixed(6)} BTC @ $${STATE.price.toFixed(2)}\nBalance: $${STATE.balance.toFixed(2)}`);
-    saveToSupabase('SELL', STATE.btc, STATE.price);
-    STATE.btc = 0;
+    log(`✅ SELL: ${STATE.coinHolding.toFixed(6)} ${STATE.coinName} @ $${STATE.price.toFixed(2)}`);
+    sendTelegram(`✅ <b>SELL EXECUTED</b>\n${STATE.coinHolding.toFixed(6)} ${STATE.coinName} @ $${STATE.price.toFixed(2)}\nBalance: $${STATE.balance.toFixed(2)}`);
+    saveToSupabase('SELL', STATE.coinHolding, STATE.price);
+    STATE.coinHolding = 0;
     STATE.trades++;
   }
   updateUI();
@@ -350,27 +398,27 @@ async function saveToSupabase(type, amount, price) {
   if (!STATE.supabase) return;
   try {
     await STATE.supabase.from('trades').insert([{
-      type, amount, price, timestamp: new Date().toISOString(),
-      balance: STATE.balance, btc: STATE.btc
+      type, amount, price, pair: STATE.coinName, timestamp: new Date().toISOString(),
+      balance: STATE.balance, holding: STATE.coinHolding
     }]);
   } catch(e) { log('❌ DB error: ' + e.message); }
 }
 
 function toggleAuto() {
-  STATE.autoTrade = !STATE.autoTrade;
+  STATE.autoTrade =!STATE.autoTrade;
   localStorage.setItem('autoTrade', STATE.autoTrade);
   document.getElementById('autoToggle').classList.toggle('active');
-  log(STATE.autoTrade ? '🤖 Auto Trading ON' : '⏸️ Auto Trading OFF');
+  log(STATE.autoTrade? '🤖 Auto Trading ON' : '⏸️ Auto Trading OFF');
 }
 
 function updateUI() {
   document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2);
-  document.getElementById('btcHold').textContent = STATE.btc.toFixed(6);
+  document.getElementById('btcHold').textContent = STATE.coinHolding.toFixed(6);
   document.getElementById('trades').textContent = STATE.trades;
-  const totalValue = STATE.balance + (STATE.btc * STATE.price);
+  const totalValue = STATE.balance + (STATE.coinHolding * STATE.price);
   const pnl = totalValue - 10000;
-  document.getElementById('pnl').textContent = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toFixed(2);
-  document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0 ? 'green' : 'red');
+  document.getElementById('pnl').textContent = (pnl >= 0? '+$' : '-$') + Math.abs(pnl).toFixed(2);
+  document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0? 'green' : 'red');
 }
 
 function showTab(tab) {
@@ -386,27 +434,33 @@ function log(msg) {
   logBox.innerHTML = `<div class="log-item">[${time}] ${msg}</div>` + logBox.innerHTML;
 }
 
-// TRADINGVIEW CHART
-new TradingView.widget({
-  "width": "100%",
-  "height": 400,
-  "symbol": "BINANCE:BTCUSDT",
-  "interval": "5",
-  "timezone": "Asia/Kolkata",
-  "theme": "dark",
-  "style": "1",
-  "locale": "en",
-  "toolbar_bg": "#0a0e1a",
-  "enable_publishing": false,
-  "hide_side_toolbar": false,
-  "allow_symbol_change": false,
-  "container_id": "tv_chart"
-});
+// TRADINGVIEW CHART - DYNAMIC
+function loadTradingView() {
+  if (STATE.tvWidget) {
+    document.getElementById('tv_chart').innerHTML = '';
+  }
+  STATE.tvWidget = new TradingView.widget({
+    "width": "100%",
+    "height": 500,
+    "symbol": STATE.symbol,
+    "interval": "5",
+    "timezone": "Asia/Kolkata",
+    "theme": "dark",
+    "style": "1",
+    "locale": "en",
+    "toolbar_bg": "#0a0e1a",
+    "enable_publishing": false,
+    "hide_side_toolbar": false,
+    "allow_symbol_change": true,
+    "container_id": "tv_chart"
+  });
+}
 
 loadConfig();
-fetchBTC();
-setInterval(fetchBTC, 10000);
-log('🚀 Bot initialized. Paper trading mode.');
+loadTradingView();
+fetchCoinData();
+setInterval(fetchCoinData, 10000);
+log('🚀 Bot initialized. Multi-coin trading mode.');
 </script>
 </body>
 </html>
