@@ -137,6 +137,7 @@
 .sr-label { font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase; }
 .sr-value { font-size: 13px; font-weight: 700; margin-top: 2px; }
 .sr-strength { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+.error-banner { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; padding: 12px; border-radius: 10px; margin-bottom: 16px; text-align: center; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -145,6 +146,8 @@
       <div class="logo">⚡ AlertPro Pro</div>
       <div class="subtitle">Institutional Grade Crypto Dashboard</div>
     </div>
+
+    <div id="errorBanner" class="error-banner hidden"></div>
 
     <div class="tabs">
       <div class="tab active" onclick="showTab('dashboard', event)">Dashboard</div>
@@ -232,7 +235,6 @@
             <div class="stat-label">Smart Money</div>
             <div class="stat-value" id="smartMoney">Neutral</div>
           </div>
-        </div>
         <!-- VOLATILITY METER -->
         <div style="margin-top: 16px;">
           <div class="stat-label">Volatility Level</div>
@@ -356,7 +358,6 @@
             <div class="stat-label">Selected Coin</div>
             <div class="stat-value" id="tradingCoin">BTC</div>
           </div>
-        </div>
         <button class="btn btn-buy" onclick="manualTrade('BUY')">Manual BUY</button>
         <button class="btn btn-sell" onclick="manualTrade('SELL')">Manual SELL</button>
       </div>
@@ -409,9 +410,16 @@ const STATE = {
 };
 
 const COIN_RANKS = { 'BTCUSDT': 1, 'ETHUSDT': 2, 'BNBUSDT': 4 };
-// CORS PROXY - Binance direct block ho jata hai
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+// WORKING CORS PROXY - Ye stable hai
+const PROXY = 'https://api.codetabs.com/v1/proxy?quest=';
 const BINANCE_API = 'https://api.binance.com/api/v3';
+
+function showError(msg) {
+  const banner = document.getElementById('errorBanner');
+  banner.textContent = '❌ ' + msg;
+  banner.classList.remove('hidden');
+  setTimeout(() => banner.classList.add('hidden'), 5000);
+}
 
 function loadConfig() {
   STATE.sbUrl = localStorage.getItem('sbUrl') || '';
@@ -439,6 +447,8 @@ function loadConfig() {
   if (STATE.autoTrade) document.getElementById('autoToggle').classList.add('active');
   if (STATE.sbUrl && STATE.sbKey) initSupabase();
   updateUI();
+
+  // SAB FETCH KARO
   fetchUsdInrRate();
   fetchFearGreed();
   fetchHeatMap();
@@ -484,7 +494,7 @@ async function fetchHeatMap() {
   const coins = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT'];
   for (let coin of coins) {
     try {
-      const res = await fetch(CORS_PROXY + encodeURIComponent(`${BINANCE_API}/ticker/24hr?symbol=${coin}`));
+      const res = await fetch(PROXY + encodeURIComponent(`${BINANCE_API}/ticker/24hr?symbol=${coin}`));
       const data = await res.json();
       const change = parseFloat(data.priceChangePercent);
       const symbol = coin.replace('USDT', '');
@@ -503,7 +513,7 @@ async function updateConfluence() {
 
   for (let tf of timeframes) {
     try {
-      const klines = await fetch(CORS_PROXY + encodeURIComponent(`${BINANCE_API}/klines?symbol=${STATE.coinName}&interval=${tf}&limit=50`));
+      const klines = await fetch(PROXY + encodeURIComponent(`${BINANCE_API}/klines?symbol=${STATE.coinName}&interval=${tf}&limit=50`));
       const candles = await klines.json();
 
       let bullish = 0, bearish = 0;
@@ -514,3 +524,38 @@ async function updateConfluence() {
       }
 
       const signal = bullish > bearish * 1.2? 'BULL' : bearish > bullish * 1.2? 'BEAR' : 'SIDE';
+      STATE.confluence[tf] = signal;
+      document.getElementById('tf' + tf).textContent = signal;
+      document.getElementById('tf' + tf).className = 'confluence-value ' +
+        (signal === 'BULL'? 'green' : signal === 'BEAR'? 'red' : 'orange');
+
+      if (signal === 'BULL') bullishCount++;
+      if (signal === 'BEAR') bearishCount++;
+    } catch(e) { console.log('Confluence error:', e); }
+  }
+
+  let confText = 'Mixed Signals';
+  let confColor = '#fbbf24';
+  if (bullishCount >= 3) {
+    confText = '🚀 STRONG BUY - All TF Aligned';
+    confColor = '#10b981';
+  } else if (bearishCount >= 3) {
+    confText = '🔻 STRONG SELL - All TF Aligned';
+    confColor = '#ef4444';
+  }
+  document.getElementById('confluenceSignal').textContent = confText;
+  document.getElementById('confluenceSignal').style.color = confColor;
+
+  calculateAIScore(bullishCount, bearishCount);
+}
+
+function calculateAIScore(bullishCount, bearishCount) {
+  let score = 50;
+  score += bullishCount * 10;
+  score -= bearishCount * 10;
+  score += (STATE.trendStrength / 2);
+  score += STATE.change24h > 0? STATE.change24h : STATE.change24h / 2;
+  score = Math.max(0, Math.min(100, score));
+
+  STATE.aiScore = score.toFixed(0);
+  document.getElementById('aiScore
