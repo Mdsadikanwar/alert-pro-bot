@@ -45,7 +45,7 @@
 .stat-value { font-size: 22px; font-weight: 800; }
 .signal-box { text-align: center; padding: 28px; border-radius: 16px; margin: 16px 0; }
 .signal-BULLISH { background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.1)); border: 2px solid #10b981; }
-.signal-BEARISH { background: linear-gradient(135deg, rgba(239, 68, 0.2), rgba(248, 113, 0.1)); border: 2px solid #ef4444; }
+.signal-BEARISH { background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(248, 113, 113, 0.1)); border: 2px solid #ef4444; }
 .signal-SIDEWAYS { background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(252, 211, 77, 0.1)); border: 2px solid #fbbf24; }
 .signal-text { font-size: 36px; font-weight: 900; margin-bottom: 8px; letter-spacing: -1px; }
 .signal-reason { font-size: 13px; color: #94a3b8; font-weight: 500; }
@@ -194,12 +194,19 @@
         </div>
       </div>
 
-      <!-- COIN SENTIMENT -->
+      <!-- MARKET SENTIMENT -->
       <div class="card">
         <div class="toggle-row">
           <div class="toggle-label" style="font-size: 18px; font-weight: 800;">
-            📊 Coin Sentiment <span class="badge badge-live">LIVE</span>
+            📊 Market Sentiment <span class="badge badge-live">LIVE</span>
           </div>
+          <select class="input" id="timeframeSelect" onchange="updateSentiment()" style="width: 100px; margin: 0;">
+            <option value="15m">15m</option>
+            <option value="30m">30m</option>
+            <option value="1h">1h</option>
+            <option value="4h">4h</option>
+            <option value="1d">1d</option>
+          </select>
         </div>
         <div id="sentimentBox" class="signal-box signal-SIDEWAYS">
           <div class="signal-text" id="sentimentText">SIDEWAYS</div>
@@ -348,7 +355,6 @@
             <div class="stat-label">Selected Coin</div>
             <div class="stat-value" id="tradingCoin">BTC</div>
           </div>
-        </div>
         <button class="btn btn-buy" onclick="manualTrade('BUY')">Manual BUY</button>
         <button class="btn btn-sell" onclick="manualTrade('SELL')">Manual SELL</button>
       </div>
@@ -387,6 +393,7 @@ const STATE = {
   priceUSDT: 0, priceINR: 0,
   high24h: 0, low24h: 0, change24h: 0,
   sentiment: 'SIDEWAYS', trendStrength: 0, volatility: 'Low',
+  timeframe: '15m',
   support: 0, resistance: 0, supportStrength: 0, resistanceStrength: 0,
   marketRank: 1,
   fearGreed: 50, fearGreedChange: 0,
@@ -408,12 +415,14 @@ function loadConfig() {
   STATE.tgChat = localStorage.getItem('tgChat') || '';
   STATE.autoTrade = localStorage.getItem('autoTrade') === 'true';
   STATE.coinName = localStorage.getItem('currentCoin') || 'BTCUSDT';
+  STATE.timeframe = localStorage.getItem('timeframe') || '15m';
   STATE.currency = localStorage.getItem('currency') || 'USDT';
   STATE.balance = parseFloat(localStorage.getItem('balance') || '10000');
   STATE.coinHolding = parseFloat(localStorage.getItem('coinHolding') || '0');
   STATE.trades = parseInt(localStorage.getItem('trades') || '0');
 
   document.getElementById('coinSelect').value = STATE.coinName;
+  document.getElementById('timeframeSelect').value = STATE.timeframe;
   document.getElementById('currencySelect').value = STATE.currency;
   document.getElementById('pairLabel').textContent = STATE.coinName.replace('USDT', '/USDT');
   document.getElementById('tradingCoin').textContent = STATE.coinName.replace('USDT', '');
@@ -519,6 +528,31 @@ async function updateConfluence() {
   }
   document.getElementById('confluenceSignal').textContent = confText;
   document.getElementById('confluenceSignal').style.color = confColor;
+
+  // AI Score calculation
+  calculateAIScore(bullishCount, bearishCount);
+}
+
+function calculateAIScore(bullishCount, bearishCount) {
+  let score = 50;
+  score += bullishCount * 10;
+  score -= bearishCount * 10;
+  score += (STATE.trendStrength / 2);
+  score += STATE.change24h > 0? STATE.change24h : STATE.change24h / 2;
+  score = Math.max(0, Math.min(100, score));
+
+  STATE.aiScore = score.toFixed(0);
+  document.getElementById('aiScore').textContent = STATE.aiScore;
+
+  let text = 'Neutral';
+  if (score >= 80) text = 'Very Strong Buy';
+  else if (score >= 65) text = 'Strong Buy';
+  else if (score >= 55) text = 'Buy';
+  else if (score <= 20) text = 'Very Strong Sell';
+  else if (score <= 35) text = 'Strong Sell';
+  else if (score <= 45) text = 'Sell';
+
+  document.getElementById('aiScoreText').textContent = text;
 }
 
 function initSupabase() {
@@ -549,40 +583,3 @@ async function sendTelegram(msg) {
   try {
     await fetch(`https://api.telegram.org/bot${STATE.tgToken}/sendMessage`, {
       method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ chat_id: STATE.tgChat, text: msg, parse_mode: 'HTML' })
-    });
-  } catch(e) { console.log(e); }
-}
-
-function testTelegram() {
-  sendTelegram('🧪 <b>AlertPro Test</b>\nBot connected successfully!');
-  log('📤 Test alert sent');
-}
-
-function changeCoin() {
-  STATE.coinName = document.getElementById('coinSelect').value;
-  localStorage.setItem('currentCoin', STATE.coinName);
-  document.getElementById('pairLabel').textContent = STATE.coinName.replace('USDT', '/USDT');
-  document.getElementById('tradingCoin').textContent = STATE.coinName.replace('USDT', '');
-  document.getElementById('marketRank').textContent = '#' + (COIN_RANKS[STATE.coinName] || '-');
-  STATE.coinHolding = 0;
-  localStorage.setItem('coinHolding', '0');
-  updateUI();
-  fetchCoinData();
-  updateSentiment();
-  updateConfluence();
-  log(`🔄 Switched to ${STATE.coinName}`);
-}
-
-function updatePrices() {
-  STATE.currency = document.getElementById('currencySelect').value;
-  localStorage.setItem('currency', STATE.currency);
-  displayPrices();
-}
-
-function displayPrices() {
-  if (STATE.currency === 'USDT') {
-    document.getElementById('coinPriceUSDT').textContent = '$' + STATE.priceUSDT.toFixed(2);
-    document.getElementById('coinPriceINR').textContent = '₹' + (STATE.priceUSDT * STATE.usdInrRate).toFixed(2);
-    document.getElementById('tradingPrice').textContent = '$' + STATE.priceUSDT.toFixed(2);
-  }
