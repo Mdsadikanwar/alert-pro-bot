@@ -84,6 +84,17 @@
    .hidden { display: none; }
    .select-row { display: flex; gap: 8px; margin-bottom: 12px; }
     select.input { flex: 1; }
+   .chart-wrapper { position: relative; }
+   .chart-wrapper.fullscreen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 9999; background: #0a0e1a; padding: 16px; border-radius: 0;
+    }
+   .fullscreen-btn {
+      position: absolute; top: 12px; right: 12px; z-index: 10;
+      background: rgba(59, 130, 246, 0.9); color: white; border: none;
+      padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -100,7 +111,6 @@
     </div>
 
     <div id="trading">
-      <!-- COIN SELECTOR ADDED -->
       <div class="card">
         <div class="select-row">
           <select class="input" id="coinSelect" onchange="changeCoin()">
@@ -133,8 +143,8 @@
         </div>
       </div>
 
-      <!-- TRADINGVIEW CHART - FULL WIDTH -->
-      <div class="card" style="padding: 8px; height: 500px;">
+      <div class="card chart-wrapper" id="chartWrapper" style="padding: 8px; height: 450px;">
+        <button class="fullscreen-btn" onclick="toggleChartFullscreen()">⛶ Full</button>
         <div id="tv_chart" style="height: 100%;"></div>
       </div>
 
@@ -214,7 +224,8 @@ const STATE = {
   balance: 10000, coinHolding: 0, trades: 0, autoTrade: false,
   supabase: null, tgToken: '', tgChat: '',
   rsiBuyLevel: 30, rsiSellLevel: 70,
-  tvWidget: null
+  tvWidget: null,
+  chartFullscreen: false
 };
 
 function loadConfig() {
@@ -225,6 +236,10 @@ function loadConfig() {
   STATE.autoTrade = localStorage.getItem('autoTrade') === 'true';
   STATE.rsiBuyLevel = parseInt(localStorage.getItem('rsiBuy') || '30');
   STATE.rsiSellLevel = parseInt(localStorage.getItem('rsiSell') || '70');
+  STATE.symbol = localStorage.getItem('currentSymbol') || 'BINANCE:BTCUSDT';
+  STATE.coinName = STATE.symbol.split(':')[1];
+  document.getElementById('coinSelect').value = STATE.symbol;
+  document.getElementById('pairLabel').textContent = STATE.coinName;
   document.getElementById('sbUrl').value = STATE.sbUrl;
   document.getElementById('sbKey').value = STATE.sbKey;
   document.getElementById('tgToken').value = STATE.tgToken;
@@ -281,10 +296,10 @@ function saveStrategy() {
   log('✅ Strategy saved');
 }
 
-// COIN CHANGE FUNCTIONS
 function changeCoin() {
   STATE.symbol = document.getElementById('coinSelect').value;
   STATE.coinName = STATE.symbol.split(':')[1];
+  localStorage.setItem('currentSymbol', STATE.symbol);
   document.getElementById('pairLabel').textContent = STATE.coinName;
   STATE.coinHolding = 0;
   updateUI();
@@ -298,6 +313,7 @@ function loadCustomCoin() {
   if (!custom) return;
   STATE.symbol = custom;
   STATE.coinName = custom.split(':')[1] || custom;
+  localStorage.setItem('currentSymbol', STATE.symbol);
   document.getElementById('pairLabel').textContent = STATE.coinName;
   STATE.coinHolding = 0;
   updateUI();
@@ -305,6 +321,21 @@ function loadCustomCoin() {
   fetchCoinData();
   log(`🔄 Loaded custom: ${STATE.coinName}`);
   document.getElementById('customSymbol').value = '';
+}
+
+function toggleChartFullscreen() {
+  const wrapper = document.getElementById('chartWrapper');
+  STATE.chartFullscreen =!STATE.chartFullscreen;
+  if (STATE.chartFullscreen) {
+    wrapper.classList.add('fullscreen');
+    document.querySelector('.fullscreen-btn').textContent = '✕ Exit';
+  } else {
+    wrapper.classList.remove('fullscreen');
+    document.querySelector('.fullscreen-btn').textContent = '⛶ Full';
+  }
+  setTimeout(() => {
+    if (STATE.tvWidget) loadTradingView();
+  }, 100);
 }
 
 async function fetchCoinData() {
@@ -434,14 +465,13 @@ function log(msg) {
   logBox.innerHTML = `<div class="log-item">[${time}] ${msg}</div>` + logBox.innerHTML;
 }
 
-// TRADINGVIEW CHART - DYNAMIC
 function loadTradingView() {
   if (STATE.tvWidget) {
     document.getElementById('tv_chart').innerHTML = '';
   }
   STATE.tvWidget = new TradingView.widget({
     "width": "100%",
-    "height": 500,
+    "height": "100%",
     "symbol": STATE.symbol,
     "interval": "5",
     "timezone": "Asia/Kolkata",
@@ -452,7 +482,8 @@ function loadTradingView() {
     "enable_publishing": false,
     "hide_side_toolbar": false,
     "allow_symbol_change": true,
-    "container_id": "tv_chart"
+    "container_id": "tv_chart",
+    "studies": ["RSI@tv-basicstudies", "MACD@tv-basicstudies"]
   });
 }
 
