@@ -45,7 +45,7 @@
 .stat-value { font-size: 22px; font-weight: 800; }
 .signal-box { text-align: center; padding: 28px; border-radius: 16px; margin: 16px 0; }
 .signal-BULLISH { background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.1)); border: 2px solid #10b981; }
-.signal-BEARISH { background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(248, 113, 113, 0.1)); border: 2px solid #ef4444; }
+.signal-BEARISH { background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(248, 113, 0.1)); border: 2px solid #ef4444; }
 .signal-SIDEWAYS { background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(252, 211, 77, 0.1)); border: 2px solid #fbbf24; }
 .signal-text { font-size: 36px; font-weight: 900; margin-bottom: 8px; letter-spacing: -1px; }
 .signal-reason { font-size: 13px; color: #94a3b8; font-weight: 500; }
@@ -118,7 +118,7 @@
 .heat-map { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
 .heat-item { padding: 16px; border-radius: 12px; text-align: center; border: 2px solid; }
 .heat-bullish { background: rgba(16, 185, 129, 0.15); border-color: #10b981; }
-.heat-bearish { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; }
+.heat-bearish { background: rgba(239, 68, 0.15); border-color: #ef4444; }
 .heat-sideways { background: rgba(251, 191, 36, 0.15); border-color: #fbbf24; }
 .heat-symbol { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
 .heat-change { font-size: 14px; font-weight: 700; }
@@ -160,13 +160,13 @@
       <div class="card">
         <div class="select-row">
           <select class="input" id="coinSelect" onchange="changeCoin()">
-            <option value="BTCUSDT">Bitcoin (BTC)</option>
-            <option value="ETHUSDT">Ethereum (ETH)</option>
-            <option value="BNBUSDT">BNB (BNB)</option>
+            <option value="bitcoin">Bitcoin (BTC)</option>
+            <option value="ethereum">Ethereum (ETH)</option>
+            <option value="binancecoin">BNB (BNB)</option>
           </select>
           <select class="input" id="currencySelect" onchange="updatePrices()" style="max-width: 100px;">
-            <option value="USDT">USDT</option>
-            <option value="INR">INR</option>
+            <option value="usd">USD</option>
+            <option value="inr">INR</option>
           </select>
         </div>
       </div>
@@ -235,6 +235,7 @@
             <div class="stat-label">Smart Money</div>
             <div class="stat-value" id="smartMoney">Neutral</div>
           </div>
+        </div>
         <!-- VOLATILITY METER -->
         <div style="margin-top: 16px;">
           <div class="stat-label">Volatility Level</div>
@@ -278,7 +279,7 @@
 
       <!-- PRICE BOX -->
       <div class="card price-box">
-        <div class="price-label" id="pairLabel">BTC/USDT</div>
+        <div class="price-label" id="pairLabel">BTC/USD</div>
         <div class="price-main" id="coinPriceUSDT">$0.00</div>
         <div class="price-secondary" id="coinPriceINR">₹0.00</div>
         <div class="price-change" id="coinChange">Loading...</div>
@@ -333,7 +334,7 @@
         </div>
         <div class="stats">
           <div class="stat">
-            <div class="stat-label">Balance USDT</div>
+            <div class="stat-label">Balance USD</div>
             <div class="stat-value" id="balance">$10000</div>
           </div>
           <div class="stat">
@@ -348,7 +349,6 @@
             <div class="stat-label">Trades</div>
             <div class="stat-value" id="trades">0</div>
           </div>
-        </div>
         <div class="stats" style="margin-top: 12px;">
           <div class="stat">
             <div class="stat-label">Current Price</div>
@@ -391,9 +391,10 @@
 
 <script>
 const STATE = {
-  coinName: 'BTCUSDT',
-  currency: 'USDT',
-  priceUSDT: 0, priceINR: 0,
+  coinId: 'bitcoin',
+  coinSymbol: 'BTC',
+  currency: 'usd',
+  price: 0, priceINR: 0,
   high24h: 0, low24h: 0, change24h: 0,
   sentiment: 'SIDEWAYS', trendStrength: 0, volatility: 'Low',
   timeframe: '15m',
@@ -409,10 +410,13 @@ const STATE = {
   heatMapData: {}
 };
 
-const COIN_RANKS = { 'BTCUSDT': 1, 'ETHUSDT': 2, 'BNBUSDT': 4 };
-// WORKING CORS PROXY - Ye stable hai
-const PROXY = 'https://api.codetabs.com/v1/proxy?quest=';
-const BINANCE_API = 'https://api.binance.com/api/v3';
+const COIN_MAP = {
+  'bitcoin': { symbol: 'BTC', rank: 1 },
+  'ethereum': { symbol: 'ETH', rank: 2 },
+  'binancecoin': { symbol: 'BNB', rank: 4 }
+};
+
+const CG_API = 'https://api.coingecko.com/api/v3';
 
 function showError(msg) {
   const banner = document.getElementById('errorBanner');
@@ -427,19 +431,21 @@ function loadConfig() {
   STATE.tgToken = localStorage.getItem('tgToken') || '';
   STATE.tgChat = localStorage.getItem('tgChat') || '';
   STATE.autoTrade = localStorage.getItem('autoTrade') === 'true';
-  STATE.coinName = localStorage.getItem('currentCoin') || 'BTCUSDT';
+  STATE.coinId = localStorage.getItem('currentCoin') || 'bitcoin';
   STATE.timeframe = localStorage.getItem('timeframe') || '15m';
-  STATE.currency = localStorage.getItem('currency') || 'USDT';
+  STATE.currency = localStorage.getItem('currency') || 'usd';
   STATE.balance = parseFloat(localStorage.getItem('balance') || '10000');
   STATE.coinHolding = parseFloat(localStorage.getItem('coinHolding') || '0');
   STATE.trades = parseInt(localStorage.getItem('trades') || '0');
 
-  document.getElementById('coinSelect').value = STATE.coinName;
+  document.getElementById('coinSelect').value = STATE.coinId;
   document.getElementById('timeframeSelect').value = STATE.timeframe;
   document.getElementById('currencySelect').value = STATE.currency;
-  document.getElementById('pairLabel').textContent = STATE.coinName.replace('USDT', '/USDT');
-  document.getElementById('tradingCoin').textContent = STATE.coinName.replace('USDT', '');
-  document.getElementById('marketRank').textContent = '#' + (COIN_RANKS[STATE.coinName] || '-');
+  STATE.coinSymbol = COIN_MAP[STATE.coinId].symbol;
+  STATE.marketRank = COIN_MAP[STATE.coinId].rank;
+  document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
+  document.getElementById('tradingCoin').textContent = STATE.coinSymbol;
+  document.getElementById('marketRank').textContent = '#' + STATE.marketRank;
   document.getElementById('sbUrl').value = STATE.sbUrl;
   document.getElementById('sbKey').value = STATE.sbKey;
   document.getElementById('tgToken').value = STATE.tgToken;
@@ -447,8 +453,6 @@ function loadConfig() {
   if (STATE.autoTrade) document.getElementById('autoToggle').classList.add('active');
   if (STATE.sbUrl && STATE.sbKey) initSupabase();
   updateUI();
-
-  // SAB FETCH KARO
   fetchUsdInrRate();
   fetchFearGreed();
   fetchHeatMap();
@@ -491,15 +495,15 @@ async function fetchFearGreed() {
 }
 
 async function fetchHeatMap() {
-  const coins = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT'];
-  for (let coin of coins) {
+  const coins = ['bitcoin', 'ethereum', 'binancecoin'];
+  const symbols = ['BTC', 'ETH', 'BNB'];
+  for (let i = 0; i < coins.length; i++) {
     try {
-      const res = await fetch(PROXY + encodeURIComponent(`${BINANCE_API}/ticker/24hr?symbol=${coin}`));
+      const res = await fetch(`${CG_API}/coins/${coins[i]}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false`);
       const data = await res.json();
-      const change = parseFloat(data.priceChangePercent);
-      const symbol = coin.replace('USDT', '');
-      const elem = document.getElementById('heat' + symbol);
-      const changeElem = document.getElementById('heat' + symbol + 'Change');
+      const change = data.market_data.price_change_percentage_24h;
+      const elem = document.getElementById('heat' + symbols[i]);
+      const changeElem = document.getElementById('heat' + symbols[i] + 'Change');
 
       changeElem.textContent = (change >= 0? '+' : '') + change.toFixed(2) + '%';
       elem.className = 'heat-item ' + (change > 2? 'heat-bullish' : change < -2? 'heat-bearish' : 'heat-sideways');
@@ -509,18 +513,19 @@ async function fetchHeatMap() {
 
 async function updateConfluence() {
   const timeframes = ['15m', '1h', '4h', '1d'];
+  const cgDays = { '15m': 1, '1h': 1, '4h': 7, '1d': 30 };
   let bullishCount = 0, bearishCount = 0;
 
   for (let tf of timeframes) {
     try {
-      const klines = await fetch(PROXY + encodeURIComponent(`${BINANCE_API}/klines?symbol=${STATE.coinName}&interval=${tf}&limit=50`));
-      const candles = await klines.json();
+      const days = cgDays[tf];
+      const res = await fetch(`${CG_API}/coins/${STATE.coinId}/market_chart?vs_currency=usd&days=${days}`);
+      const data = await res.json();
+      const prices = data.prices;
 
       let bullish = 0, bearish = 0;
-      for(let i = 1; i < candles.length; i++) {
-        const close = parseFloat(candles[i][4]);
-        const open = parseFloat(candles[i][1]);
-        if (close > open) bullish++; else bearish++;
+      for(let i = 1; i < prices.length; i++) {
+        if (prices[i][1] > prices[i-1][1]) bullish++; else bearish++;
       }
 
       const signal = bullish > bearish * 1.2? 'BULL' : bearish > bullish * 1.2? 'BEAR' : 'SIDE';
@@ -552,10 +557,4 @@ async function updateConfluence() {
 function calculateAIScore(bullishCount, bearishCount) {
   let score = 50;
   score += bullishCount * 10;
-  score -= bearishCount * 10;
-  score += (STATE.trendStrength / 2);
-  score += STATE.change24h > 0? STATE.change24h : STATE.change24h / 2;
-  score = Math.max(0, Math.min(100, score));
-
-  STATE.aiScore = score.toFixed(0);
-  document.getElementById('aiScore
+  score
