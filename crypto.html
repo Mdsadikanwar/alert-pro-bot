@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AlertPro Terminal - Auto BTC Bot</title>
+  <title>AlertPro Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow-x: hidden; }
@@ -31,20 +30,20 @@
     }
    .price-box { text-align: center; }
    .price-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
-   .price { font-size: 36px; font-weight: 800; color: #f59e0b; }
-   .price-change { font-size: 14px; margin-top: 4px; }
+   .price { font-size: 42px; font-weight: 800; color: #f59e0b; }
+   .price-change { font-size: 16px; margin-top: 8px; font-weight: 600; }
    .green { color: #10b981; }
    .red { color: #ef4444; }
    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
-   .stat { background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 12px; text-align: center; }
-   .stat-label { font-size: 10px; color: #64748b; margin-bottom: 4px; }
-   .stat-value { font-size: 18px; font-weight: 700; }
-   .signal-box { text-align: center; padding: 16px; border-radius: 12px; margin: 16px 0; }
-   .signal-BUY { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; }
-   .signal-SELL { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; }
-   .signal-HOLD { background: rgba(100, 116, 139, 0.15); border: 1px solid #64748b; }
-   .signal-text { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
-   .signal-reason { font-size: 12px; color: #94a3b8; }
+   .stat { background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 12px; text-align: center; }
+   .stat-label { font-size: 11px; color: #64748b; margin-bottom: 6px; }
+   .stat-value { font-size: 20px; font-weight: 700; }
+   .signal-box { text-align: center; padding: 20px; border-radius: 12px; margin: 16px 0; }
+   .signal-BULLISH { background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; }
+   .signal-BEARISH { background: rgba(239, 68, 68, 0.15); border: 2px solid #ef4444; }
+   .signal-NEUTRAL { background: rgba(100, 116, 139, 0.15); border: 2px solid #64748b; }
+   .signal-text { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+   .signal-reason { font-size: 13px; color: #94a3b8; }
    .toggle-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
    .toggle-label { font-size: 14px; font-weight: 600; }
    .toggle {
@@ -56,7 +55,7 @@
       width: 22px; height: 22px; background: white; border-radius: 50%;
       position: absolute; top: 2px; left: 2px; transition: 0.3s;
     }
-   .toggle.active.toggle-dot { left: 26px; }
+   .toggle.active .toggle-dot { left: 26px; }
    .btn {
       width: 100%; padding: 14px; border: none; border-radius: 12px;
       font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px;
@@ -84,75 +83,105 @@
    .hidden { display: none; }
    .select-row { display: flex; gap: 8px; margin-bottom: 12px; }
     select.input { flex: 1; }
-   .chart-wrapper { position: relative; }
-   .chart-wrapper.fullscreen {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      z-index: 9999; background: #0a0e1a; padding: 16px; border-radius: 0;
+   .sentiment-meter {
+      width: 100%; height: 8px; background: #334155; border-radius: 4px;
+      margin: 12px 0; position: relative; overflow: hidden;
     }
-   .fullscreen-btn {
-      position: absolute; top: 12px; right: 12px; z-index: 10;
-      background: rgba(59, 130, 246, 0.9); color: white; border: none;
-      padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700;
-      cursor: pointer;
+   .sentiment-fill {
+      height: 100%; border-radius: 4px; transition: 0.5s;
     }
+   .sentiment-BULLISH { background: linear-gradient(90deg, #10b981, #34d399); }
+   .sentiment-BEARISH { background: linear-gradient(90deg, #ef4444, #f87171); }
+   .sentiment-NEUTRAL { background: linear-gradient(90deg, #64748b, #94a3b8); }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo">🚨 AlertPro Auto Bot</div>
-      <div class="subtitle">Multi-Crypto Paper Trading + Live Signals</div>
+      <div class="logo">📊 AlertPro Dashboard</div>
+      <div class="subtitle">Live Price + Market Sentiment</div>
     </div>
 
     <div class="tabs">
-      <div class="tab active" onclick="showTab('trading')">Trading</div>
+      <div class="tab active" onclick="showTab('dashboard')">Dashboard</div>
       <div class="tab" onclick="showTab('settings')">Settings</div>
       <div class="tab" onclick="showTab('logs')">Logs</div>
     </div>
 
-    <div id="trading">
+    <div id="dashboard">
       <div class="card">
         <div class="select-row">
           <select class="input" id="coinSelect" onchange="changeCoin()">
-            <option value="BINANCE:BTCUSDT">BTC/USDT</option>
-            <option value="BINANCE:ETHUSDT">ETH/USDT</option>
-            <option value="BINANCE:BNBUSDT">BNB/USDT</option>
-            <option value="BINANCE:SOLUSDT">SOL/USDT</option>
-            <option value="BINANCE:XRPUSDT">XRP/USDT</option>
-            <option value="BINANCE:DOGEUSDT">DOGE/USDT</option>
-            <option value="BINANCE:ADAUSDT">ADA/USDT</option>
-            <option value="BINANCE:MATICUSDT">MATIC/USDT</option>
+            <option value="BTCUSDT">BTC/USDT</option>
+            <option value="ETHUSDT">ETH/USDT</option>
+            <option value="BNBUSDT">BNB/USDT</option>
+            <option value="SOLUSDT">SOL/USDT</option>
+            <option value="XRPUSDT">XRP/USDT</option>
+            <option value="DOGEUSDT">DOGE/USDT</option>
+            <option value="ADAUSDT">ADA/USDT</option>
+            <option value="MATICUSDT">MATIC/USDT</option>
+            <option value="AVAXUSDT">AVAX/USDT</option>
+            <option value="DOTUSDT">DOT/USDT</option>
           </select>
         </div>
-        <input class="input" id="customSymbol" placeholder="Custom: BINANCE:AVAXUSDT" onkeypress="if(event.key==='Enter') loadCustomCoin()">
+        <input class="input" id="customSymbol" placeholder="Custom: AVAXUSDT" onkeypress="if(event.key==='Enter') loadCustomCoin()">
       </div>
 
       <div class="card price-box">
         <div class="price-label" id="pairLabel">BTC/USDT</div>
-        <div class="price" id="btcPrice">$0.00</div>
-        <div class="price-change" id="btcChange">Loading...</div>
+        <div class="price" id="coinPrice">$0.00</div>
+        <div class="price-change" id="coinChange">Loading...</div>
         <div class="stats">
+          <div class="stat">
+            <div class="stat-label">24h High</div>
+            <div class="stat-value" id="high24h">$0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">24h Low</div>
+            <div class="stat-value" id="low24h">$0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">24h Volume</div>
+            <div class="stat-value" id="volume24h">0</div>
+          </div>
           <div class="stat">
             <div class="stat-label">RSI (14)</div>
             <div class="stat-value" id="rsi">0</div>
           </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="toggle-row">
+          <div class="toggle-label" style="font-size: 16px; font-weight: 700;">Market Sentiment</div>
+          <select class="input" id="timeframeSelect" onchange="updateSentiment()" style="width: 100px; margin: 0;">
+            <option value="15m">15m</option>
+            <option value="30m">30m</option>
+            <option value="1h">1h</option>
+            <option value="4h">4h</option>
+            <option value="1d">1d</option>
+          </select>
+        </div>
+        <div id="sentimentBox" class="signal-box signal-NEUTRAL">
+          <div class="signal-text" id="sentimentText">NEUTRAL</div>
+          <div class="signal-reason" id="sentimentReason">Analyzing market...</div>
+        </div>
+        <div class="sentiment-meter">
+          <div class="sentiment-fill sentiment-NEUTRAL" id="sentimentBar" style="width: 50%"></div>
+        </div>
+        <div class="stats">
           <div class="stat">
-            <div class="stat-label">EMA 9/21</div>
-            <div class="stat-value" id="ema">0/0</div>
+            <div class="stat-label">Buy Pressure</div>
+            <div class="stat-value green" id="buyPressure">50%</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Sell Pressure</div>
+            <div class="stat-value red" id="sellPressure">50%</div>
           </div>
         </div>
       </div>
 
-      <div class="card chart-wrapper" id="chartWrapper" style="padding: 8px; height: 450px;">
-        <button class="fullscreen-btn" onclick="toggleChartFullscreen()">⛶ Full</button>
-        <div id="tv_chart" style="height: 100%;"></div>
-      </div>
-
       <div class="card">
-        <div id="signalBox" class="signal-box signal-HOLD">
-          <div class="signal-text" id="signalText">HOLD</div>
-          <div class="signal-reason" id="signalReason">Waiting for data...</div>
-        </div>
         <div class="toggle-row">
           <div class="toggle-label">Auto Trading</div>
           <div class="toggle" id="autoToggle" onclick="toggleAuto()"><div class="toggle-dot"></div></div>
@@ -164,7 +193,7 @@
           </div>
           <div class="stat">
             <div class="stat-label">Holdings</div>
-            <div class="stat-value" id="btcHold">0.0000</div>
+            <div class="stat-value" id="coinHold">0.0000</div>
           </div>
           <div class="stat">
             <div class="stat-label">Total P&L</div>
@@ -194,18 +223,6 @@
         <button class="btn btn-buy" onclick="saveTelegram()">Save Telegram</button>
         <button class="btn btn-buy" onclick="testTelegram()">Test Alert</button>
       </div>
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">Strategy Settings</h3>
-        <div class="toggle-row">
-          <div class="toggle-label">RSI Oversold < 30</div>
-          <input class="input" id="rsiBuy" value="30" style="width: 80px;">
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-label">RSI Overbought > 70</div>
-          <input class="input" id="rsiSell" value="70" style="width: 80px;">
-        </div>
-        <button class="btn btn-buy" onclick="saveStrategy()">Save Strategy</button>
-      </div>
     </div>
 
     <div id="logs" class="hidden">
@@ -218,14 +235,12 @@
 
 <script>
 const STATE = {
-  symbol: 'BINANCE:BTCUSDT',
   coinName: 'BTCUSDT',
-  price: 0, rsi: 50, ema9: 0, ema21: 0, signal: 'HOLD',
+  price: 0, rsi: 50, high24h: 0, low24h: 0, volume24h: 0,
+  sentiment: 'NEUTRAL', buyPressure: 50, sellPressure: 50,
+  timeframe: '15m',
   balance: 10000, coinHolding: 0, trades: 0, autoTrade: false,
-  supabase: null, tgToken: '', tgChat: '',
-  rsiBuyLevel: 30, rsiSellLevel: 70,
-  tvWidget: null,
-  chartFullscreen: false
+  supabase: null, tgToken: '', tgChat: ''
 };
 
 function loadConfig() {
@@ -234,18 +249,15 @@ function loadConfig() {
   STATE.tgToken = localStorage.getItem('tgToken') || '';
   STATE.tgChat = localStorage.getItem('tgChat') || '';
   STATE.autoTrade = localStorage.getItem('autoTrade') === 'true';
-  STATE.rsiBuyLevel = parseInt(localStorage.getItem('rsiBuy') || '30');
-  STATE.rsiSellLevel = parseInt(localStorage.getItem('rsiSell') || '70');
-  STATE.symbol = localStorage.getItem('currentSymbol') || 'BINANCE:BTCUSDT';
-  STATE.coinName = STATE.symbol.split(':')[1];
-  document.getElementById('coinSelect').value = STATE.symbol;
-  document.getElementById('pairLabel').textContent = STATE.coinName;
+  STATE.coinName = localStorage.getItem('currentCoin') || 'BTCUSDT';
+  STATE.timeframe = localStorage.getItem('timeframe') || '15m';
+  document.getElementById('coinSelect').value = STATE.coinName;
+  document.getElementById('timeframeSelect').value = STATE.timeframe;
+  document.getElementById('pairLabel').textContent = STATE.coinName.replace('USDT', '/USDT');
   document.getElementById('sbUrl').value = STATE.sbUrl;
   document.getElementById('sbKey').value = STATE.sbKey;
   document.getElementById('tgToken').value = STATE.tgToken;
   document.getElementById('tgChat').value = STATE.tgChat;
-  document.getElementById('rsiBuy').value = STATE.rsiBuyLevel;
-  document.getElementById('rsiSell').value = STATE.rsiSellLevel;
   if (STATE.autoTrade) document.getElementById('autoToggle').classList.add('active');
   if (STATE.sbUrl && STATE.sbKey) initSupabase();
 }
@@ -288,54 +300,29 @@ function testTelegram() {
   log('📤 Test alert sent');
 }
 
-function saveStrategy() {
-  STATE.rsiBuyLevel = parseInt(document.getElementById('rsiBuy').value);
-  STATE.rsiSellLevel = parseInt(document.getElementById('rsiSell').value);
-  localStorage.setItem('rsiBuy', STATE.rsiBuyLevel);
-  localStorage.setItem('rsiSell', STATE.rsiSellLevel);
-  log('✅ Strategy saved');
-}
-
 function changeCoin() {
-  STATE.symbol = document.getElementById('coinSelect').value;
-  STATE.coinName = STATE.symbol.split(':')[1];
-  localStorage.setItem('currentSymbol', STATE.symbol);
-  document.getElementById('pairLabel').textContent = STATE.coinName;
+  STATE.coinName = document.getElementById('coinSelect').value;
+  localStorage.setItem('currentCoin', STATE.coinName);
+  document.getElementById('pairLabel').textContent = STATE.coinName.replace('USDT', '/USDT');
   STATE.coinHolding = 0;
   updateUI();
-  loadTradingView();
   fetchCoinData();
+  updateSentiment();
   log(`🔄 Switched to ${STATE.coinName}`);
 }
 
 function loadCustomCoin() {
   const custom = document.getElementById('customSymbol').value.trim().toUpperCase();
   if (!custom) return;
-  STATE.symbol = custom;
-  STATE.coinName = custom.split(':')[1] || custom;
-  localStorage.setItem('currentSymbol', STATE.symbol);
-  document.getElementById('pairLabel').textContent = STATE.coinName;
+  STATE.coinName = custom;
+  localStorage.setItem('currentCoin', STATE.coinName);
+  document.getElementById('pairLabel').textContent = STATE.coinName.replace('USDT', '/USDT');
   STATE.coinHolding = 0;
   updateUI();
-  loadTradingView();
   fetchCoinData();
+  updateSentiment();
   log(`🔄 Loaded custom: ${STATE.coinName}`);
   document.getElementById('customSymbol').value = '';
-}
-
-function toggleChartFullscreen() {
-  const wrapper = document.getElementById('chartWrapper');
-  STATE.chartFullscreen =!STATE.chartFullscreen;
-  if (STATE.chartFullscreen) {
-    wrapper.classList.add('fullscreen');
-    document.querySelector('.fullscreen-btn').textContent = '✕ Exit';
-  } else {
-    wrapper.classList.remove('fullscreen');
-    document.querySelector('.fullscreen-btn').textContent = '⛶ Full';
-  }
-  setTimeout(() => {
-    if (STATE.tvWidget) loadTradingView();
-  }, 100);
 }
 
 async function fetchCoinData() {
@@ -343,20 +330,26 @@ async function fetchCoinData() {
     const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${STATE.coinName}`);
     const data = await res.json();
     STATE.price = parseFloat(data.lastPrice);
+    STATE.high24h = parseFloat(data.highPrice);
+    STATE.low24h = parseFloat(data.lowPrice);
+    STATE.volume24h = parseFloat(data.volume);
     const change = parseFloat(data.priceChangePercent);
-    document.getElementById('btcPrice').textContent = '$' + STATE.price.toFixed(2);
-    document.getElementById('btcChange').textContent = (change >= 0? '▲ ' : '▼ ') + change.toFixed(2) + '% (24h)';
-    document.getElementById('btcChange').className = 'price-change ' + (change >= 0? 'green' : 'red');
+    
+    document.getElementById('coinPrice').textContent = '$' + STATE.price.toFixed(2);
+    document.getElementById('coinChange').textContent = (change >= 0? '▲ ' : '▼ ') + change.toFixed(2) + '% (24h)';
+    document.getElementById('coinChange').className = 'price-change ' + (change >= 0? 'green' : 'red');
+    document.getElementById('high24h').textContent = '$' + STATE.high24h.toFixed(2);
+    document.getElementById('low24h').textContent = '$' + STATE.low24h.toFixed(2);
+    document.getElementById('volume24h').textContent = (STATE.volume24h / 1000).toFixed(1) + 'K';
+    
     const klines = await fetch(`https://api.binance.com/api/v3/klines?symbol=${STATE.coinName}&interval=5m&limit=50`);
     const candles = await klines.json();
     const closes = candles.map(c => parseFloat(c[4]));
-    calculateIndicators(closes);
-    updateSignal();
-    updateUI();
+    calculateRSI(closes);
   } catch(e) { log('❌ Fetch error: ' + e.message); }
 }
 
-function calculateIndicators(closes) {
+function calculateRSI(closes) {
   let gains = 0, losses = 0;
   for(let i = 1; i < 15; i++) {
     const diff = closes[closes.length - i] - closes[closes.length - i - 1];
@@ -364,39 +357,50 @@ function calculateIndicators(closes) {
   }
   const avgGain = gains / 14, avgLoss = losses / 14;
   STATE.rsi = 100 - (100 / (1 + avgGain / avgLoss));
-  const k9 = 2 / (9 + 1), k21 = 2 / (21 + 1);
-  STATE.ema9 = closes[closes.length - 9];
-  STATE.ema21 = closes[closes.length - 21];
-  for(let i = closes.length - 8; i < closes.length; i++) {
-    STATE.ema9 = closes[i] * k9 + STATE.ema9 * (1 - k9);
-  }
-  for(let i = closes.length - 20; i < closes.length; i++) {
-    STATE.ema21 = closes[i] * k21 + STATE.ema21 * (1 - k21);
-  }
   document.getElementById('rsi').textContent = STATE.rsi.toFixed(1);
-  document.getElementById('ema').textContent = STATE.ema9.toFixed(0) + '/' + STATE.ema21.toFixed(0);
 }
 
-function updateSignal() {
-  let signal = 'HOLD', reason = 'No clear signal';
-  if (STATE.rsi < STATE.rsiBuyLevel && STATE.ema9 > STATE.ema21) {
-    signal = 'BUY';
-    reason = `RSI oversold (${STATE.rsi.toFixed(1)}) + EMA bullish`;
-  } else if (STATE.rsi > STATE.rsiSellLevel && STATE.ema9 < STATE.ema21) {
-    signal = 'SELL';
-    reason = `RSI overbought (${STATE.rsi.toFixed(1)}) + EMA bearish`;
-  }
-  if (signal!== STATE.signal) {
-    STATE.signal = signal;
-    document.getElementById('signalText').textContent = signal;
-    document.getElementById('signalReason').textContent = reason;
-    document.getElementById('signalBox').className = 'signal-box signal-' + signal;
-    if (signal!== 'HOLD') {
-      log(`🎯 Signal: ${signal} - ${reason}`);
-      sendTelegram(`🎯 <b>${signal} SIGNAL</b>\nPair: ${STATE.coinName}\nPrice: $${STATE.price.toFixed(2)}\nRSI: ${STATE.rsi.toFixed(1)}\n${reason}`);
-      if (STATE.autoTrade) executeTrade(signal);
+async function updateSentiment() {
+  STATE.timeframe = document.getElementById('timeframeSelect').value;
+  localStorage.setItem('timeframe', STATE.timeframe);
+  
+  try {
+    // Get candles for selected timeframe
+    const interval = STATE.timeframe;
+    const klines = await fetch(`https://api.binance.com/api/v3/klines?symbol=${STATE.coinName}&interval=${interval}&limit=100`);
+    const candles = await klines.json();
+    
+    let bullish = 0, bearish = 0;
+    for(let i = 1; i < candles.length; i++) {
+      const close = parseFloat(candles[i][4]);
+      const open = parseFloat(candles[i][1]);
+      if (close > open) bullish++;
+      else bearish++;
     }
-  }
+    
+    const total = bullish + bearish;
+    STATE.buyPressure = ((bullish / total) * 100).toFixed(0);
+    STATE.sellPressure = ((bearish / total) * 100).toFixed(0);
+    
+    let sentiment = 'NEUTRAL', reason = 'Market is balanced';
+    if (STATE.buyPressure > 60) {
+      sentiment = 'BULLISH';
+      reason = `Strong buying: ${STATE.buyPressure}% candles green on ${STATE.timeframe}`;
+    } else if (STATE.sellPressure > 60) {
+      sentiment = 'BEARISH';
+      reason = `Strong selling: ${STATE.sellPressure}% candles red on ${STATE.timeframe}`;
+    }
+    
+    STATE.sentiment = sentiment;
+    document.getElementById('sentimentText').textContent = sentiment;
+    document.getElementById('sentimentReason').textContent = reason;
+    document.getElementById('sentimentBox').className = 'signal-box signal-' + sentiment;
+    document.getElementById('sentimentBar').className = 'sentiment-fill sentiment-' + sentiment;
+    document.getElementById('sentimentBar').style.width = STATE.buyPressure + '%';
+    document.getElementById('buyPressure').textContent = STATE.buyPressure + '%';
+    document.getElementById('sellPressure').textContent = STATE.sellPressure + '%';
+    
+  } catch(e) { log('❌ Sentiment error: ' + e.message); }
 }
 
 function executeTrade(type) {
@@ -444,7 +448,7 @@ function toggleAuto() {
 
 function updateUI() {
   document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2);
-  document.getElementById('btcHold').textContent = STATE.coinHolding.toFixed(6);
+  document.getElementById('coinHold').textContent = STATE.coinHolding.toFixed(6);
   document.getElementById('trades').textContent = STATE.trades;
   const totalValue = STATE.balance + (STATE.coinHolding * STATE.price);
   const pnl = totalValue - 10000;
@@ -454,7 +458,7 @@ function updateUI() {
 
 function showTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('#trading, #settings, #logs').forEach(d => d.classList.add('hidden'));
+  document.querySelectorAll('#dashboard, #settings, #logs').forEach(d => d.classList.add('hidden'));
   event.target.classList.add('active');
   document.getElementById(tab).classList.remove('hidden');
 }
@@ -465,33 +469,12 @@ function log(msg) {
   logBox.innerHTML = `<div class="log-item">[${time}] ${msg}</div>` + logBox.innerHTML;
 }
 
-function loadTradingView() {
-  if (STATE.tvWidget) {
-    document.getElementById('tv_chart').innerHTML = '';
-  }
-  STATE.tvWidget = new TradingView.widget({
-    "width": "100%",
-    "height": "100%",
-    "symbol": STATE.symbol,
-    "interval": "5",
-    "timezone": "Asia/Kolkata",
-    "theme": "dark",
-    "style": "1",
-    "locale": "en",
-    "toolbar_bg": "#0a0e1a",
-    "enable_publishing": false,
-    "hide_side_toolbar": false,
-    "allow_symbol_change": true,
-    "container_id": "tv_chart",
-    "studies": ["RSI@tv-basicstudies", "MACD@tv-basicstudies"]
-  });
-}
-
 loadConfig();
-loadTradingView();
 fetchCoinData();
-setInterval(fetchCoinData, 10000);
-log('🚀 Bot initialized. Multi-coin trading mode.');
+updateSentiment();
+setInterval(fetchCoinData, 5000);
+setInterval(updateSentiment, 30000);
+log('🚀 Dashboard initialized');
 </script>
 </body>
 </html>
