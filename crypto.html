@@ -97,7 +97,7 @@
       <div class="subtitle">BTC Paper Trading + Live Signals</div>
     </div>
 
-    <div class="status-banner" id="statusBanner">⚠️ API Rate Limited - Retrying in 60s</div>
+    <div class="status-banner" id="statusBanner">⚠️ API Error - Retrying...</div>
 
     <div class="tabs">
       <div class="tab active" onclick="showTab('trading', event)">Trading</div>
@@ -197,18 +197,6 @@
         <button class="btn btn-buy" onclick="saveTelegram()">Save Telegram</button>
         <button class="btn btn-buy" onclick="testTelegram()">Test Alert</button>
       </div>
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">Strategy Settings</h3>
-        <div class="toggle-row">
-          <div class="toggle-label">RSI Oversold < 30</div>
-          <input class="input" id="rsiOversold" value="30" style="width: 80px; margin: 0;">
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-label">RSI Overbought > 70</div>
-          <input class="input" id="rsiOverbought" value="70" style="width: 80px; margin: 0;">
-        </div>
-        <button class="btn btn-buy" onclick="saveStrategy()">Save Strategy</button>
-      </div>
     </div>
   </div>
 
@@ -223,19 +211,16 @@ const STATE = {
   signal: 'HOLD',
   balance: 10000, coinHolding: 0, trades: 0, autoTrade: false,
   supabase: null, tgToken: '', tgChat: '',
-  rsiOversold: 30, rsiOverbought: 70,
-  lastFetchTime: 0,
-  isRateLimited: false
+  lastFetchSuccess: false
 };
 
 const COIN_DATA = {
-  'bitcoin': { symbol: 'BTC', rank: 1 },
-  'ethereum': { symbol: 'ETH', rank: 2 },
-  'binancecoin': { symbol: 'BNB', rank: 4 }
+  'bitcoin': { symbol: 'BTC', rank: 1, cgId: 'bitcoin' },
+  'ethereum': { symbol: 'ETH', rank: 2, cgId: 'ethereum' },
+  'binancecoin': { symbol: 'BNB', rank: 4, cgId: 'binancecoin' }
 };
 
-const CG_API = 'https://api.coingecko.com/api/v3';
-const FETCH_INTERVAL = 60000; // 60 sec - CoinGecko rate limit safe
+const FETCH_INTERVAL = 60000;
 
 function loadConfig() {
   STATE.sbUrl = localStorage.getItem('sbUrl') || '';
@@ -248,8 +233,6 @@ function loadConfig() {
   STATE.balance = parseFloat(localStorage.getItem('balance') || '10000');
   STATE.coinHolding = parseFloat(localStorage.getItem('coinHolding') || '0');
   STATE.trades = parseInt(localStorage.getItem('trades') || '0');
-  STATE.rsiOversold = parseInt(localStorage.getItem('rsiOversold') || '30');
-  STATE.rsiOverbought = parseInt(localStorage.getItem('rsiOverbought') || '70');
 
   document.getElementById('coinSelect').value = STATE.coinId;
   document.getElementById('currencySelect').value = STATE.currency;
@@ -260,8 +243,6 @@ function loadConfig() {
   document.getElementById('sbKey').value = STATE.sbKey;
   document.getElementById('tgToken').value = STATE.tgToken;
   document.getElementById('tgChat').value = STATE.tgChat;
-  document.getElementById('rsiOversold').value = STATE.rsiOversold;
-  document.getElementById('rsiOverbought').value = STATE.rsiOverbought;
   if (STATE.autoTrade) document.getElementById('autoToggle').classList.add('active');
   if (STATE.sbUrl && STATE.sbKey) initSupabase();
   updateUI();
@@ -288,14 +269,6 @@ function saveTelegram() {
   localStorage.setItem('tgToken', STATE.tgToken);
   localStorage.setItem('tgChat', STATE.tgChat);
   log('✅ Telegram saved');
-}
-
-function saveStrategy() {
-  STATE.rsiOversold = parseInt(document.getElementById('rsiOversold').value);
-  STATE.rsiOverbought = parseInt(document.getElementById('rsiOverbought').value);
-  localStorage.setItem('rsiOversold', STATE.rsiOversold);
-  localStorage.setItem('rsiOverbought', STATE.rsiOverbought);
-  log('✅ Strategy saved');
 }
 
 async function sendTelegram(msg) {
@@ -329,6 +302,7 @@ function changeCoin() {
 function updatePrices() {
   STATE.currency = document.getElementById('currencySelect').value;
   localStorage.setItem('currency', STATE.currency);
+  document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
   displayPrices();
 }
 
@@ -344,22 +318,16 @@ function displayPrices() {
 }
 
 async function fetchCoinData() {
-  const now = Date.now();
-  if (now - STATE.lastFetchTime < 55000) return; // Prevent rapid calls
-  
-  STATE.lastFetchTime = now;
-  
   try {
-    const res = await fetch(`${CG_API}/coins/${STATE.coinId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false`);
+    document.getElementById('coinChange').textContent = 'Fetching...';
     
-    if (res.status === 429) {
-      STATE.isRateLimited = true;
-      document.getElementById('statusBanner').style.display = 'block';
-      log('❌ Rate limited by CoinGecko - Waiting 60s');
-      return;
+    // Primary: CoinGecko
+    let url = `https://api.coingecko.com/api/v3/coins/${COIN_DATA[STATE.coinId].cgId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false`;
+    let res = await fetch(url);
+    
+    if (!res.ok) {
+      throw new Error(`CoinGecko HTTP ${res.status}`);
     }
-    
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     
     const data = await res.json();
     const m = data.market_data;
@@ -370,15 +338,20 @@ async function fetchCoinData() {
     STATE.change24h = m.price_change_percentage_24h;
     STATE.volume24h = m.total_volume[STATE.currency];
     STATE.marketRank = m.market_cap_rank;
-    STATE.isRateLimited = false;
+    STATE.lastFetchSuccess = true;
+    
     document.getElementById('statusBanner').style.display = 'none';
-
     displayPrices();
     updateSignal();
     updateUI();
+    log(`✅ Price updated: ${STATE.currency.toUpperCase()}${STATE.price.toFixed(2)}`);
+    
   } catch(e) {
+    STATE.lastFetchSuccess = false;
+    document.getElementById('statusBanner').style.display = 'block';
+    document.getElementById('coinChange').textContent = 'API Error - Check Logs';
     log('❌ Fetch error: ' + e.message);
-    document.getElementById('coinChange').textContent = 'Error - Retrying...';
+    console.error('Fetch failed:', e);
   }
 }
 
@@ -393,6 +366,8 @@ function updateSignal() {
     signal = 'BUY'; reason = 'Uptrend: +' + STATE.change24h.toFixed(2) + '%'; signalClass = 'BULLISH';
   } else if (STATE.change24h < -1) {
     signal = 'SELL'; reason = 'Downtrend: ' + STATE.change24h.toFixed(2) + '%'; signalClass = 'BEARISH';
+  } else {
+    signal = 'HOLD'; reason = 'Sideways: ' + STATE.change24h.toFixed(2) + '%'; signalClass = 'SIDEWAYS';
   }
 
   STATE.signal = signal;
@@ -477,10 +452,11 @@ function log(msg) {
   logBox.innerHTML = `<div class="log-item">[${time}] ${msg}</div>` + logBox.innerHTML;
 }
 
+// INIT
 loadConfig();
-fetchCoinData();
-setInterval(fetchCoinData, FETCH_INTERVAL);
-log('🚀 Dashboard initialized - CoinGecko API Active (60s interval)');
+fetchCoinData(); // PEHLA CALL TURANT
+setInterval(fetchCoinData, FETCH_INTERVAL); // FIR HAR 60 SEC
+log('🚀 Dashboard initialized - CoinGecko API Active');
 </script>
 </body>
 </html>
