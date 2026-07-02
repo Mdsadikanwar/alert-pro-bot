@@ -75,7 +75,7 @@
     .log-item { padding: 4px 0; border-bottom: 1px solid #1e293b; }
     .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
     .tab {
-      flex: 1; min-width: 80px; padding: 10px; background: rgba(15, 23, 42, 0.6);
+      flex: 1; min-width: 70px; padding: 10px; background: rgba(15, 23, 42, 0.6);
       border: 1px solid #334155; border-radius: 10px; text-align: center;
       font-size: 12px; font-weight: 600; cursor: pointer;
     }
@@ -100,12 +100,13 @@
     <div class="status-banner" id="statusBanner">⚠️ API Error - Retrying...</div>
 
     <div class="tabs">
-      <div class="tab active" onclick="showTab('trading', event)">Trading</div>
+      <div class="tab active" onclick="showTab('dashboard', event)">Dashboard</div>
+      <div class="tab" onclick="showTab('trading', event)">Trading</div>
       <div class="tab" onclick="showTab('settings', event)">Settings</div>
       <div class="tab" onclick="showTab('logs', event)">Logs</div>
     </div>
 
-    <div id="trading">
+    <div id="dashboard">
       <div class="card">
         <div class="select-row">
           <select class="input" id="coinSelect" onchange="changeCoin()">
@@ -149,6 +150,11 @@
           <div class="signal-text" id="signalText">HOLD</div>
           <div class="signal-reason" id="signalReason">Waiting for data...</div>
         </div>
+      </div>
+    </div>
+
+    <div id="trading" class="hidden">
+      <div class="card">
         <div class="toggle-row">
           <div class="toggle-label">Auto Trading</div>
           <div class="toggle" id="autoToggle" onclick="toggleAuto()"><div class="toggle-dot"></div></div>
@@ -321,7 +327,6 @@ async function fetchCoinData() {
   try {
     document.getElementById('coinChange').textContent = 'Fetching...';
     
-    // Primary: CoinGecko
     let url = `https://api.coingecko.com/api/v3/coins/${COIN_DATA[STATE.coinId].cgId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false`;
     let res = await fetch(url);
     
@@ -441,7 +446,7 @@ function updateUI() {
 
 function showTab(tab, event) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('#trading, #settings, #logs').forEach(d => d.classList.add('hidden'));
+  document.querySelectorAll('#dashboard, #trading, #settings, #logs').forEach(d => d.classList.add('hidden'));
   event.target.classList.add('active');
   document.getElementById(tab).classList.remove('hidden');
 }
@@ -454,8 +459,8 @@ function log(msg) {
 
 // INIT
 loadConfig();
-fetchCoinData(); // PEHLA CALL TURANT
-setInterval(fetchCoinData, FETCH_INTERVAL); // FIR HAR 60 SEC
+fetchCoinData();
+setInterval(fetchCoinData, FETCH_INTERVAL);
 log('🚀 Dashboard initialized - CoinGecko API Active');
 </script>
 </body>
