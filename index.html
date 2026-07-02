@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AlertPro Terminal - Auto BTC Bot</title>
+  <title>AlertPro Terminal</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow-x: hidden; }
@@ -13,416 +12,91 @@
       font-family: 'Inter', sans-serif; 
       background: #0a0e1a; 
       color: #e2e8f0; 
-      padding: 16px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
     }
-    
-    .container { max-width: 600px; width: 100%; margin: 0 auto; position: relative; z-index: 1; }
-    .header { text-align: center; margin-bottom: 24px; }
+    .container { max-width: 500px; width: 100%; margin: 0 auto; }
+    .header { text-align: center; margin-bottom: 40px; }
     .logo { 
-      font-size: 28px; font-weight: 800; margin-bottom: 8px;
+      font-size: 32px; font-weight: 800; margin-bottom: 8px;
       background: linear-gradient(135deg, #10b981, #34d399);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .subtitle { color: #94a3b8; font-size: 13px; font-weight: 500; }
-    
-    .card { 
-      background: rgba(19, 27, 46, 0.6); backdrop-filter: blur(20px);
-      border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 16px; 
-      padding: 20px; margin-bottom: 16px;
+    .subtitle { color: #94a3b8; font-size: 14px; font-weight: 500; }
+    .market-card { 
+      background: rgba(19, 27, 46, 0.6); 
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(30, 41, 59, 0.8); 
+      border-radius: 20px; 
+      padding: 28px 24px; 
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: block;
     }
-    
-    .price-box { text-align: center; }
-    .price-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
-    .price { font-size: 36px; font-weight: 800; color: #f59e0b; }
-    .price-change { font-size: 14px; margin-top: 4px; }
-    .green { color: #10b981; }
-    .red { color: #ef4444; }
-    
-    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
-    .stat { background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 12px; text-align: center; }
-    .stat-label { font-size: 10px; color: #64748b; margin-bottom: 4px; }
-    .stat-value { font-size: 18px; font-weight: 700; }
-    
-    .signal-box { text-align: center; padding: 16px; border-radius: 12px; margin: 16px 0; }
-    .signal-BUY { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; }
-    .signal-SELL { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; }
-    .signal-HOLD { background: rgba(100, 116, 139, 0.15); border: 1px solid #64748b; }
-    .signal-text { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
-    .signal-reason { font-size: 12px; color: #94a3b8; }
-    
-    .toggle-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
-    .toggle-label { font-size: 14px; font-weight: 600; }
-    .toggle { 
-      width: 50px; height: 26px; background: #334155; border-radius: 13px; 
-      position: relative; cursor: pointer; transition: 0.3s;
+    .market-card:hover {
+      border-color: #10b981;
+      transform: translateY(-4px);
+      box-shadow: 0 10px 40px rgba(16, 185, 129, 0.2);
     }
-    .toggle.active { background: #10b981; }
-    .toggle-dot { 
-      width: 22px; height: 22px; background: white; border-radius: 50%; 
-      position: absolute; top: 2px; left: 2px; transition: 0.3s;
+    .market-card:active { transform: scale(0.98); }
+    .market-title {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      text-align: center;
     }
-    .toggle.active .toggle-dot { left: 26px; }
-    
-    .btn { 
-      width: 100%; padding: 14px; border: none; border-radius: 12px; 
-      font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px;
+    .crypto-title { color: #f59e0b; }
+    .share-title { color: #10b981; }
+    .market-desc {
+      color: #94a3b8;
+      font-size: 13px;
+      text-align: center;
+      font-weight: 500;
     }
-    .btn-buy { background: #10b981; color: white; }
-    .btn-sell { background: #ef4444; color: white; }
-    .btn:active { transform: scale(0.98); }
-    
-    .input { 
-      width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.6); 
-      border: 1px solid #334155; border-radius: 10px; color: #e2e8f0; 
-      margin: 8px 0; font-size: 14px;
+    .share-card { opacity: 0.6; cursor: not-allowed; }
+    .share-card:hover { transform: none; border-color: rgba(30, 41, 59, 0.8); box-shadow: none; }
+    .badge {
+      display: inline-block;
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-top: 8px;
+      font-weight: 700;
     }
-    
-    .log { 
-      background: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 12px; 
-      max-height: 200px; overflow-y: auto; font-size: 11px; font-family: monospace;
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #475569;
+      font-size: 12px;
     }
-    .log-item { padding: 4px 0; border-bottom: 1px solid #1e293b; }
-    
-    .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-    .tab { 
-      flex: 1; padding: 10px; background: rgba(15, 23, 42, 0.6); 
-      border: 1px solid #334155; border-radius: 10px; text-align: center; 
-      font-size: 13px; font-weight: 600; cursor: pointer;
-    }
-    .tab.active { background: #10b981; border-color: #10b981; color: white; }
-    
-    .hidden { display: none; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo">🚨 AlertPro Auto Bot</div>
-      <div class="subtitle">BTC Paper Trading + Live Signals</div>
+      <div class="logo">🔔 AlertPro Terminal</div>
+      <div class="subtitle">Select Market to Manage Strategies</div>
     </div>
 
-    <div class="tabs">
-      <div class="tab active" onclick="showTab('trading')">Trading</div>
-      <div class="tab" onclick="showTab('settings')">Settings</div>
-      <div class="tab" onclick="showTab('logs')">Logs</div>
+    <a href="crypto.html" class="market-card">
+      <div class="market-title crypto-title">₿ CRYPTO</div>
+      <div class="market-desc">BTC, ETH, Altcoins • Real-time Signal Strategies</div>
+    </a>
+
+    <div class="market-card share-card">
+      <div class="market-title share-title">📈 SHARE MARKET</div>
+      <div class="market-desc">Nifty 50, Bank Nifty • Professional Trading Setup</div>
+      <div style="text-align: center;"><span class="badge">COMING SOON</span></div>
     </div>
 
-    <!-- TRADING TAB -->
-    <div id="trading">
-      <div class="card price-box">
-        <div class="price-label">BTC/USDT</div>
-        <div class="price" id="btcPrice">$0.00</div>
-        <div class="price-change" id="btcChange">Loading...</div>
-        
-        <div class="stats">
-          <div class="stat">
-            <div class="stat-label">RSI (14)</div>
-            <div class="stat-value" id="rsi">0</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">EMA 9/21</div>
-            <div class="stat-value" id="ema">0/0</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div id="signalBox" class="signal-box signal-HOLD">
-          <div class="signal-text" id="signalText">HOLD</div>
-          <div class="signal-reason" id="signalReason">Waiting for data...</div>
-        </div>
-
-        <div class="toggle-row">
-          <div class="toggle-label">Auto Trading</div>
-          <div class="toggle" id="autoToggle" onclick="toggleAuto()"><div class="toggle-dot"></div></div>
-        </div>
-
-        <div class="stats">
-          <div class="stat">
-            <div class="stat-label">Balance USDT</div>
-            <div class="stat-value" id="balance">$10000</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">BTC Holdings</div>
-            <div class="stat-value" id="btcHold">0.0000</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Total P&L</div>
-            <div class="stat-value" id="pnl">$0.00</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Trades</div>
-            <div class="stat-value" id="trades">0</div>
-          </div>
-        </div>
-
-        <button class="btn btn-buy" onclick="manualTrade('BUY')">Manual BUY</button>
-        <button class="btn btn-sell" onclick="manualTrade('SELL')">Manual SELL</button>
-      </div>
-    </div>
-
-    <!-- SETTINGS TAB -->
-    <div id="settings" class="hidden">
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">Supabase Config</h3>
-        <input class="input" id="sbUrl" placeholder="Supabase URL">
-        <input class="input" id="sbKey" placeholder="Supabase Anon Key">
-        <button class="btn btn-buy" onclick="saveSupabase()">Save Supabase</button>
-      </div>
-
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">Telegram Alerts</h3>
-        <input class="input" id="tgToken" placeholder="Bot Token">
-        <input class="input" id="tgChat" placeholder="Chat ID">
-        <button class="btn btn-buy" onclick="saveTelegram()">Save Telegram</button>
-        <button class="btn btn-buy" onclick="testTelegram()">Test Alert</button>
-      </div>
-
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">Strategy Settings</h3>
-        <div class="toggle-row">
-          <div class="toggle-label">RSI Oversold < 30</div>
-          <input class="input" id="rsiBuy" value="30" style="width: 80px;">
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-label">RSI Overbought > 70</div>
-          <input class="input" id="rsiSell" value="70" style="width: 80px;">
-        </div>
-        <button class="btn btn-buy" onclick="saveStrategy()">Save Strategy</button>
-      </div>
-    </div>
-
-    <!-- LOGS TAB -->
-    <div id="logs" class="hidden">
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">Trade Logs</h3>
-        <div class="log" id="logBox"></div>
-      </div>
-    </div>
+    <div class="footer">Powered by AlertPro AI • v2.0</div>
   </div>
-
-<script>
-const STATE = {
-  price: 0, rsi: 50, ema9: 0, ema21: 0, signal: 'HOLD',
-  balance: 10000, btc: 0, trades: 0, autoTrade: false,
-  supabase: null, tgToken: '', tgChat: '',
-  rsiBuyLevel: 30, rsiSellLevel: 70
-};
-
-// LOAD SAVED CONFIG
-function loadConfig() {
-  STATE.sbUrl = localStorage.getItem('sbUrl') || '';
-  STATE.sbKey = localStorage.getItem('sbKey') || '';
-  STATE.tgToken = localStorage.getItem('tgToken') || '';
-  STATE.tgChat = localStorage.getItem('tgChat') || '';
-  STATE.autoTrade = localStorage.getItem('autoTrade') === 'true';
-  STATE.rsiBuyLevel = parseInt(localStorage.getItem('rsiBuy') || '30');
-  STATE.rsiSellLevel = parseInt(localStorage.getItem('rsiSell') || '70');
-  
-  document.getElementById('sbUrl').value = STATE.sbUrl;
-  document.getElementById('sbKey').value = STATE.sbKey;
-  document.getElementById('tgToken').value = STATE.tgToken;
-  document.getElementById('tgChat').value = STATE.tgChat;
-  document.getElementById('rsiBuy').value = STATE.rsiBuyLevel;
-  document.getElementById('rsiSell').value = STATE.rsiSellLevel;
-  
-  if (STATE.autoTrade) document.getElementById('autoToggle').classList.add('active');
-  if (STATE.sbUrl && STATE.sbKey) initSupabase();
-}
-
-// SUPABASE
-function initSupabase() {
-  try {
-    STATE.supabase = supabase.createClient(STATE.sbUrl, STATE.sbKey);
-    log('✅ Supabase connected');
-  } catch(e) { log('❌ Supabase error: ' + e.message); }
-}
-
-function saveSupabase() {
-  STATE.sbUrl = document.getElementById('sbUrl').value;
-  STATE.sbKey = document.getElementById('sbKey').value;
-  localStorage.setItem('sbUrl', STATE.sbUrl);
-  localStorage.setItem('sbKey', STATE.sbKey);
-  initSupabase();
-}
-
-// TELEGRAM
-function saveTelegram() {
-  STATE.tgToken = document.getElementById('tgToken').value;
-  STATE.tgChat = document.getElementById('tgChat').value;
-  localStorage.setItem('tgToken', STATE.tgToken);
-  localStorage.setItem('tgChat', STATE.tgChat);
-  log('✅ Telegram saved');
-}
-
-async function sendTelegram(msg) {
-  if (!STATE.tgToken || !STATE.tgChat) return;
-  try {
-    await fetch(`https://api.telegram.org/bot${STATE.tgToken}/sendMessage`, {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ chat_id: STATE.tgChat, text: msg, parse_mode: 'HTML' })
-    });
-  } catch(e) { console.log(e); }
-}
-
-function testTelegram() {
-  sendTelegram('🧪 <b>AlertPro Test</b>\nBot connected successfully!');
-  log('📤 Test alert sent');
-}
-
-// STRATEGY
-function saveStrategy() {
-  STATE.rsiBuyLevel = parseInt(document.getElementById('rsiBuy').value);
-  STATE.rsiSellLevel = parseInt(document.getElementById('rsiSell').value);
-  localStorage.setItem('rsiBuy', STATE.rsiBuyLevel);
-  localStorage.setItem('rsiSell', STATE.rsiSellLevel);
-  log('✅ Strategy saved');
-}
-
-// FETCH BTC DATA
-async function fetchBTC() {
-  try {
-    const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
-    const data = await res.json();
-    STATE.price = parseFloat(data.lastPrice);
-    const change = parseFloat(data.priceChangePercent);
-    
-    document.getElementById('btcPrice').textContent = '$' + STATE.price.toFixed(2);
-    document.getElementById('btcChange').textContent = (change >= 0 ? '▲ ' : '▼ ') + change.toFixed(2) + '% (24h)';
-    document.getElementById('btcChange').className = 'price-change ' + (change >= 0 ? 'green' : 'red');
-    
-    // Fetch klines for RSI/EMA
-    const klines = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=5m&limit=50');
-    const candles = await klines.json();
-    const closes = candles.map(c => parseFloat(c[4]));
-    
-    calculateIndicators(closes);
-    updateSignal();
-    updateUI();
-  } catch(e) { log('❌ Fetch error: ' + e.message); }
-}
-
-function calculateIndicators(closes) {
-  // RSI
-  let gains = 0, losses = 0;
-  for(let i = 1; i < 15; i++) {
-    const diff = closes[closes.length - i] - closes[closes.length - i - 1];
-    if (diff > 0) gains += diff; else losses -= diff;
-  }
-  const avgGain = gains / 14, avgLoss = losses / 14;
-  STATE.rsi = 100 - (100 / (1 + avgGain / avgLoss));
-  
-  // EMA 9 & 21
-  const k9 = 2 / (9 + 1), k21 = 2 / (21 + 1);
-  STATE.ema9 = closes[closes.length - 9];
-  STATE.ema21 = closes[closes.length - 21];
-  for(let i = closes.length - 8; i < closes.length; i++) {
-    STATE.ema9 = closes[i] * k9 + STATE.ema9 * (1 - k9);
-  }
-  for(let i = closes.length - 20; i < closes.length; i++) {
-    STATE.ema21 = closes[i] * k21 + STATE.ema21 * (1 - k21);
-  }
-  
-  document.getElementById('rsi').textContent = STATE.rsi.toFixed(1);
-  document.getElementById('ema').textContent = STATE.ema9.toFixed(0) + '/' + STATE.ema21.toFixed(0);
-}
-
-function updateSignal() {
-  let signal = 'HOLD', reason = 'No clear signal';
-  
-  if (STATE.rsi < STATE.rsiBuyLevel && STATE.ema9 > STATE.ema21) {
-    signal = 'BUY';
-    reason = `RSI oversold (${STATE.rsi.toFixed(1)}) + EMA bullish`;
-  } else if (STATE.rsi > STATE.rsiSellLevel && STATE.ema9 < STATE.ema21) {
-    signal = 'SELL';
-    reason = `RSI overbought (${STATE.rsi.toFixed(1)}) + EMA bearish`;
-  }
-  
-  if (signal !== STATE.signal) {
-    STATE.signal = signal;
-    document.getElementById('signalText').textContent = signal;
-    document.getElementById('signalReason').textContent = reason;
-    document.getElementById('signalBox').className = 'signal-box signal-' + signal;
-    
-    if (signal !== 'HOLD') {
-      log(`🎯 Signal: ${signal} - ${reason}`);
-      sendTelegram(`🎯 <b>${signal} SIGNAL</b>\nPrice: $${STATE.price.toFixed(2)}\nRSI: ${STATE.rsi.toFixed(1)}\n${reason}`);
-      if (STATE.autoTrade) executeTrade(signal);
-    }
-  }
-}
-
-function executeTrade(type) {
-  const amount = STATE.balance * 0.95; // 95% of balance
-  if (type === 'BUY' && STATE.balance > 10) {
-    const btcBuy = amount / STATE.price;
-    STATE.btc += btcBuy;
-    STATE.balance -= amount;
-    STATE.trades++;
-    log(`✅ BUY: ${btcBuy.toFixed(6)} BTC @ $${STATE.price.toFixed(2)}`);
-    sendTelegram(`✅ <b>BUY EXECUTED</b>\n${btcBuy.toFixed(6)} BTC @ $${STATE.price.toFixed(2)}\nBalance: $${STATE.balance.toFixed(2)}`);
-    saveToSupabase('BUY', btcBuy, STATE.price);
-  } else if (type === 'SELL' && STATE.btc > 0.00001) {
-    const usdtSell = STATE.btc * STATE.price;
-    STATE.balance += usdtSell;
-    log(`✅ SELL: ${STATE.btc.toFixed(6)} BTC @ $${STATE.price.toFixed(2)}`);
-    sendTelegram(`✅ <b>SELL EXECUTED</b>\n${STATE.btc.toFixed(6)} BTC @ $${STATE.price.toFixed(2)}\nBalance: $${STATE.balance.toFixed(2)}`);
-    saveToSupabase('SELL', STATE.btc, STATE.price);
-    STATE.btc = 0;
-    STATE.trades++;
-  }
-  updateUI();
-}
-
-function manualTrade(type) {
-  executeTrade(type);
-}
-
-async function saveToSupabase(type, amount, price) {
-  if (!STATE.supabase) return;
-  try {
-    await STATE.supabase.from('trades').insert([{
-      type, amount, price, timestamp: new Date().toISOString(),
-      balance: STATE.balance, btc: STATE.btc
-    }]);
-  } catch(e) { log('❌ DB error: ' + e.message); }
-}
-
-function toggleAuto() {
-  STATE.autoTrade = !STATE.autoTrade;
-  localStorage.setItem('autoTrade', STATE.autoTrade);
-  document.getElementById('autoToggle').classList.toggle('active');
-  log(STATE.autoTrade ? '🤖 Auto Trading ON' : '⏸️ Auto Trading OFF');
-}
-
-function updateUI() {
-  document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2);
-  document.getElementById('btcHold').textContent = STATE.btc.toFixed(6);
-  document.getElementById('trades').textContent = STATE.trades;
-  const totalValue = STATE.balance + (STATE.btc * STATE.price);
-  const pnl = totalValue - 10000;
-  document.getElementById('pnl').textContent = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toFixed(2);
-  document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0 ? 'green' : 'red');
-}
-
-function showTab(tab) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('#trading, #settings, #logs').forEach(d => d.classList.add('hidden'));
-  event.target.classList.add('active');
-  document.getElementById(tab).classList.remove('hidden');
-}
-
-function log(msg) {
-  const logBox = document.getElementById('logBox');
-  const time = new Date().toLocaleTimeString();
-  logBox.innerHTML = `<div class="log-item">[${time}] ${msg}</div>` + logBox.innerHTML;
-}
-
-// INIT
-loadConfig();
-fetchBTC();
-setInterval(fetchBTC, 10000); // Update every 10 sec
-log('🚀 Bot initialized. Paper trading mode.');
-</script>
 </body>
 </html>
