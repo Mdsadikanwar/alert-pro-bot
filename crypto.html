@@ -200,6 +200,7 @@ const STATE = {
   signal: 'HOLD',
   balance: 10000, coinHolding: 0, trades: 0, autoTrade: false,
   supabase: null, tgToken: '', tgChat: '',
+  sbUrl: '', sbKey: '',
   lastFetchSuccess: false
 };
 
@@ -221,7 +222,7 @@ function showTab(tab, event) {
   document.getElementById(tab).classList.remove('hidden');
 }
 
-function loadConfig() {
+async function loadConfig() {
   STATE.sbUrl = localStorage.getItem('sbUrl') || '';
   STATE.sbKey = localStorage.getItem('sbKey') || '';
   STATE.tgToken = localStorage.getItem('tgToken') || '';
@@ -233,6 +234,39 @@ function loadConfig() {
   STATE.coinHolding = parseFloat(localStorage.getItem('coinHolding') || '0');
   STATE.trades = parseInt(localStorage.getItem('trades') || '0');
 
+  // Agar Supabase credentials hain to cloud se load karo
+  if (STATE.sbUrl && STATE.sbKey) {
+    try {
+      STATE.supabase = supabase.createClient(STATE.sbUrl, STATE.sbKey);
+      const { data, error } = await STATE.supabase
+        .from('app_settings')
+        .select('*')
+        .eq('id', 1)
+        .single();
+        
+      if (!error && data) {
+        // Tere table ke columns ke hisab se
+        STATE.sbKey = data.supabase_key || STATE.sbKey;
+        STATE.tgToken = data.telegram_token || STATE.tgToken;
+        STATE.tgChat = data.telegram_chat_id || STATE.tgChat;
+        STATE.balance = data.paper_balance || STATE.balance;
+        STATE.coinHolding = data.coin_holding || STATE.coinHolding;
+        STATE.trades = data.trades || STATE.trades;
+        
+        // Local bhi update kar de
+        localStorage.setItem('tgToken', STATE.tgToken);
+        localStorage.setItem('tgChat', STATE.tgChat);
+        localStorage.setItem('balance', STATE.balance);
+        localStorage.setItem('coinHolding', STATE.coinHolding);
+        localStorage.setItem('trades', STATE.trades);
+        
+        log('✅ Cloud se Balance/Trades sab load ho gaya');
+      }
+    } catch(e) { 
+      log('⚠️ Cloud load fail: ' + e.message); 
+    }
+  }
+
   document.getElementById('coinSelect').value = STATE.coinId;
   document.getElementById('currencySelect').value = STATE.currency;
   STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol;
@@ -242,7 +276,6 @@ function loadConfig() {
   document.getElementById('tgToken').value = STATE.tgToken;
   document.getElementById('tgChat').value = STATE.tgChat;
   if (STATE.autoTrade) document.getElementById('autoToggle').classList.add('active');
-  if (STATE.sbUrl && STATE.sbKey) initSupabase();
   updateUI();
 }
 
@@ -253,12 +286,44 @@ function initSupabase() {
   } catch(e) { log('❌ Supabase error: ' + e.message); }
 }
 
-function saveSupabase() {
-  STATE.sbUrl = document.getElementById('sbUrl').value;
-  STATE.sbKey = document.getElementById('sbKey').value;
-  localStorage.setItem('sbUrl', STATE.sbUrl);
-  localStorage.setItem('sbKey', STATE.sbKey);
-  initSupabase();
+async function saveSupabase() {
+  const url = document.getElementById('sbUrl').value.trim();
+  const key = document.getElementById('sbKey').value.trim();
+  
+  if (!url || !key) {
+    log('⚠️ Supabase URL/Key daal bhai');
+    return;
+  }
+  
+  localStorage.setItem('sbUrl', url);
+  localStorage.setItem('sbKey', key);
+  
+  try {
+    STATE.supabase = supabase.createClient(url, key);
+    
+    // Tere table ke column names ke hisab se
+    const { error } = await STATE.supabase
+      .from('app_settings')
+      .upsert({
+        id: 1,
+        supabase_key: key,
+        telegram_token: STATE.tgToken,
+        telegram_chat_id: STATE.tgChat,
+        paper_balance: STATE.balance,
+        coin_holding: STATE.coinHolding,
+        trades: STATE.trades,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+      
+    if (error) throw error;
+    
+    STATE.sbUrl = url;
+    STATE.sbKey = key;
+    log('✅ Cloud mein save ho gaya! Phone pe auto load hoga');
+    sendTelegram('✅ <b>Cloud Sync ON</b>\nAb phone/laptop sab sync rahega');
+  } catch (e) {
+    log('❌ Save failed: ' + e.message);
+  }
 }
 
 function saveTelegram() {
