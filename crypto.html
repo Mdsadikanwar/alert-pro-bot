@@ -626,6 +626,7 @@ function renderStrategies() {
         <div class="toggle ${s.is_active ? 'active' : ''}" onclick="toggleStrategy(${s.id})">
           <div class="toggle-dot"></div>
         </div>
+      </div>
       <button class="btn btn-sell" style="margin-top:8px;padding:8px;font-size:12px;" onclick="deleteStrategy(${s.id})">Delete</button>
     </div>
   `).join('');
@@ -663,43 +664,4 @@ async function saveStrategy() {
     
     document.getElementById('strategyName').value = '';
     document.getElementById('buyCondition').value = '';
-    document.getElementById('sellCondition').value = '';
-    
-    await loadStrategies();
-  } catch(e) {
-    log('❌ Save failed: ' + e.message);
-  }
-}
-
-async function toggleStrategy(id) {
-  const strategy = STRATEGIES.find(s => s.id === id);
-  if (!strategy) return;
-  
-  try {
-    const { error } = await STATE.supabase
-      .from('strategies')
-      .update({ is_active: !strategy.is_active })
-      .eq('id', id);
-      
-    if (error) throw error;
-    
-    strategy.is_active = !strategy.is_active;
-    log(`${strategy.is_active ? '▶️' : '⏸️'} Strategy ${strategy.is_active ? 'Activated' : 'Deactivated'}: ${strategy.name}`);
-    sendTelegram(`${strategy.is_active ? '▶️' : '⏸️'} <b>Strategy ${strategy.is_active ? 'ON' : 'OFF'}</b>\n${strategy.name}`);
-    renderStrategies();
-    
-    if (STATE.autoTrade && strategy.is_active) {
-      updateSignal();
-    }
-  } catch(e) {
-    log('❌ Toggle failed: ' + e.message);
-  }
-}
-
-async function deleteStrategy(id) {
-  if (!confirm('Strategy delete karni hai?')) return;
-  
-  try {
-    const { error } = await STATE.supabase.from('strategies').delete().eq('id', id);
-    if (error) throw error;
-    log('
+    document.getElement
