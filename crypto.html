@@ -222,7 +222,7 @@ const STATE = {
   marketRank: 1,
   signal: 'HOLD',
   balance: 10000, coinHolding: 0, trades: 0, autoTrade: false,
-  supabase: null, tgToken: '', tgChat: '',
+  supabase: null, sbUrl: '', sbKey: '', tgToken: '', tgChat: '',
   lastFetchSuccess: false
 };
 
@@ -234,30 +234,81 @@ const COIN_DATA = {
 
 const FETCH_INTERVAL = 60000;
 
-function loadConfig() {
+async function loadConfig() {
   STATE.sbUrl = localStorage.getItem('sbUrl') || '';
   STATE.sbKey = localStorage.getItem('sbKey') || '';
-  STATE.tgToken = localStorage.getItem('tgToken') || '';
-  STATE.tgChat = localStorage.getItem('tgChat') || '';
+  
+  if (STATE.sbUrl && STATE.sbKey) {
+    initSupabase();
+    await loadSettingsFromCloud();
+  } else {
+    STATE.tgToken = localStorage.getItem('tgToken') || '';
+    STATE.tgChat = localStorage.getItem('tgChat') || '';
+    STATE.balance = parseFloat(localStorage.getItem('balance') || '10000');
+    STATE.coinHolding = parseFloat(localStorage.getItem('coinHolding') || '0');
+    STATE.trades = parseInt(localStorage.getItem('trades') || '0');
+  }
+  
   STATE.autoTrade = localStorage.getItem('autoTrade') === 'true';
   STATE.coinId = localStorage.getItem('currentCoin') || 'bitcoin';
   STATE.currency = localStorage.getItem('currency') || 'usd';
-  STATE.balance = parseFloat(localStorage.getItem('balance') || '10000');
-  STATE.coinHolding = parseFloat(localStorage.getItem('coinHolding') || '0');
-  STATE.trades = parseInt(localStorage.getItem('trades') || '0');
-
-  document.getElementById('coinSelect').value = STATE.coinId;
-  document.getElementById('currencySelect').value = STATE.currency;
   STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol;
   STATE.marketRank = COIN_DATA[STATE.coinId].rank;
+  
+  document.getElementById('coinSelect').value = STATE.coinId;
+  document.getElementById('currencySelect').value = STATE.currency;
   document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
   document.getElementById('sbUrl').value = STATE.sbUrl;
   document.getElementById('sbKey').value = STATE.sbKey;
   document.getElementById('tgToken').value = STATE.tgToken;
   document.getElementById('tgChat').value = STATE.tgChat;
   if (STATE.autoTrade) document.getElementById('autoToggle').classList.add('active');
-  if (STATE.sbUrl && STATE.sbKey) initSupabase();
   updateUI();
+}
+
+async function loadSettingsFromCloud() {
+  if (!STATE.supabase) return;
+  try {
+    const { data, error } = await STATE.supabase
+      .from('app_settings')
+      .select('*')
+      .eq('id', 1)
+      .single();
+    
+    if (data && data.supabase_url) {
+      STATE.sbUrl = data.supabase_url || '';
+      STATE.sbKey = data.supabase_key || '';
+      STATE.tgToken = data.telegram_token || '';
+      STATE.tgChat = data.telegram_chat_id || '';
+      STATE.balance = parseFloat(data.paper_balance) || 10000;
+      STATE.coinHolding = parseFloat(data.coin_holding) || 0;
+      STATE.trades = parseInt(data.trades) || 0;
+      
+      log('✅ Settings loaded from Supabase Cloud');
+      document.getElementById('sbUrl').value = STATE.sbUrl;
+      document.getElementById('sbKey').value = STATE.sbKey;
+      document.getElementById('tgToken').value = STATE.tgToken;
+      document.getElementById('tgChat').value = STATE.tgChat;
+    }
+  } catch(e) { 
+    log('⚠️ Cloud load failed - Using localStorage');
+  }
+}
+
+async function saveSettingsToCloud() {
+  if (!STATE.supabase) return;
+  try {
+    await STATE.supabase.from('app_settings').upsert({
+      id: 1,
+      supabase_url: STATE.sbUrl,
+      supabase_key: STATE.sbKey,
+      telegram_token: STATE.tgToken,
+      telegram_chat_id: STATE.tgChat,
+      paper_balance: STATE.balance,
+      coin_holding: STATE.coinHolding,
+      trades: STATE.trades
+    });
+  } catch(e) { console.log(e); }
 }
 
 function initSupabase() {
@@ -267,20 +318,23 @@ function initSupabase() {
   } catch(e) { log('❌ Supabase error: ' + e.message); }
 }
 
-function saveSupabase() {
+async function saveSupabase() {
   STATE.sbUrl = document.getElementById('sbUrl').value;
   STATE.sbKey = document.getElementById('sbKey').value;
   localStorage.setItem('sbUrl', STATE.sbUrl);
   localStorage.setItem('sbKey', STATE.sbKey);
   initSupabase();
+  await saveSettingsToCloud();
+  log('✅ Settings saved to cloud! Phone pe bhi chalega');
 }
 
-function saveTelegram() {
+async function saveTelegram() {
   STATE.tgToken = document.getElementById('tgToken').value;
   STATE.tgChat = document.getElementById('tgChat').value;
   localStorage.setItem('tgToken', STATE.tgToken);
   localStorage.setItem('tgChat', STATE.tgChat);
-  log('✅ Telegram saved');
+  await saveSettingsToCloud();
+  log('✅ Telegram saved to cloud');
 }
 
 async function sendTelegram(msg) {
@@ -298,7 +352,7 @@ function testTelegram() {
   log('📤 Test alert sent');
 }
 
-function resetBalance() {
+async function resetBalance() {
   if (confirm('Balance $10,000 reset karna hai? Saare trades delete ho jayenge.')) {
     STATE.balance = 10000;
     STATE.coinHolding = 0;
@@ -306,6 +360,7 @@ function resetBalance() {
     localStorage.setItem('balance', '10000');
     localStorage.setItem('coinHolding', '0');
     localStorage.setItem('trades', '0');
+    await saveSettingsToCloud();
     updateUI();
     log('🔄 Balance reset to $10,000');
     sendTelegram('🔄 <b>Balance Reset</b>\nPaper trading balance reset to $10,000');
@@ -405,7 +460,7 @@ function updateSignal() {
   }
 }
 
-function executeTrade(type) {
+async function executeTrade(type) {
   const amount = STATE.balance * 0.95;
   if (type === 'BUY' && STATE.balance > 10) {
     const coinBuy = amount / STATE.price;
@@ -415,6 +470,7 @@ function executeTrade(type) {
     localStorage.setItem('balance', STATE.balance);
     localStorage.setItem('coinHolding', STATE.coinHolding);
     localStorage.setItem('trades', STATE.trades);
+    await saveSettingsToCloud();
     log(`✅ BUY: ${coinBuy.toFixed(6)} ${STATE.coinSymbol} @ ${STATE.currency.toUpperCase()}${STATE.price.toFixed(2)}`);
     sendTelegram(`🟢 <b>BUY ALERT - AlertPro Bot</b>\n\nPair: ${STATE.coinSymbol}/${STATE.currency.toUpperCase()}\nAction: BUY @ ${STATE.currency === 'usd' ? '$' : '₹'}${STATE.price.toFixed(2)}\nQty: ${coinBuy.toFixed(6)} ${STATE.coinSymbol}\nValue: ${STATE.currency === 'usd' ? '$' : '₹'}${amount.toFixed(2)}\n24h Change: ${STATE.change24h.toFixed(2)}% | Signal: ${STATE.signal}\nTime: ${new Date().toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}\nBalance: $${STATE.balance.toFixed(2)}`);
     saveToSupabase('BUY', coinBuy, STATE.price);
@@ -429,6 +485,7 @@ function executeTrade(type) {
     localStorage.setItem('balance', STATE.balance);
     localStorage.setItem('coinHolding', '0');
     localStorage.setItem('trades', STATE.trades);
+    await saveSettingsToCloud();
   }
   updateUI();
 }
@@ -460,28 +517,29 @@ function updateUI() {
   document.getElementById('trades').textContent = STATE.trades;
   const totalValue = STATE.balance + (STATE.coinHolding * STATE.price);
   const pnl = totalValue - 10000;
-  document.getElementById('pnl').textContent = (pnl >= 0? '+$' : '-$') + Math.abs(pnl).toFixed(2);
+  document.getElementById('pnl').textContent = (pnl >= 0? '+' : '') + '$' + pnl.toFixed(2);
   document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0? 'green' : 'red');
 }
 
-function showTab(tab, event) {
+function log(msg) {
+  const box = document.getElementById('logBox');
+  const time = new Date().toLocaleTimeString('en-IN', {timeZone: 'Asia/Kolkata'});
+  box.innerHTML = `<div class="log-item">[${time}] ${msg}</div>` + box.innerHTML;
+  if (box.children.length > 50) box.removeChild(box.lastChild);
+}
+
+function showTab(tab, e) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('#dashboard, #trading, #settings, #logs').forEach(d => d.classList.add('hidden'));
-  event.target.classList.add('active');
+  e.target.classList.add('active');
+  ['dashboard', 'trading', 'settings', 'logs'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
   document.getElementById(tab).classList.remove('hidden');
 }
 
-function log(msg) {
-  const logBox = document.getElementById('logBox');
-  const time = new Date().toLocaleTimeString();
-  logBox.innerHTML = `<div class="log-item">[${time}] ${msg}</div>` + logBox.innerHTML;
-}
-
-// INIT
 loadConfig();
 fetchCoinData();
 setInterval(fetchCoinData, FETCH_INTERVAL);
-log('🚀 Dashboard initialized - CoinGecko API Active');
 </script>
 </body>
 </html>
