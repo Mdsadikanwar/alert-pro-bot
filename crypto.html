@@ -63,6 +63,7 @@
       <div class="tab" onclick="showTab('settings', event)">Settings</div>
       <div class="tab" onclick="showTab('logs', event)">Logs</div>
     </div>
+
     <div id="dashboard">
       <div class="card">
         <div class="select-row">
@@ -88,6 +89,7 @@
         </div>
       </div>
     </div>
+
     <div id="trading" class="hidden">
       <div class="card">
         <div class="toggle-row">
@@ -104,6 +106,8 @@
         <button class="btn btn-buy" onclick="manualTrade('BUY')">Manual BUY</button>
         <button class="btn btn-sell" onclick="manualTrade('SELL')">Manual SELL</button>
       </div>
+    </div>
+
     <div id="strategies" class="hidden">
       <div class="card">
         <h3 style="margin-bottom: 12px;">Create Strategy</h3>
@@ -124,11 +128,14 @@
         <div id="strategyList"></div>
       </div>
     </div>
+
     <div id="logs" class="hidden">
       <div class="card">
         <h3 style="margin-bottom: 12px;">Trade Logs</h3>
         <div class="log" id="logBox"></div>
       </div>
+    </div>
+
     <div id="settings" class="hidden">
       <div class="card">
         <h3 style="margin-bottom: 12px;">Reset Paper Trading</h3>
@@ -150,12 +157,14 @@
       </div>
     </div>
   </div>
+
 <script>
 const STATE = { coinId: 'bitcoin', coinSymbol: 'BTC', currency: 'usd', price: 0, high24h: 0, low24h: 0, change24h: 0, signal: 'HOLD', balance: 10000, coinHolding: 0, trades: 0, autoTrade: false, supabase: null, tgToken: '', tgChat: '', sbUrl: '', sbKey: '', lastFetchSuccess: false, lastTradeTime: 0 };
 const COIN_DATA = { 'bitcoin': { symbol: 'BTC', rank: 1, cgId: 'bitcoin' }, 'ethereum': { symbol: 'ETH', rank: 2, cgId: 'ethereum' }, 'binancecoin': { symbol: 'BNB', rank: 4, cgId: 'binancecoin' } };
 const FETCH_INTERVAL = 60000;
 const TRADE_COOLDOWN = 300000; 
 let STRATEGIES = [];
+
 function showTab(tab, event) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   event.target.classList.add('active');
@@ -166,6 +175,7 @@ function showTab(tab, event) {
   document.getElementById('strategies').classList.add('hidden');
   document.getElementById(tab).classList.remove('hidden');
 }
+
 async function loadConfig() {
   STATE.sbUrl = localStorage.getItem('sbUrl') || '';
   STATE.sbKey = localStorage.getItem('sbKey') || '';
@@ -213,6 +223,7 @@ async function loadConfig() {
   updateAutoStatusText();
   updateUI();
 }
+
 async function saveSupabase() {
   const url = document.getElementById('sbUrl').value.trim();
   const key = document.getElementById('sbKey').value.trim();
@@ -229,6 +240,7 @@ async function saveSupabase() {
     await loadStrategies();
   } catch (e) { log('❌ Save failed: ' + e.message); }
 }
+
 function saveTelegram() {
   STATE.tgToken = document.getElementById('tgToken').value;
   STATE.tgChat = document.getElementById('tgChat').value;
@@ -236,11 +248,14 @@ function saveTelegram() {
   localStorage.setItem('tgChat', STATE.tgChat);
   log('✅ Telegram saved');
 }
+
 async function sendTelegram(msg) {
   if (!STATE.tgToken || !STATE.tgChat) return;
   try { await fetch(`https://api.telegram.org/bot${STATE.tgToken}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: STATE.tgChat, text: msg, parse_mode: 'HTML' }) }); } catch(e) { console.log(e); }
 }
+
 function testTelegram() { sendTelegram('🧪 <b>AlertPro Test</b>\nBot connected successfully!'); log('📤 Test alert sent'); }
+
 function resetBalance() {
   if (confirm('Balance $10,000 reset karna hai? Saare trades delete ho jayenge.')) {
     STATE.balance = 10000; STATE.coinHolding = 0; STATE.trades = 0;
@@ -248,6 +263,7 @@ function resetBalance() {
     updateUI(); log('🔄 Balance reset to $10,000'); sendTelegram('🔄 <b>Balance Reset</b>\nPaper trading balance reset to $10,000');
   }
 }
+
 function changeCoin() {
   STATE.coinId = document.getElementById('coinSelect').value;
   localStorage.setItem('currentCoin', STATE.coinId);
@@ -256,12 +272,14 @@ function changeCoin() {
   STATE.coinHolding = 0; localStorage.setItem('coinHolding', '0');
   updateUI(); fetchCoinData(); log(`🔄 Switched to ${STATE.coinSymbol}`);
 }
+
 function updatePrices() {
   STATE.currency = document.getElementById('currencySelect').value;
   localStorage.setItem('currency', STATE.currency);
   document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
   displayPrices();
 }
+
 function displayPrices() {
   const symbol = STATE.currency === 'usd' ? '$' : '₹';
   document.getElementById('coinPrice').textContent = symbol + STATE.price.toFixed(2);
@@ -270,6 +288,7 @@ function displayPrices() {
   document.getElementById('high24h').textContent = symbol + STATE.high24h.toFixed(2);
   document.getElementById('low24h').textContent = symbol + STATE.low24h.toFixed(2);
 }
+
 async function fetchCoinData() {
   try {
     document.getElementById('coinChange').textContent = 'Fetching...';
@@ -286,6 +305,7 @@ async function fetchCoinData() {
     log('❌ Fetch error: ' + e.message); console.error('Fetch failed:', e);
   }
 }
+
 function updateSignal() {
   const activeStrategies = STRATEGIES.filter(s => s.is_active);
   if (activeStrategies.length === 0) {
@@ -311,6 +331,7 @@ function updateSignal() {
   }
   updateAutoStatusText();
 }
+
 function executeTrade(type, strategyName = 'Manual') {
   const amount = STATE.balance * 0.95;
   if (type === 'BUY' && STATE.balance > 10) {
@@ -331,21 +352,26 @@ function executeTrade(type, strategyName = 'Manual') {
   }
   updateUI();
 }
+
 function manualTrade(type) { executeTrade(type, 'Manual'); }
+
 async function saveToSupabase(type, amount, price) {
   if (!STATE.supabase) return;
   try { await STATE.supabase.from('trades').insert([{ type, amount, price, pair: STATE.coinId, timestamp: new Date().toISOString(), balance: STATE.balance, holding: STATE.coinHolding }]); } catch(e) { log('❌ DB error: ' + e.message); }
 }
+
 function toggleAuto() {
   STATE.autoTrade = !STATE.autoTrade; localStorage.setItem('autoTrade', STATE.autoTrade);
   document.getElementById('autoToggle').classList.toggle('active');
   log(STATE.autoTrade ? '🤖 Auto Trading ON' : '⏸️ Auto Trading OFF'); updateAutoStatusText();
   if (STATE.autoTrade) { sendTelegram('🤖 <b>Auto Trading ON</b>\nStrategies will execute automatically'); updateSignal(); }
 }
+
 function updateAutoStatusText() {
   const activeCount = STRATEGIES.filter(s => s.is_active).length;
   if (STATE.autoTrade) { document.getElementById('autoStatusText').innerHTML = `<span class="green">● ACTIVE</span> - ${activeCount} strategy${activeCount !== 1 ? 'ies' : ''} running`; } else { document.getElementById('autoStatusText').textContent = 'Auto trading OFF'; }
 }
+
 function updateUI() {
   document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2);
   document.getElementById('coinHold').textContent = STATE.coinHolding.toFixed(6);
@@ -354,11 +380,13 @@ function updateUI() {
   document.getElementById('pnl').textContent = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toFixed(2);
   document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0 ? 'green' : 'red');
 }
+
 function log(msg) {
   const box = document.getElementById('logBox'); const item = document.createElement('div');
   item.className = 'log-item'; item.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
   box.insertBefore(item, box.firstChild); if (box.children.length > 50) box.removeChild(box.lastChild);
 }
+
 async function loadStrategies() {
   if (!STATE.supabase) return;
   try {
@@ -367,6 +395,7 @@ async function loadStrategies() {
     if (STATE.autoTrade) { const activeCount = STRATEGIES.filter(s => s.is_active).length; if (activeCount > 0) log(`🤖 Auto Trading running with ${activeCount} active strategies`); }
   } catch(e) { log('❌ Strategy load fail: ' + e.message); }
 }
+
 function renderStrategies() {
   const list = document.getElementById('strategyList');
   if (STRATEGIES.length === 0) { list.innerHTML = '<div style="text-align:center;color:#64748b;padding:20px">No strategies saved yet</div>'; return; }
@@ -384,6 +413,7 @@ function renderStrategies() {
   `).join('');
   updateAutoStatusText();
 }
+
 async function saveStrategy() {
   const name = document.getElementById('strategyName').value.trim();
   const type = document.getElementById('strategyType').value;
@@ -400,6 +430,7 @@ async function saveStrategy() {
     await loadStrategies();
   } catch(e) { log('❌ Save failed: ' + e.message); }
 }
+
 async function toggleStrategy(id) {
   const strategy = STRATEGIES.find(s => s.id === id); if (!strategy) return;
   try {
@@ -411,6 +442,7 @@ async function toggleStrategy(id) {
     renderStrategies(); if (STATE.autoTrade && strategy.is_active) updateSignal();
   } catch(e) { log('❌ Toggle failed: ' + e.message); }
 }
+
 async function deleteStrategy(id) {
   if (!confirm('Strategy delete karni hai?')) return;
   try {
@@ -418,6 +450,7 @@ async function deleteStrategy(id) {
     if (error) throw error; log('🗑️ Strategy deleted'); loadStrategies();
   } catch(e) { log('❌ Delete failed: ' + e.message); }
 }
+
 window.onload = () => { loadConfig(); fetchCoinData(); setInterval(fetchCoinData, FETCH_INTERVAL); };
 </script>
 </body>
