@@ -244,7 +244,7 @@ const COIN_DATA = {
 };
 
 const FETCH_INTERVAL = 60000;
-const TRADE_COOLDOWN = 300000; // 5 min cooldown
+const TRADE_COOLDOWN = 300000; 
 let STRATEGIES = [];
 
 function showTab(tab, event) {
@@ -302,7 +302,6 @@ async function loadConfig() {
       log('⚠️ Cloud load fail: ' + e.message); 
     }
     
-    // Strategies load karo but error se app mat todo
     try {
       await loadStrategies();
     } catch(e) {
@@ -321,13 +320,6 @@ async function loadConfig() {
   if (STATE.autoTrade) document.getElementById('autoToggle').classList.add('active');
   updateAutoStatusText();
   updateUI();
-}
-
-function initSupabase() {
-  try {
-    STATE.supabase = supabase.createClient(STATE.sbUrl, STATE.sbKey);
-    log('✅ Supabase connected');
-  } catch(e) { log('❌ Supabase error: ' + e.message); }
 }
 
 async function saveSupabase() {
@@ -471,7 +463,6 @@ async function fetchCoinData() {
   }
 }
 
-// STEP 4: AUTO TRADING LOGIC UPDATE
 function updateSignal() {
   const activeStrategies = STRATEGIES.filter(s => s.is_active);
   
@@ -482,7 +473,6 @@ function updateSignal() {
     return;
   }
   
-  // Cooldown check
   const now = Date.now();
   if (now - STATE.lastTradeTime < TRADE_COOLDOWN) {
     const remaining = Math.ceil((TRADE_COOLDOWN - (now - STATE.lastTradeTime)) / 1000);
@@ -567,7 +557,7 @@ function toggleAuto() {
   updateAutoStatusText();
   if (STATE.autoTrade) {
     sendTelegram('🤖 <b>Auto Trading ON</b>\nStrategies will execute automatically');
-    updateSignal(); // Turant check kar
+    updateSignal();
   }
 }
 
@@ -598,7 +588,7 @@ function log(msg) {
   if (box.children.length > 50) box.removeChild(box.lastChild);
 }
 
-// STRATEGY FUNCTIONS - STEP 5: LOAD ON STARTUP
+// STRATEGY FUNCTIONS - FIXED
 async function loadStrategies() {
   if (!STATE.supabase) return;
   try {
@@ -608,7 +598,6 @@ async function loadStrategies() {
     renderStrategies();
     log(`✅ ${STRATEGIES.length} strategies loaded`);
     
-    // Auto trading ON hai to status update karo
     if (STATE.autoTrade) {
       const activeCount = STRATEGIES.filter(s => s.is_active).length;
       if (activeCount > 0) {
@@ -695,4 +684,22 @@ async function toggleStrategy(id) {
     if (error) throw error;
     
     strategy.is_active = !strategy.is_active;
-    log(`${strategy.is_active ? '▶️' : '⏸️'} Strategy ${strategy.is_active ? 'Activated' : 'Deactivated'}: ${strategy.name
+    log(`${strategy.is_active ? '▶️' : '⏸️'} Strategy ${strategy.is_active ? 'Activated' : 'Deactivated'}: ${strategy.name}`);
+    sendTelegram(`${strategy.is_active ? '▶️' : '⏸️'} <b>Strategy ${strategy.is_active ? 'ON' : 'OFF'}</b>\n${strategy.name}`);
+    renderStrategies();
+    
+    if (STATE.autoTrade && strategy.is_active) {
+      updateSignal();
+    }
+  } catch(e) {
+    log('❌ Toggle failed: ' + e.message);
+  }
+}
+
+async function deleteStrategy(id) {
+  if (!confirm('Strategy delete karni hai?')) return;
+  
+  try {
+    const { error } = await STATE.supabase.from('strategies').delete().eq('id', id);
+    if (error) throw error;
+    log('
