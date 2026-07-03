@@ -9,24 +9,12 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow-x: hidden; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #0a0e1a;
-      color: #e2e8f0;
-      padding: 16px;
-    }
+    body { font-family: 'Inter', sans-serif; background: #0a0e1a; color: #e2e8f0; padding: 16px; }
     .container { max-width: 600px; width: 100%; margin: 0 auto; position: relative; z-index: 1; }
     .header { text-align: center; margin-bottom: 24px; }
-    .logo {
-      font-size: 28px; font-weight: 800; margin-bottom: 8px;
-      color: #10b981;
-    }
+    .logo { font-size: 28px; font-weight: 800; margin-bottom: 8px; color: #10b981; }
     .subtitle { color: #94a3b8; font-size: 13px; font-weight: 500; }
-    .card {
-      background: rgba(19, 27, 46, 0.6); backdrop-filter: blur(20px);
-      border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 16px;
-      padding: 20px; margin-bottom: 16px;
-    }
+    .card { background: rgba(19, 27, 46, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
     .price-box { text-align: center; }
     .price-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
     .price-main { font-size: 42px; font-weight: 800; color: #f59e0b; line-height: 1; }
@@ -39,54 +27,26 @@
     .stat-value { font-size: 20px; font-weight: 700; }
     .toggle-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
     .toggle-label { font-size: 14px; font-weight: 600; }
-    .toggle {
-      width: 50px; height: 26px; background: #334155; border-radius: 13px;
-      position: relative; cursor: pointer; transition: 0.3s;
-    }
+    .toggle { width: 50px; height: 26px; background: #334155; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s; }
     .toggle.active { background: #10b981; }
-    .toggle-dot {
-      width: 22px; height: 22px; background: white; border-radius: 50%;
-      position: absolute; top: 2px; left: 2px; transition: 0.3s;
-    }
+    .toggle-dot { width: 22px; height: 22px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
     .toggle.active .toggle-dot { left: 26px; }
-    .btn {
-      width: 100%; padding: 14px; border: none; border-radius: 12px;
-      font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px;
-    }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px; }
     .btn-buy { background: #10b981; color: white; }
     .btn-sell { background: #ef4444; color: white; }
     .btn-reset { background: #f59e0b; color: white; }
     .btn:active { transform: scale(0.98); }
-    .input {
-      width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.6);
-      border: 1px solid #334155; border-radius: 10px; color: #e2e8f0;
-      margin: 8px 0; font-size: 14px;
-    }
-    .log {
-      background: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 12px;
-      max-height: 200px; overflow-y: auto; font-size: 11px; font-family: monospace;
-    }
+    .input { width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; color: #e2e8f0; margin: 8px 0; font-size: 14px; }
+    .log { background: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 12px; max-height: 200px; overflow-y: auto; font-size: 11px; font-family: monospace; }
     .log-item { padding: 4px 0; border-bottom: 1px solid #1e293b; }
     .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-    .tab {
-      flex: 1; min-width: 70px; padding: 10px; background: rgba(15, 23, 42, 0.6);
-      border: 1px solid #334155; border-radius: 10px; text-align: center;
-      font-size: 12px; font-weight: 600; cursor: pointer;
-    }
+    .tab { flex: 1; min-width: 70px; padding: 10px; background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; text-align: center; font-size: 12px; font-weight: 600; cursor: pointer; }
     .tab.active { background: #10b981; border-color: #10b981; color: white; }
     .hidden { display: none; }
     .select-row { display: flex; gap: 8px; margin-bottom: 12px; }
     select.input { flex: 1; }
-    .status-banner { 
-      background: rgba(251, 191, 36, 0.15); border: 1px solid #fbbf24; 
-      padding: 8px; border-radius: 8px; margin-bottom: 12px; 
-      text-align: center; font-size: 12px; display: none;
-    }
-    .strategy-badge {
-      display: inline-block; padding: 4px 8px; background: rgba(16, 185, 129, 0.2);
-      border: 1px solid #10b981; border-radius: 6px; font-size: 11px; font-weight: 600;
-      color: #10b981; margin-left: 8px;
-    }
+    .status-banner { background: rgba(251, 191, 36, 0.15); border: 1px solid #fbbf24; padding: 8px; border-radius: 8px; margin-bottom: 12px; text-align: center; font-size: 12px; display: none; }
+    .strategy-badge { display: inline-block; padding: 4px 8px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; border-radius: 6px; font-size: 11px; font-weight: 600; color: #10b981; margin-left: 8px; }
   </style>
 </head>
 <body>
@@ -95,9 +55,7 @@
       <div class="logo">🔔 AlertPro Auto Bot</div>
       <div class="subtitle">BTC Paper Trading + Live Signals</div>
     </div>
-
     <div class="status-banner" id="statusBanner">⚠️ API Error - Retrying...</div>
-
     <div class="tabs">
       <div class="tab active" onclick="showTab('dashboard', event)">Dashboard</div>
       <div class="tab" onclick="showTab('trading', event)">Trading</div>
@@ -105,7 +63,6 @@
       <div class="tab" onclick="showTab('settings', event)">Settings</div>
       <div class="tab" onclick="showTab('logs', event)">Logs</div>
     </div>
-
     <div id="dashboard">
       <div class="card">
         <div class="select-row">
@@ -120,25 +77,17 @@
           </select>
         </div>
       </div>
-
       <div class="card price-box">
         <div class="price-label" id="pairLabel">BTC/USD</div>
         <div class="price-main" id="coinPrice">$0.00</div>
         <div class="price-change" id="coinChange">Loading...</div>
         <div style="margin-top:8px;font-size:12px;color:#64748b;" id="activeStrategyText"></div>
         <div class="stats">
-          <div class="stat">
-            <div class="stat-label">24h High</div>
-            <div class="stat-value" id="high24h">$0</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">24h Low</div>
-            <div class="stat-value" id="low24h">$0</div>
-          </div>
+          <div class="stat"><div class="stat-label">24h High</div><div class="stat-value" id="high24h">$0</div></div>
+          <div class="stat"><div class="stat-label">24h Low</div><div class="stat-value" id="low24h">$0</div></div>
         </div>
       </div>
     </div>
-
     <div id="trading" class="hidden">
       <div class="card">
         <div class="toggle-row">
@@ -147,27 +96,14 @@
         </div>
         <div style="font-size:11px;color:#64748b;margin-bottom:12px;text-align:center;" id="autoStatusText">Auto trading OFF</div>
         <div class="stats">
-          <div class="stat">
-            <div class="stat-label">Balance USD</div>
-            <div class="stat-value" id="balance">$10000.00</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Holdings</div>
-            <div class="stat-value" id="coinHold">0.000000</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Total P&L</div>
-            <div class="stat-value" id="pnl">+$0.00</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Trades</div>
-            <div class="stat-value" id="trades">0</div>
-          </div>
+          <div class="stat"><div class="stat-label">Balance USD</div><div class="stat-value" id="balance">$10000.00</div></div>
+          <div class="stat"><div class="stat-label">Holdings</div><div class="stat-value" id="coinHold">0.000000</div></div>
+          <div class="stat"><div class="stat-label">Total P&L</div><div class="stat-value" id="pnl">+$0.00</div></div>
+          <div class="stat"><div class="stat-label">Trades</div><div class="stat-value" id="trades">0</div></div>
+        </div>
         <button class="btn btn-buy" onclick="manualTrade('BUY')">Manual BUY</button>
         <button class="btn btn-sell" onclick="manualTrade('SELL')">Manual SELL</button>
       </div>
-    </div>
-
     <div id="strategies" class="hidden">
       <div class="card">
         <h3 style="margin-bottom: 12px;">Create Strategy</h3>
@@ -177,28 +113,22 @@
           <option value="manual">Manual - Price Based</option>
           <option value="preset">Preset - MA Cross</option>
         </select>
-        
         <div id="customConfig">
           <input class="input" id="buyCondition" placeholder="BUY when 24h change > X% - Ex: 3">
           <input class="input" id="sellCondition" placeholder="SELL when 24h change < X% - Ex: -3">
         </div>
-        
         <button class="btn btn-buy" onclick="saveStrategy()">💾 Save Strategy</button>
       </div>
-
       <div class="card">
         <h3 style="margin-bottom: 12px;">Saved Strategies</h3>
         <div id="strategyList"></div>
       </div>
     </div>
-
     <div id="logs" class="hidden">
       <div class="card">
         <h3 style="margin-bottom: 12px;">Trade Logs</h3>
         <div class="log" id="logBox"></div>
       </div>
-    </div>
-
     <div id="settings" class="hidden">
       <div class="card">
         <h3 style="margin-bottom: 12px;">Reset Paper Trading</h3>
@@ -220,32 +150,12 @@
       </div>
     </div>
   </div>
-
 <script>
-const STATE = {
-  coinId: 'bitcoin',
-  coinSymbol: 'BTC',
-  currency: 'usd',
-  price: 0,
-  high24h: 0, low24h: 0, change24h: 0,
-  signal: 'HOLD',
-  balance: 10000, coinHolding: 0, trades: 0, autoTrade: false,
-  supabase: null, tgToken: '', tgChat: '',
-  sbUrl: '', sbKey: '',
-  lastFetchSuccess: false,
-  lastTradeTime: 0
-};
-
-const COIN_DATA = {
-  'bitcoin': { symbol: 'BTC', rank: 1, cgId: 'bitcoin' },
-  'ethereum': { symbol: 'ETH', rank: 2, cgId: 'ethereum' },
-  'binancecoin': { symbol: 'BNB', rank: 4, cgId: 'binancecoin' }
-};
-
+const STATE = { coinId: 'bitcoin', coinSymbol: 'BTC', currency: 'usd', price: 0, high24h: 0, low24h: 0, change24h: 0, signal: 'HOLD', balance: 10000, coinHolding: 0, trades: 0, autoTrade: false, supabase: null, tgToken: '', tgChat: '', sbUrl: '', sbKey: '', lastFetchSuccess: false, lastTradeTime: 0 };
+const COIN_DATA = { 'bitcoin': { symbol: 'BTC', rank: 1, cgId: 'bitcoin' }, 'ethereum': { symbol: 'ETH', rank: 2, cgId: 'ethereum' }, 'binancecoin': { symbol: 'BNB', rank: 4, cgId: 'binancecoin' } };
 const FETCH_INTERVAL = 60000;
 const TRADE_COOLDOWN = 300000; 
 let STRATEGIES = [];
-
 function showTab(tab, event) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   event.target.classList.add('active');
@@ -256,7 +166,6 @@ function showTab(tab, event) {
   document.getElementById('strategies').classList.add('hidden');
   document.getElementById(tab).classList.remove('hidden');
 }
-
 async function loadConfig() {
   STATE.sbUrl = localStorage.getItem('sbUrl') || '';
   STATE.sbKey = localStorage.getItem('sbKey') || '';
@@ -268,16 +177,10 @@ async function loadConfig() {
   STATE.balance = parseFloat(localStorage.getItem('balance') || '10000');
   STATE.coinHolding = parseFloat(localStorage.getItem('coinHolding') || '0');
   STATE.trades = parseInt(localStorage.getItem('trades') || '0');
-
   if (STATE.sbUrl && STATE.sbKey) {
     try {
       STATE.supabase = supabase.createClient(STATE.sbUrl, STATE.sbKey);
-      const { data, error } = await STATE.supabase
-        .from('app_settings')
-        .select('*')
-        .eq('id', 1)
-        .single();
-        
+      const { data, error } = await STATE.supabase.from('app_settings').select('*').eq('id', 1).single();
       if (!error && data) {
         STATE.sbUrl = data.supabase_url || STATE.sbUrl;
         STATE.sbKey = data.supabase_key || STATE.sbKey;
@@ -286,7 +189,6 @@ async function loadConfig() {
         STATE.balance = data.paper_balance || STATE.balance;
         STATE.coinHolding = data.coin_holding || STATE.coinHolding;
         STATE.trades = data.trades || STATE.trades;
-        
         localStorage.setItem('sbUrl', STATE.sbUrl);
         localStorage.setItem('sbKey', STATE.sbKey);
         localStorage.setItem('tgToken', STATE.tgToken);
@@ -294,20 +196,11 @@ async function loadConfig() {
         localStorage.setItem('balance', STATE.balance);
         localStorage.setItem('coinHolding', STATE.coinHolding);
         localStorage.setItem('trades', STATE.trades);
-        
         log('✅ Cloud se Balance/Trades sab load ho gaya');
       }
-    } catch(e) { 
-      log('⚠️ Cloud load fail: ' + e.message); 
-    }
-    
-    try {
-      await loadStrategies();
-    } catch(e) {
-      log('⚠️ Strategies table nahi mila. SQL chalao.');
-    }
+    } catch(e) { log('⚠️ Cloud load fail: ' + e.message); }
+    try { await loadStrategies(); } catch(e) { log('⚠️ Strategies table nahi mila. SQL chalao.'); }
   }
-
   document.getElementById('coinSelect').value = STATE.coinId;
   document.getElementById('currencySelect').value = STATE.currency;
   STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol;
@@ -320,48 +213,22 @@ async function loadConfig() {
   updateAutoStatusText();
   updateUI();
 }
-
 async function saveSupabase() {
   const url = document.getElementById('sbUrl').value.trim();
   const key = document.getElementById('sbKey').value.trim();
-  
-  if (!url || !key) {
-    log('⚠️ Supabase URL/Key daal bhai');
-    return;
-  }
-  
+  if (!url || !key) { log('⚠️ Supabase URL/Key daal bhai'); return; }
   localStorage.setItem('sbUrl', url);
   localStorage.setItem('sbKey', key);
-  
   try {
     STATE.supabase = supabase.createClient(url, key);
-    
-    const { error } = await STATE.supabase
-      .from('app_settings')
-      .upsert({
-        id: 1,
-        supabase_url: url,
-        supabase_key: key,
-        telegram_token: STATE.tgToken,
-        telegram_chat_id: STATE.tgChat,
-        paper_balance: STATE.balance,
-        coin_holding: STATE.coinHolding,
-        trades: STATE.trades,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'id' });
-      
+    const { error } = await STATE.supabase.from('app_settings').upsert({ id: 1, supabase_url: url, supabase_key: key, telegram_token: STATE.tgToken, telegram_chat_id: STATE.tgChat, paper_balance: STATE.balance, coin_holding: STATE.coinHolding, trades: STATE.trades, updated_at: new Date().toISOString() }, { onConflict: 'id' });
     if (error) throw error;
-    
-    STATE.sbUrl = url;
-    STATE.sbKey = key;
+    STATE.sbUrl = url; STATE.sbKey = key;
     log('✅ Cloud mein save ho gaya! Phone pe auto load hoga');
     sendTelegram('✅ <b>Cloud Sync ON</b>\nAb phone/laptop sab sync rahega');
     await loadStrategies();
-  } catch (e) {
-    log('❌ Save failed: ' + e.message);
-  }
+  } catch (e) { log('❌ Save failed: ' + e.message); }
 }
-
 function saveTelegram() {
   STATE.tgToken = document.getElementById('tgToken').value;
   STATE.tgChat = document.getElementById('tgChat').value;
@@ -369,55 +236,32 @@ function saveTelegram() {
   localStorage.setItem('tgChat', STATE.tgChat);
   log('✅ Telegram saved');
 }
-
 async function sendTelegram(msg) {
   if (!STATE.tgToken || !STATE.tgChat) return;
-  try {
-    await fetch(`https://api.telegram.org/bot${STATE.tgToken}/sendMessage`, {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ chat_id: STATE.tgChat, text: msg, parse_mode: 'HTML' })
-    });
-  } catch(e) { console.log(e); }
+  try { await fetch(`https://api.telegram.org/bot${STATE.tgToken}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: STATE.tgChat, text: msg, parse_mode: 'HTML' }) }); } catch(e) { console.log(e); }
 }
-
-function testTelegram() {
-  sendTelegram('🧪 <b>AlertPro Test</b>\nBot connected successfully!');
-  log('📤 Test alert sent');
-}
-
+function testTelegram() { sendTelegram('🧪 <b>AlertPro Test</b>\nBot connected successfully!'); log('📤 Test alert sent'); }
 function resetBalance() {
   if (confirm('Balance $10,000 reset karna hai? Saare trades delete ho jayenge.')) {
-    STATE.balance = 10000;
-    STATE.coinHolding = 0;
-    STATE.trades = 0;
-    localStorage.setItem('balance', '10000');
-    localStorage.setItem('coinHolding', '0');
-    localStorage.setItem('trades', '0');
-    updateUI();
-    log('🔄 Balance reset to $10,000');
-    sendTelegram('🔄 <b>Balance Reset</b>\nPaper trading balance reset to $10,000');
+    STATE.balance = 10000; STATE.coinHolding = 0; STATE.trades = 0;
+    localStorage.setItem('balance', '10000'); localStorage.setItem('coinHolding', '0'); localStorage.setItem('trades', '0');
+    updateUI(); log('🔄 Balance reset to $10,000'); sendTelegram('🔄 <b>Balance Reset</b>\nPaper trading balance reset to $10,000');
   }
 }
-
 function changeCoin() {
   STATE.coinId = document.getElementById('coinSelect').value;
   localStorage.setItem('currentCoin', STATE.coinId);
   STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol;
   document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
-  STATE.coinHolding = 0;
-  localStorage.setItem('coinHolding', '0');
-  updateUI();
-  fetchCoinData();
-  log(`🔄 Switched to ${STATE.coinSymbol}`);
+  STATE.coinHolding = 0; localStorage.setItem('coinHolding', '0');
+  updateUI(); fetchCoinData(); log(`🔄 Switched to ${STATE.coinSymbol}`);
 }
-
 function updatePrices() {
   STATE.currency = document.getElementById('currencySelect').value;
   localStorage.setItem('currency', STATE.currency);
   document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
   displayPrices();
 }
-
 function displayPrices() {
   const symbol = STATE.currency === 'usd' ? '$' : '₹';
   document.getElementById('coinPrice').textContent = symbol + STATE.price.toFixed(2);
@@ -426,95 +270,53 @@ function displayPrices() {
   document.getElementById('high24h').textContent = symbol + STATE.high24h.toFixed(2);
   document.getElementById('low24h').textContent = symbol + STATE.low24h.toFixed(2);
 }
-
 async function fetchCoinData() {
   try {
     document.getElementById('coinChange').textContent = 'Fetching...';
-    
     let url = `https://api.coingecko.com/api/v3/coins/${COIN_DATA[STATE.coinId].cgId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false`;
     let res = await fetch(url);
-    
-    if (!res.ok) {
-      throw new Error(`CoinGecko HTTP ${res.status}`);
-    }
-    
-    const data = await res.json();
-    const m = data.market_data;
-
-    STATE.price = m.current_price[STATE.currency];
-    STATE.high24h = m.high_24h[STATE.currency];
-    STATE.low24h = m.low_24h[STATE.currency];
-    STATE.change24h = m.price_change_percentage_24h;
-    STATE.lastFetchSuccess = true;
-    
+    if (!res.ok) throw new Error(`CoinGecko HTTP ${res.status}`);
+    const data = await res.json(); const m = data.market_data;
+    STATE.price = m.current_price[STATE.currency]; STATE.high24h = m.high_24h[STATE.currency]; STATE.low24h = m.low_24h[STATE.currency]; STATE.change24h = m.price_change_percentage_24h; STATE.lastFetchSuccess = true;
     document.getElementById('statusBanner').style.display = 'none';
-    displayPrices();
-    updateSignal();
-    updateUI();
-    log(`✅ Price updated: ${STATE.currency.toUpperCase()}${STATE.price.toFixed(2)}`);
-    
+    displayPrices(); updateSignal(); updateUI(); log(`✅ Price updated: ${STATE.currency.toUpperCase()}${STATE.price.toFixed(2)}`);
   } catch(e) {
-    STATE.lastFetchSuccess = false;
-    document.getElementById('statusBanner').style.display = 'block';
+    STATE.lastFetchSuccess = false; document.getElementById('statusBanner').style.display = 'block';
     document.getElementById('coinChange').textContent = 'API Error - Check Logs';
-    log('❌ Fetch error: ' + e.message);
-    console.error('Fetch failed:', e);
+    log('❌ Fetch error: ' + e.message); console.error('Fetch failed:', e);
   }
 }
-
 function updateSignal() {
   const activeStrategies = STRATEGIES.filter(s => s.is_active);
-  
   if (activeStrategies.length === 0) {
-    STATE.signal = 'HOLD';
-    document.getElementById('activeStrategyText').textContent = 'No active strategy';
-    updateAutoStatusText();
-    return;
+    STATE.signal = 'HOLD'; document.getElementById('activeStrategyText').textContent = 'No active strategy'; updateAutoStatusText(); return;
   }
-  
   const now = Date.now();
   if (now - STATE.lastTradeTime < TRADE_COOLDOWN) {
     const remaining = Math.ceil((TRADE_COOLDOWN - (now - STATE.lastTradeTime)) / 1000);
-    document.getElementById('activeStrategyText').textContent = `Cooldown: ${remaining}s remaining`;
-    return;
+    document.getElementById('activeStrategyText').textContent = `Cooldown: ${remaining}s remaining`; return;
   }
-  
   for (let s of activeStrategies) {
-    const buyThreshold = s.config.buy || 3;
-    const sellThreshold = s.config.sell || -3;
-    
+    const buyThreshold = s.config.buy || 3; const sellThreshold = s.config.sell || -3;
     document.getElementById('activeStrategyText').innerHTML = `Active: <span class="strategy-badge">${s.name}</span>`;
-    
     if (STATE.change24h > buyThreshold && STATE.signal !== 'BUY') {
-      STATE.signal = 'BUY';
-      log(`🎯 Strategy Trigger: ${s.name} - BUY @ ${STATE.change24h.toFixed(2)}%`);
-      if (STATE.autoTrade) {
-        executeTrade('BUY', s.name);
-        STATE.lastTradeTime = now;
-      }
+      STATE.signal = 'BUY'; log(`🎯 Strategy Trigger: ${s.name} - BUY @ ${STATE.change24h.toFixed(2)}%`);
+      if (STATE.autoTrade) { executeTrade('BUY', s.name); STATE.lastTradeTime = now; }
       break;
     } else if (STATE.change24h < sellThreshold && STATE.signal !== 'SELL') {
-      STATE.signal = 'SELL';
-      log(`🎯 Strategy Trigger: ${s.name} - SELL @ ${STATE.change24h.toFixed(2)}%`);
-      if (STATE.autoTrade) {
-        executeTrade('SELL', s.name);
-        STATE.lastTradeTime = now;
-      }
+      STATE.signal = 'SELL'; log(`🎯 Strategy Trigger: ${s.name} - SELL @ ${STATE.change24h.toFixed(2)}%`);
+      if (STATE.autoTrade) { executeTrade('SELL', s.name); STATE.lastTradeTime = now; }
       break;
     }
+  }
   updateAutoStatusText();
 }
-
 function executeTrade(type, strategyName = 'Manual') {
   const amount = STATE.balance * 0.95;
   if (type === 'BUY' && STATE.balance > 10) {
     const coinBuy = amount / STATE.price;
-    STATE.coinHolding += coinBuy;
-    STATE.balance -= amount;
-    STATE.trades++;
-    localStorage.setItem('balance', STATE.balance);
-    localStorage.setItem('coinHolding', STATE.coinHolding);
-    localStorage.setItem('trades', STATE.trades);
+    STATE.coinHolding += coinBuy; STATE.balance -= amount; STATE.trades++;
+    localStorage.setItem('balance', STATE.balance); localStorage.setItem('coinHolding', STATE.coinHolding); localStorage.setItem('trades', STATE.trades);
     log(`✅ BUY: ${coinBuy.toFixed(6)} ${STATE.coinSymbol} @ ${STATE.currency.toUpperCase()}${STATE.price.toFixed(2)} [${strategyName}]`);
     sendTelegram(`🟢 <b>BUY ALERT - ${strategyName}</b>\n\nPair: ${STATE.coinSymbol}/${STATE.currency.toUpperCase()}\nAction: BUY @ ${STATE.currency === 'usd' ? '$' : '₹'}${STATE.price.toFixed(2)}\nQty: ${coinBuy.toFixed(6)} ${STATE.coinSymbol}\nValue: ${STATE.currency === 'usd' ? '$' : '₹'}${amount.toFixed(2)}\n24h Change: ${STATE.change24h.toFixed(2)}%\nTime: ${new Date().toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}\nBalance: $${STATE.balance.toFixed(2)}`);
     saveToSupabase('BUY', coinBuy, STATE.price);
@@ -524,50 +326,26 @@ function executeTrade(type, strategyName = 'Manual') {
     log(`✅ SELL: ${STATE.coinHolding.toFixed(6)} ${STATE.coinSymbol} @ ${STATE.currency.toUpperCase()}${STATE.price.toFixed(2)} [${strategyName}]`);
     sendTelegram(`🔴 <b>SELL ALERT - ${strategyName}</b>\n\nPair: ${STATE.coinSymbol}/${STATE.currency.toUpperCase()}\nAction: SELL @ ${STATE.currency === 'usd' ? '$' : '₹'}${STATE.price.toFixed(2)}\nQty: ${STATE.coinHolding.toFixed(6)} ${STATE.coinSymbol}\nValue: ${STATE.currency === 'usd' ? '$' : '₹'}${usdSell.toFixed(2)}\n24h Change: ${STATE.change24h.toFixed(2)}%\nTime: ${new Date().toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})}\nBalance: $${STATE.balance.toFixed(2)}`);
     saveToSupabase('SELL', STATE.coinHolding, STATE.price);
-    STATE.coinHolding = 0;
-    STATE.trades++;
-    localStorage.setItem('balance', STATE.balance);
-    localStorage.setItem('coinHolding', '0');
-    localStorage.setItem('trades', STATE.trades);
+    STATE.coinHolding = 0; STATE.trades++;
+    localStorage.setItem('balance', STATE.balance); localStorage.setItem('coinHolding', '0'); localStorage.setItem('trades', STATE.trades);
   }
   updateUI();
 }
-
-function manualTrade(type) {
-  executeTrade(type, 'Manual');
-}
-
+function manualTrade(type) { executeTrade(type, 'Manual'); }
 async function saveToSupabase(type, amount, price) {
   if (!STATE.supabase) return;
-  try {
-    await STATE.supabase.from('trades').insert([{
-      type, amount, price, pair: STATE.coinId, timestamp: new Date().toISOString(),
-      balance: STATE.balance, holding: STATE.coinHolding
-    }]);
-  } catch(e) { log('❌ DB error: ' + e.message); }
+  try { await STATE.supabase.from('trades').insert([{ type, amount, price, pair: STATE.coinId, timestamp: new Date().toISOString(), balance: STATE.balance, holding: STATE.coinHolding }]); } catch(e) { log('❌ DB error: ' + e.message); }
 }
-
 function toggleAuto() {
-  STATE.autoTrade = !STATE.autoTrade;
-  localStorage.setItem('autoTrade', STATE.autoTrade);
+  STATE.autoTrade = !STATE.autoTrade; localStorage.setItem('autoTrade', STATE.autoTrade);
   document.getElementById('autoToggle').classList.toggle('active');
-  log(STATE.autoTrade ? '🤖 Auto Trading ON' : '⏸️ Auto Trading OFF');
-  updateAutoStatusText();
-  if (STATE.autoTrade) {
-    sendTelegram('🤖 <b>Auto Trading ON</b>\nStrategies will execute automatically');
-    updateSignal();
-  }
+  log(STATE.autoTrade ? '🤖 Auto Trading ON' : '⏸️ Auto Trading OFF'); updateAutoStatusText();
+  if (STATE.autoTrade) { sendTelegram('🤖 <b>Auto Trading ON</b>\nStrategies will execute automatically'); updateSignal(); }
 }
-
 function updateAutoStatusText() {
   const activeCount = STRATEGIES.filter(s => s.is_active).length;
-  if (STATE.autoTrade) {
-    document.getElementById('autoStatusText').innerHTML = `<span class="green">● ACTIVE</span> - ${activeCount} strategy${activeCount !== 1 ? 'ies' : ''} running`;
-  } else {
-    document.getElementById('autoStatusText').textContent = 'Auto trading OFF';
-  }
+  if (STATE.autoTrade) { document.getElementById('autoStatusText').innerHTML = `<span class="green">● ACTIVE</span> - ${activeCount} strategy${activeCount !== 1 ? 'ies' : ''} running`; } else { document.getElementById('autoStatusText').textContent = 'Auto trading OFF'; }
 }
-
 function updateUI() {
   document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2);
   document.getElementById('coinHold').textContent = STATE.coinHolding.toFixed(6);
@@ -576,43 +354,22 @@ function updateUI() {
   document.getElementById('pnl').textContent = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toFixed(2);
   document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0 ? 'green' : 'red');
 }
-
 function log(msg) {
-  const box = document.getElementById('logBox');
-  const item = document.createElement('div');
-  item.className = 'log-item';
-  item.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
-  box.insertBefore(item, box.firstChild);
-  if (box.children.length > 50) box.removeChild(box.lastChild);
+  const box = document.getElementById('logBox'); const item = document.createElement('div');
+  item.className = 'log-item'; item.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
+  box.insertBefore(item, box.firstChild); if (box.children.length > 50) box.removeChild(box.lastChild);
 }
-
 async function loadStrategies() {
   if (!STATE.supabase) return;
   try {
     const { data, error } = await STATE.supabase.from('strategies').select('*').order('created_at', {ascending: false});
-    if (error) throw error;
-    STRATEGIES = data || [];
-    renderStrategies();
-    log(`✅ ${STRATEGIES.length} strategies loaded`);
-    
-    if (STATE.autoTrade) {
-      const activeCount = STRATEGIES.filter(s => s.is_active).length;
-      if (activeCount > 0) {
-        log(`🤖 Auto Trading running with ${activeCount} active strategies`);
-      }
-    }
-  } catch(e) {
-    log('❌ Strategy load fail: ' + e.message);
-  }
+    if (error) throw error; STRATEGIES = data || []; renderStrategies(); log(`✅ ${STRATEGIES.length} strategies loaded`);
+    if (STATE.autoTrade) { const activeCount = STRATEGIES.filter(s => s.is_active).length; if (activeCount > 0) log(`🤖 Auto Trading running with ${activeCount} active strategies`); }
+  } catch(e) { log('❌ Strategy load fail: ' + e.message); }
 }
-
 function renderStrategies() {
   const list = document.getElementById('strategyList');
-  if (STRATEGIES.length === 0) {
-    list.innerHTML = '<div style="text-align:center;color:#64748b;padding:20px">No strategies saved yet</div>';
-    return;
-  }
-  
+  if (STRATEGIES.length === 0) { list.innerHTML = '<div style="text-align:center;color:#64748b;padding:20px">No strategies saved yet</div>'; return; }
   list.innerHTML = STRATEGIES.map(s => `
     <div style="background:rgba(15,23,42,0.6);padding:12px;border-radius:10px;margin-bottom:8px;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -620,96 +377,48 @@ function renderStrategies() {
           <div style="font-weight:700;font-size:14px;">${s.name}</div>
           <div style="font-size:11px;color:#64748b;">Type: ${s.type} | BUY: >${s.config?.buy || '-'}% | SELL: <${s.config?.sell || '-'}%</div>
         </div>
-        <div class="toggle ${s.is_active ? 'active' : ''}" onclick="toggleStrategy(${s.id})">
-          <div class="toggle-dot"></div>
-        </div>
+        <div class="toggle ${s.is_active ? 'active' : ''}" onclick="toggleStrategy(${s.id})"><div class="toggle-dot"></div></div>
       </div>
       <button class="btn btn-sell" style="margin-top:8px;padding:8px;font-size:12px;" onclick="deleteStrategy(${s.id})">Delete</button>
     </div>
   `).join('');
   updateAutoStatusText();
 }
-
 async function saveStrategy() {
   const name = document.getElementById('strategyName').value.trim();
   const type = document.getElementById('strategyType').value;
   const buy = parseFloat(document.getElementById('buyCondition').value) || 3;
   const sell = parseFloat(document.getElementById('sellCondition').value) || -3;
-  
-  if (!name) {
-    log('⚠️ Strategy name daal bhai');
-    return;
-  }
-  
-  if (!STATE.supabase) {
-    log('⚠️ Supabase connect nahi hai');
-    return;
-  }
-  
+  if (!name) { log('⚠️ Strategy name daal bhai'); return; }
+  if (!STATE.supabase) { log('⚠️ Supabase connect nahi hai'); return; }
   try {
-    const { error } = await STATE.supabase.from('strategies').insert([{
-      name: name,
-      type: type,
-      config: { buy: buy, sell: sell },
-      is_active: false
-    }]);
-    
+    const { error } = await STATE.supabase.from('strategies').insert([{ name: name, type: type, config: { buy: buy, sell: sell }, is_active: false }]);
     if (error) throw error;
-    
     log(`✅ Strategy saved: ${name}`);
     sendTelegram(`💾 <b>Strategy Saved</b>\nName: ${name}\nType: ${type}\nBUY: >${buy}% | SELL: <${sell}%`);
-    
-    document.getElementById('strategyName').value = '';
-    document.getElementById('buyCondition').value = '';
-    document.getElementById('sellCondition').value = '';
-    
+    document.getElementById('strategyName').value = ''; document.getElementById('buyCondition').value = ''; document.getElementById('sellCondition').value = '';
     await loadStrategies();
-  } catch(e) {
-    log('❌ Save failed: ' + e.message);
-  }
+  } catch(e) { log('❌ Save failed: ' + e.message); }
 }
-
 async function toggleStrategy(id) {
-  const strategy = STRATEGIES.find(s => s.id === id);
-  if (!strategy) return;
-  
+  const strategy = STRATEGIES.find(s => s.id === id); if (!strategy) return;
   try {
-    const { error } = await STATE.supabase
-      .from('strategies')
-      .update({ is_active: !strategy.is_active })
-      .eq('id', id);
-      
+    const { error } = await STATE.supabase.from('strategies').update({ is_active: !strategy.is_active }).eq('id', id);
     if (error) throw error;
-    
     strategy.is_active = !strategy.is_active;
     log(`${strategy.is_active ? '▶️' : '⏸️'} Strategy ${strategy.is_active ? 'Activated' : 'Deactivated'}: ${strategy.name}`);
     sendTelegram(`${strategy.is_active ? '▶️' : '⏸️'} <b>Strategy ${strategy.is_active ? 'ON' : 'OFF'}</b>\n${strategy.name}`);
-    renderStrategies();
-    
-    if (STATE.autoTrade && strategy.is_active) {
-      updateSignal();
-    }
-  } catch(e) {
-    log('❌ Toggle failed: ' + e.message);
-  }
+    renderStrategies(); if (STATE.autoTrade && strategy.is_active) updateSignal();
+  } catch(e) { log('❌ Toggle failed: ' + e.message); }
 }
-
 async function deleteStrategy(id) {
   if (!confirm('Strategy delete karni hai?')) return;
-  
   try {
     const { error } = await STATE.supabase.from('strategies').delete().eq('id', id);
-    if (error) throw error;
-    log('🗑️ Strategy deleted');
-    loadStrategies();
-  } catch(e) {
-    log('❌ Delete failed: ' + e.message);
-  }
+    if (error) throw error; log('🗑️ Strategy deleted'); loadStrategies();
+  } catch(e) { log('❌ Delete failed: ' + e.message); }
 }
-
-window.onload = () => {
-  loadConfig();
-  fetchCoinData();
-  setInterval(fetchCoinData, FETCH_INTERVAL);
-};
-</script
+window.onload = () => { loadConfig(); fetchCoinData(); setInterval(fetchCoinData, FETCH_INTERVAL); };
+</script>
+</body>
+</html>
