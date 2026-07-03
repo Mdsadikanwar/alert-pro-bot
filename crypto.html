@@ -588,7 +588,6 @@ function log(msg) {
   if (box.children.length > 50) box.removeChild(box.lastChild);
 }
 
-// STRATEGY FUNCTIONS - FIXED
 async function loadStrategies() {
   if (!STATE.supabase) return;
   try {
@@ -664,4 +663,38 @@ async function saveStrategy() {
     
     document.getElementById('strategyName').value = '';
     document.getElementById('buyCondition').value = '';
-    document.getElement
+    document.getElementById('sellCondition').value = '';
+    
+    await loadStrategies();
+  } catch(e) {
+    log('❌ Save failed: ' + e.message);
+  }
+}
+
+async function toggleStrategy(id) {
+  const strategy = STRATEGIES.find(s => s.id === id);
+  if (!strategy) return;
+  
+  try {
+    const { error } = await STATE.supabase
+      .from('strategies')
+      .update({ is_active: !strategy.is_active })
+      .eq('id', id);
+      
+    if (error) throw error;
+    
+    strategy.is_active = !strategy.is_active;
+    log(`${strategy.is_active ? '▶️' : '⏸️'} Strategy ${strategy.is_active ? 'Activated' : 'Deactivated'}: ${strategy.name}`);
+    sendTelegram(`${strategy.is_active ? '▶️' : '⏸️'} <b>Strategy ${strategy.is_active ? 'ON' : 'OFF'}</b>\n${strategy.name}`);
+    renderStrategies();
+    
+    if (STATE.autoTrade && strategy.is_active) {
+      updateSignal();
+    }
+  } catch(e) {
+    log('❌ Toggle failed: ' + e.message);
+  }
+}
+
+async function deleteStrategy(id) {
+  if (!confirm('Strategy delete
