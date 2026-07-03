@@ -697,4 +697,7 @@ async function toggleStrategy(id) {
 }
 
 async function deleteStrategy(id) {
-  if (!confirm('Strategy delete
+  if (!confirm('Strategy delete karni hai?')) return;
+  
+  try {
+    const { error } = await STATE.supabase.from('strategies').delete().eq('
