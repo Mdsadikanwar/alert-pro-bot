@@ -244,7 +244,7 @@ const COIN_DATA = {
 };
 
 const FETCH_INTERVAL = 60000;
-const TRADE_COOLDOWN = 300000; // 5 min cooldown between auto trades
+const TRADE_COOLDOWN = 300000; // 5 min cooldown
 let STRATEGIES = [];
 
 function showTab(tab, event) {
@@ -297,10 +297,16 @@ async function loadConfig() {
         localStorage.setItem('trades', STATE.trades);
         
         log('✅ Cloud se Balance/Trades sab load ho gaya');
-        await loadStrategies();
       }
     } catch(e) { 
       log('⚠️ Cloud load fail: ' + e.message); 
+    }
+    
+    // Strategies load karo but error se app mat todo
+    try {
+      await loadStrategies();
+    } catch(e) {
+      log('⚠️ Strategies table nahi mila. SQL chalao.');
     }
   }
 
@@ -561,6 +567,7 @@ function toggleAuto() {
   updateAutoStatusText();
   if (STATE.autoTrade) {
     sendTelegram('🤖 <b>Auto Trading ON</b>\nStrategies will execute automatically');
+    updateSignal(); // Turant check kar
   }
 }
 
@@ -630,7 +637,6 @@ function renderStrategies() {
         <div class="toggle ${s.is_active ? 'active' : ''}" onclick="toggleStrategy(${s.id})">
           <div class="toggle-dot"></div>
         </div>
-      </div>
       <button class="btn btn-sell" style="margin-top:8px;padding:8px;font-size:12px;" onclick="deleteStrategy(${s.id})">Delete</button>
     </div>
   `).join('');
@@ -689,21 +695,4 @@ async function toggleStrategy(id) {
     if (error) throw error;
     
     strategy.is_active = !strategy.is_active;
-    log(`${strategy.is_active ? '▶️' : '⏸️'} Strategy ${strategy.is_active ? 'Activated' : 'Deactivated'}: ${strategy.name}`);
-    sendTelegram(`${strategy.is_active ? '▶️' : '⏸️'} <b>Strategy ${strategy.is_active ? 'ON' : 'OFF'}</b>\n${strategy.name}`);
-    renderStrategies();
-    
-    // Agar auto trading ON hai to turant check karo
-    if (STATE.autoTrade && strategy.is_active) {
-      updateSignal();
-    }
-  } catch(e) {
-    log('❌ Toggle failed: ' + e.message);
-  }
-}
-
-async function deleteStrategy(id) {
-  if (!confirm('Strategy delete karni hai?')) return;
-  
-  try {
-    const { error } = await STATE
+    log(`${strategy.is_active ? '▶️' : '⏸️'} Strategy ${strategy.is_active ? 'Activated' : 'Deactivated'}: ${strategy.name
