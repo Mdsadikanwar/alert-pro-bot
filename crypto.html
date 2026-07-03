@@ -128,14 +128,6 @@
             <div class="stat-label">24h Low</div>
             <div class="stat-value" id="low24h">$0</div>
           </div>
-          <div class="stat">
-            <div class="stat-label">24h Volume</div>
-            <div class="stat-value" id="volume24h">0</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Market Rank</div>
-            <div class="stat-value" id="marketRank">#1</div>
-          </div>
         </div>
       </div>
     </div>
@@ -163,7 +155,6 @@
             <div class="stat-label">Trades</div>
             <div class="stat-value" id="trades">0</div>
           </div>
-        </div>
         <button class="btn btn-buy" onclick="manualTrade('BUY')">Manual BUY</button>
         <button class="btn btn-sell" onclick="manualTrade('SELL')">Manual SELL</button>
       </div>
@@ -204,8 +195,7 @@ const STATE = {
   coinSymbol: 'BTC',
   currency: 'usd',
   price: 0,
-  high24h: 0, low24h: 0, change24h: 0, volume24h: 0,
-  marketRank: 1,
+  high24h: 0, low24h: 0, change24h: 0,
   signal: 'HOLD',
   balance: 10000, coinHolding: 0, trades: 0, autoTrade: false,
   supabase: null, tgToken: '', tgChat: '',
@@ -245,7 +235,6 @@ function loadConfig() {
   document.getElementById('coinSelect').value = STATE.coinId;
   document.getElementById('currencySelect').value = STATE.currency;
   STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol;
-  STATE.marketRank = COIN_DATA[STATE.coinId].rank;
   document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
   document.getElementById('sbUrl').value = STATE.sbUrl;
   document.getElementById('sbKey').value = STATE.sbKey;
@@ -312,7 +301,6 @@ function changeCoin() {
   STATE.coinId = document.getElementById('coinSelect').value;
   localStorage.setItem('currentCoin', STATE.coinId);
   STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol;
-  STATE.marketRank = COIN_DATA[STATE.coinId].rank;
   document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
   STATE.coinHolding = 0;
   localStorage.setItem('coinHolding', '0');
@@ -335,8 +323,6 @@ function displayPrices() {
   document.getElementById('coinChange').className = 'price-change ' + (STATE.change24h >= 0 ? 'green' : 'red');
   document.getElementById('high24h').textContent = symbol + STATE.high24h.toFixed(2);
   document.getElementById('low24h').textContent = symbol + STATE.low24h.toFixed(2);
-  document.getElementById('volume24h').textContent = (STATE.volume24h / 1000000).toFixed(1) + 'M';
-  document.getElementById('marketRank').textContent = '#' + STATE.marketRank;
 }
 
 async function fetchCoinData() {
@@ -357,8 +343,6 @@ async function fetchCoinData() {
     STATE.high24h = m.high_24h[STATE.currency];
     STATE.low24h = m.low_24h[STATE.currency];
     STATE.change24h = m.price_change_percentage_24h;
-    STATE.volume24h = m.total_volume[STATE.currency];
-    STATE.marketRank = m.market_cap_rank;
     STATE.lastFetchSuccess = true;
     
     document.getElementById('statusBanner').style.display = 'none';
