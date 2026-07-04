@@ -50,109 +50,122 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="logo">🔔 AlertPro Auto Bot</div>
-      <div class="subtitle">BTC Paper Trading + Live Signals</div>
-    </div>
-    <div class="status-banner" id="statusBanner">⚠️ API Error - Retrying...</div>
-    <div class="tabs">
-      <div class="tab active" onclick="showTab('dashboard', event)">Dashboard</div>
-      <div class="tab" onclick="showTab('trading', event)">Trading</div>
-      <div class="tab" onclick="showTab('strategies', event)">Strategies</div>
-      <div class="tab" onclick="showTab('settings', event)">Settings</div>
-      <div class="tab" onclick="showTab('logs', event)">Logs</div>
-    </div>
+  <!-- LOGIN BOX ADD KIYA -->
+  <div id="authBox" style="max-width:320px; margin:80px auto; text-align:center; border:1px solid #334155; padding:20px; border-radius:12px; background:rgba(19,27,46,0.6);">
+    <h2 style="color:#10b981; margin-bottom:12px;">AlertPro Login</h2>
+    <input type="email" id="email" placeholder="Email" class="input">
+    <input type="password" id="password" placeholder="Password" class="input">
+    <button onclick="signup()" class="btn btn-buy">Signup</button>
+    <button onclick="login()" class="btn btn-blue">Login</button>
+  </div>
 
-    <div id="dashboard">
-      <div class="card">
-        <div class="select-row">
-          <select class="input" id="coinSelect" onchange="changeCoin()">
-            <option value="bitcoin">Bitcoin (BTC)</option>
-            <option value="ethereum">Ethereum (ETH)</option>
-            <option value="binancecoin">BNB (BNB)</option>
+  <!-- TERA PURA APP ISKE ANDAR WRAP KIYA -->
+  <div id="app" class="hidden">
+    <div class="container">
+      <div class="header">
+        <div class="logo">🔔 AlertPro Auto Bot</div>
+        <div class="subtitle">BTC Paper Trading + Live Signals</div>
+        <button onclick="logout()" class="btn btn-reset" style="max-width:120px; margin:10px auto 0; padding:8px;">Logout</button>
+      </div>
+      <div class="status-banner" id="statusBanner">⚠️ API Error - Retrying...</div>
+      <div class="tabs">
+        <div class="tab active" onclick="showTab('dashboard', event)">Dashboard</div>
+        <div class="tab" onclick="showTab('trading', event)">Trading</div>
+        <div class="tab" onclick="showTab('strategies', event)">Strategies</div>
+        <div class="tab" onclick="showTab('settings', event)">Settings</div>
+        <div class="tab" onclick="showTab('logs', event)">Logs</div>
+      </div>
+
+      <div id="dashboard">
+        <div class="card">
+          <div class="select-row">
+            <select class="input" id="coinSelect" onchange="changeCoin()">
+              <option value="bitcoin">Bitcoin (BTC)</option>
+              <option value="ethereum">Ethereum (ETH)</option>
+              <option value="binancecoin">BNB (BNB)</option>
+            </select>
+            <select class="input" id="currencySelect" onchange="updatePrices()" style="max-width: 100px;">
+              <option value="usd">USD</option>
+              <option value="inr">INR</option>
+            </select>
+          </div>
+        </div>
+        <div class="card price-box">
+          <div class="price-label" id="pairLabel">BTC/USD</div>
+          <div class="price-main" id="coinPrice">$0.00</div>
+          <div class="price-change" id="coinChange">Loading...</div>
+          <div style="margin-top:8px;font-size:12px;color:#64748b;" id="activeStrategyText"></div>
+          <div class="stats">
+            <div class="stat"><div class="stat-label">24h High</div><div class="stat-value" id="high24h">$0</div></div>
+            <div class="stat"><div class="stat-label">24h Low</div><div class="stat-value" id="low24h">$0</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="trading" class="hidden">
+        <div class="card">
+          <div class="toggle-row">
+            <div class="toggle-label">Auto Trading</div>
+            <div class="toggle" id="autoToggle" onclick="toggleAuto()"><div class="toggle-dot"></div></div>
+          </div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:12px;text-align:center;" id="autoStatusText">Auto trading OFF</div>
+          <div class="stats">
+            <div class="stat"><div class="stat-label">Balance USD</div><div class="stat-value" id="balance">$10000.00</div></div>
+            <div class="stat"><div class="stat-label">Holdings</div><div class="stat-value" id="coinHold">0.000</div></div>
+            <div class="stat"><div class="stat-label">Total P&L</div><div class="stat-value" id="pnl">+$0.00</div></div>
+            <div class="stat"><div class="stat-label">Trades</div><div class="stat-value" id="trades">0</div></div>
+          </div>
+          <button class="btn btn-buy" onclick="manualTrade('BUY')">Manual BUY</button>
+          <button class="btn btn-sell" onclick="manualTrade('SELL')">Manual SELL</button>
+        </div>
+      </div>
+
+      <div id="strategies" class="hidden">
+        <div class="card">
+          <h3 style="margin-bottom: 12px;">Create Strategy</h3>
+          <input class="input" id="strategyName" placeholder="Strategy Name - Ex: Pump Hunter">
+          <select class="input" id="strategyType">
+            <option value="custom">Custom - 24h % Change</option>
           </select>
-          <select class="input" id="currencySelect" onchange="updatePrices()" style="max-width: 100px;">
-            <option value="usd">USD</option>
-            <option value="inr">INR</option>
-          </select>
+          <div id="customConfig">
+            <input class="input" id="buyCondition" placeholder="BUY when 24h change > X% - Ex: 3">
+            <input class="input" id="sellCondition" placeholder="SELL when 24h change < X% - Ex: -3">
+          </div>
+          <button class="btn btn-buy" onclick="saveStrategy()">💾 Save Strategy</button>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom: 12px;">Saved Strategies</h3>
+          <div id="strategyList"></div>
         </div>
       </div>
-      <div class="card price-box">
-        <div class="price-label" id="pairLabel">BTC/USD</div>
-        <div class="price-main" id="coinPrice">$0.00</div>
-        <div class="price-change" id="coinChange">Loading...</div>
-        <div style="margin-top:8px;font-size:12px;color:#64748b;" id="activeStrategyText"></div>
-        <div class="stats">
-          <div class="stat"><div class="stat-label">24h High</div><div class="stat-value" id="high24h">$0</div></div>
-          <div class="stat"><div class="stat-label">24h Low</div><div class="stat-value" id="low24h">$0</div></div>
-        </div>
-      </div>
-    </div>
 
-    <div id="trading" class="hidden">
-      <div class="card">
-        <div class="toggle-row">
-          <div class="toggle-label">Auto Trading</div>
-          <div class="toggle" id="autoToggle" onclick="toggleAuto()"><div class="toggle-dot"></div></div>
+      <div id="logs" class="hidden">
+        <div class="card">
+          <h3 style="margin-bottom: 12px;">Trade Logs</h3>
+          <div class="log" id="logBox"></div>
         </div>
-        <div style="font-size:11px;color:#64748b;margin-bottom:12px;text-align:center;" id="autoStatusText">Auto trading OFF</div>
-        <div class="stats">
-          <div class="stat"><div class="stat-label">Balance USD</div><div class="stat-value" id="balance">$10000.00</div></div>
-          <div class="stat"><div class="stat-label">Holdings</div><div class="stat-value" id="coinHold">0.000</div></div>
-          <div class="stat"><div class="stat-label">Total P&L</div><div class="stat-value" id="pnl">+$0.00</div></div>
-          <div class="stat"><div class="stat-label">Trades</div><div class="stat-value" id="trades">0</div></div>
+      </div>
+
+      <div id="settings" class="hidden">
+        <div class="card">
+          <h3 style="margin-bottom: 12px;">Data Backup</h3>
+          <button class="btn btn-blue" onclick="exportData()">📤 Export Data</button>
+          <input type="file" id="importFile" class="input" accept=".json">
+          <button class="btn btn-blue" onclick="importData()">📥 Import Data</button>
+          <div style="font-size: 11px; color: #64748b; margin-top: 8px; text-align: center;">Phone se export karke laptop mein import kar do. Sab sync ho jayega</div>
         </div>
-        <button class="btn btn-buy" onclick="manualTrade('BUY')">Manual BUY</button>
-        <button class="btn btn-sell" onclick="manualTrade('SELL')">Manual SELL</button>
-      </div>
-    </div>
-
-    <div id="strategies" class="hidden">
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">Create Strategy</h3>
-        <input class="input" id="strategyName" placeholder="Strategy Name - Ex: Pump Hunter">
-        <select class="input" id="strategyType">
-          <option value="custom">Custom - 24h % Change</option>
-        </select>
-        <div id="customConfig">
-          <input class="input" id="buyCondition" placeholder="BUY when 24h change > X% - Ex: 3">
-          <input class="input" id="sellCondition" placeholder="SELL when 24h change < X% - Ex: -3">
+        <div class="card">
+          <h3 style="margin-bottom: 12px;">Reset Paper Trading</h3>
+          <button class="btn btn-reset" onclick="resetBalance()">🔄 Reset Balance to $10,000</button>
+          <div style="font-size: 11px; color: #64748b; margin-top: 8px; text-align: center;">Ye balance, holdings, P&L aur trades reset kar dega</div>
         </div>
-        <button class="btn btn-buy" onclick="saveStrategy()">💾 Save Strategy</button>
-      </div>
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">Saved Strategies</h3>
-        <div id="strategyList"></div>
-      </div>
-    </div>
-
-    <div id="logs" class="hidden">
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">Trade Logs</h3>
-        <div class="log" id="logBox"></div>
-      </div>
-    </div>
-
-    <div id="settings" class="hidden">
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">Data Backup</h3>
-        <button class="btn btn-blue" onclick="exportData()">📤 Export Data</button>
-        <input type="file" id="importFile" class="input" accept=".json">
-        <button class="btn btn-blue" onclick="importData()">📥 Import Data</button>
-        <div style="font-size: 11px; color: #64748b; margin-top: 8px; text-align: center;">Phone se export karke laptop mein import kar do. Sab sync ho jayega</div>
-      </div>
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">Reset Paper Trading</h3>
-        <button class="btn btn-reset" onclick="resetBalance()">🔄 Reset Balance to $10,000</button>
-        <div style="font-size: 11px; color: #64748b; margin-top: 8px; text-align: center;">Ye balance, holdings, P&L aur trades reset kar dega</div>
-      </div>
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">Telegram Alerts</h3>
-        <input class="input" id="tgToken" placeholder="Bot Token">
-        <input class="input" id="tgChat" placeholder="Chat ID">
-        <button class="btn btn-buy" onclick="saveTelegram()">Save Telegram</button>
-        <button class="btn btn-buy" onclick="testTelegram()">Test Alert</button>
+        <div class="card">
+          <h3 style="margin-bottom: 12px;">Telegram Alerts</h3>
+          <input class="input" id="tgToken" placeholder="Bot Token">
+          <input class="input" id="tgChat" placeholder="Chat ID">
+          <button class="btn btn-buy" onclick="saveTelegram()">Save Telegram</button>
+          <button class="btn btn-buy" onclick="testTelegram()">Test Alert</button>
+        </div>
       </div>
     </div>
   </div>
@@ -173,6 +186,15 @@ function showTab(tab, event) {
   document.getElementById('logs').classList.add('hidden');
   document.getElementById('strategies').classList.add('hidden');
   document.getElementById(tab).classList.remove('hidden');
+}
+
+function log(msg) {
+  const logBox = document.getElementById('logBox');
+  if(!logBox) return;
+  const item = document.createElement('div');
+  item.className = 'log-item';
+  item.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
+  logBox.prepend(item);
 }
 
 function loadConfig() {
@@ -362,55 +384,61 @@ function updateAutoStatusText() {
   document.getElementById('autoStatusText').textContent = STATE.autoTrade? 'Auto trading ON - ' + STATE.signal : 'Auto trading OFF';
 }
 
-function updateUI() {
-  document.getElementById('balance').textContent = (STATE.currency === 'usd'? '$' : '₹') + STATE.balance.toFixed(2);
-  document.getElementById('coinHold').textContent = STATE.coinHolding.toFixed(6);
-  document.getElementById('trades').textContent = STATE.trades;
-  const pnl = (STATE.coinHolding * STATE.price) + STATE.balance - 10000;
-  document.getElementById('pnl').textContent = (pnl >= 0? '+$' : '-$') + Math.abs(pnl).toFixed(2);
-  document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0? 'green' : 'red');
-}
+function saveStrategy() { const name = document.getElementById('strategyName').value; const buy = parseFloat(document.getElementById('buyCondition').value); const sell = parseFloat(document.getElementById('sellCondition').value); if(!name) return alert('Name dalo'); STRATEGIES.push({name, config:{buy,sell}, is_active:false}); saveAllToLocal(); renderStrategies(); log('✅ Strategy saved'); }
+function renderStrategies() { const list = document.getElementById('strategyList'); if(!list) return; list.innerHTML = STRATEGIES.map((s,i)=>`<div class="card" style="padding:10px;"><b>${s.name}</b><br>BUY >${s.config.buy}% | SELL <${s.config.sell}% <button onclick="toggleStrat(${i})" class="btn btn-blue" style="padding:6px; margin-top:6px;">${s.is_active?'Deactivate':'Activate'}</button></div>`).join(''); }
+window.toggleStrat = function(i){ STRATEGIES[i].is_active =!STRATEGIES[i].is_active; saveAllToLocal(); renderStrategies(); }
+function updateUI() { document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2); document.getElementById('coinHold').textContent = STATE.coinHolding.toFixed(6); document.getElementById('trades').textContent = STATE.trades; const pnl = (STATE.coinHolding * STATE.price + STATE.balance - 10000); document.getElementById('pnl').textContent = (pnl >= 0? '+' : '') + '$' + pnl.toFixed(2); document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0? 'green' : 'red'); }
+</script>
 
-function log(msg) {
-  const logBox = document.getElementById('logBox');
-  const time = new Date().toLocaleTimeString();
-  logBox.innerHTML = `<div class="log-item">[${time}] ${msg}</div>` + logBox.innerHTML;
-}
+<!-- FIREBASE SYSTEM ADD KIYA -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-function saveStrategy() {
-  const name = document.getElementById('strategyName').value;
-  const buy = parseFloat(document.getElementById('buyCondition').value);
-  const sell = parseFloat(document.getElementById('sellCondition').value);
-  if (!name || isNaN(buy) || isNaN(sell)) { log('⚠️ Saare fields bharo'); return; }
-  const strategy = { name, type: 'custom', config: { buy, sell }, is_active: false };
-  STRATEGIES.push(strategy);
-  saveAllToLocal();
-  renderStrategies();
-  log(`✅ Strategy "${name}" SAVED PERMANENTLY`);
-}
+  const firebaseConfig = {
+    apiKey: "AIzaSyDIPtw7gur2viWc4k39N3HBK_aPJ4EBWqk",
+    authDomain: "alertpro-bot.firebaseapp.com",
+    projectId: "alertpro-bot",
+    storageBucket: "alertpro-bot.firebasestorage.app",
+    messagingSenderId: "834804229548",
+    appId: "1:834804229548:web:e46f165bd57b66e92f0609"
+  };
 
-function renderStrategies() {
-  const list = document.getElementById('strategyList');
-  list.innerHTML = STRATEGIES.map((s, i) => `
-    <div style="background:rgba(15,23,42,0.6);padding:10px;border-radius:8px;margin-bottom:8px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div><b>${s.name}</b> <span class="strategy-badge">${s.is_active? 'ACTIVE' : 'OFF'}</span></div>
-        <button onclick="toggleStrategy(${i})" class="btn" style="padding:6px 12px;font-size:12px;width:auto;">${s.is_active? 'OFF' : 'ON'}</button>
-      </div>
-      <div style="font-size:11px;color:#64748b;">Buy > ${s.config.buy}% | Sell < ${s.config.sell}%</div>
-    </div>
-  `).join('');
-}
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-function toggleStrategy(i) {
-  STRATEGIES[i].is_active =!STRATEGIES[i].is_active;
-  saveAllToLocal();
-  renderStrategies();
-}
+  window.signup = function() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    createUserWithEmailAndPassword(auth, email, password)
+    .then(() => alert("Signup Ho Gaya ✅"))
+    .catch((error) => alert("Error: " + error.message));
+  }
 
-loadConfig();
-setInterval(fetchCoinData, FETCH_INTERVAL);
-fetchCoinData();
+  window.login = function() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    signInWithEmailAndPassword(auth, email, password)
+    .then(() => alert("Login Ho Gaya ✅"))
+    .catch((error) => alert("Error: " + error.message));
+  }
+
+  window.logout = function() {
+    signOut(auth).then(() => location.reload());
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      document.getElementById('authBox').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      loadConfig();
+      fetchCoinData();
+      setInterval(fetchCoinData, FETCH_INTERVAL);
+    } else {
+      document.getElementById('authBox').classList.remove('hidden');
+      document.getElementById('app').classList.add('hidden');
+    }
+  });
 </script>
 </body>
 </html>
