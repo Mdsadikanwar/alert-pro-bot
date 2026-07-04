@@ -51,126 +51,116 @@
   </style>
 </head>
 <body>
-  <div id="authBox" style="max-width:320px; margin:80px auto; text-align:center; border:1px solid #334155; padding:20px; border-radius:12px; background:rgba(19,27,46,0.6);">
-    <h2 style="color:#10b981; margin-bottom:12px;">AlertPro Login</h2>
-    <input type="email" id="email" placeholder="Email" class="input">
-    <input type="password" id="password" placeholder="Password" class="input">
-    <button onclick="signup()" class="btn btn-buy">Signup</button>
-    <button onclick="login()" class="btn btn-blue">Login</button>
-  </div>
+  <!-- LOGIN BOX HATA DIYA -->
+  <div class="container">
+    <div class="header">
+      <div class="logo">🔔 AlertPro Auto Bot</div>
+      <div class="subtitle">BTC Paper Trading + Live Signals <span class="sync-badge" id="syncStatus">☁️ Loading...</span></div>
+    </div>
+    <div class="status-banner" id="statusBanner">⚠️ API Error - Retrying...</div>
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('dashboard', event)">Dashboard</div>
+      <div class="tab" onclick="showTab('trading', event)">Trading</div>
+      <div class="tab" onclick="showTab('strategies', event)">Strategies</div>
+      <div class="tab" onclick="showTab('settings', event)">Settings</div>
+      <div class="tab" onclick="showTab('logs', event)">Logs</div>
+    </div>
 
-  <div id="app" class="hidden">
-    <div class="container">
-      <div class="header">
-        <div class="logo">🔔 AlertPro Auto Bot</div>
-        <div class="subtitle">BTC Paper Trading + Live Signals <span class="sync-badge" id="syncStatus">☁️ Syncing...</span></div>
-        <button onclick="logout()" class="btn btn-reset" style="max-width:120px; margin:10px auto 0; padding:8px;">Logout</button>
-      </div>
-      <div class="status-banner" id="statusBanner">⚠️ API Error - Retrying...</div>
-      <div class="tabs">
-        <div class="tab active" onclick="showTab('dashboard', event)">Dashboard</div>
-        <div class="tab" onclick="showTab('trading', event)">Trading</div>
-        <div class="tab" onclick="showTab('strategies', event)">Strategies</div>
-        <div class="tab" onclick="showTab('settings', event)">Settings</div>
-        <div class="tab" onclick="showTab('logs', event)">Logs</div>
-      </div>
-
-      <div id="dashboard">
-        <div class="card">
-          <div class="select-row">
-            <select class="input" id="coinSelect" onchange="changeCoin()">
-              <option value="bitcoin">Bitcoin (BTC)</option>
-              <option value="ethereum">Ethereum (ETH)</option>
-              <option value="binancecoin">BNB (BNB)</option>
-            </select>
-            <select class="input" id="currencySelect" onchange="updatePrices()" style="max-width: 100px;">
-              <option value="usd">USD</option>
-              <option value="inr">INR</option>
-            </select>
-          </div>
-        </div>
-        <div class="card price-box">
-          <div class="price-label" id="pairLabel">BTC/USD</div>
-          <div class="price-main" id="coinPrice">$0.00</div>
-          <div class="price-change" id="coinChange">Loading...</div>
-          <div style="margin-top:8px;font-size:12px;color:#64748b;" id="activeStrategyText"></div>
-          <div class="stats">
-            <div class="stat"><div class="stat-label">24h High</div><div class="stat-value" id="high24h">$0</div></div>
-            <div class="stat"><div class="stat-label">24h Low</div><div class="stat-value" id="low24h">$0</div></div>
-          </div>
-        </div>
-      </div>
-
-      <div id="trading" class="hidden">
-        <div class="card">
-          <div class="toggle-row">
-            <div class="toggle-label">Auto Trading</div>
-            <div class="toggle" id="autoToggle" onclick="toggleAuto()"><div class="toggle-dot"></div></div>
-          </div>
-          <div style="font-size:11px;color:#64748b;margin-bottom:12px;text-align:center;" id="autoStatusText">Auto trading OFF</div>
-          <div class="stats">
-            <div class="stat"><div class="stat-label">Balance USD</div><div class="stat-value" id="balance">$10000.00</div></div>
-            <div class="stat"><div class="stat-label">Holdings</div><div class="stat-value" id="coinHold">0.000</div></div>
-            <div class="stat"><div class="stat-label">Total P&L</div><div class="stat-value" id="pnl">+$0.00</div></div>
-            <div class="stat"><div class="stat-label">Trades</div><div class="stat-value" id="trades">0</div></div>
-          </div>
-          <button class="btn btn-buy" onclick="manualTrade('BUY')">Manual BUY</button>
-          <button class="btn btn-sell" onclick="manualTrade('SELL')">Manual SELL</button>
-        </div>
-      </div>
-
-      <div id="strategies" class="hidden">
-        <div class="card">
-          <h3 style="margin-bottom: 12px;">Create Strategy</h3>
-          <input class="input" id="strategyName" placeholder="Strategy Name - Ex: Pump Hunter">
-          <select class="input" id="strategyType">
-            <option value="custom">Custom - 24h % Change</option>
+    <div id="dashboard">
+      <div class="card">
+        <div class="select-row">
+          <select class="input" id="coinSelect" onchange="changeCoin()">
+            <option value="bitcoin">Bitcoin (BTC)</option>
+            <option value="ethereum">Ethereum (ETH)</option>
+            <option value="binancecoin">BNB (BNB)</option>
           </select>
-          <div id="customConfig">
-            <input class="input" id="buyCondition" placeholder="BUY when 24h change > X% - Ex: 3">
-            <input class="input" id="sellCondition" placeholder="SELL when 24h change < X% - Ex: -3">
-          </div>
-          <button class="btn btn-buy" onclick="saveStrategy()">💾 Save Strategy</button>
-        </div>
-        <div class="card">
-          <h3 style="margin-bottom: 12px;">Saved Strategies</h3>
-          <div id="strategyList"></div>
+          <select class="input" id="currencySelect" onchange="updatePrices()" style="max-width: 100px;">
+            <option value="usd">USD</option>
+            <option value="inr">INR</option>
+          </select>
         </div>
       </div>
-
-      <div id="logs" class="hidden">
-        <div class="card">
-          <h3 style="margin-bottom: 12px;">Trade Logs</h3>
-          <div class="log" id="logBox"></div>
+      <div class="card price-box">
+        <div class="price-label" id="pairLabel">BTC/USD</div>
+        <div class="price-main" id="coinPrice">$0.00</div>
+        <div class="price-change" id="coinChange">Loading...</div>
+        <div style="margin-top:8px;font-size:12px;color:#64748b;" id="activeStrategyText"></div>
+        <div class="stats">
+          <div class="stat"><div class="stat-label">24h High</div><div class="stat-value" id="high24h">$0</div></div>
+          <div class="stat"><div class="stat-label">24h Low</div><div class="stat-value" id="low24h">$0</div></div>
         </div>
       </div>
+    </div>
 
-      <div id="settings" class="hidden">
-        <div class="card">
-          <h3 style="margin-bottom: 12px;">Data Backup</h3>
-          <button class="btn btn-blue" onclick="exportData()">📤 Export Data</button>
-          <input type="file" id="importFile" class="input" accept=".json">
-          <button class="btn btn-blue" onclick="importData()">📥 Import Data</button>
-          <div style="font-size: 11px; color: #64748b; margin-top: 8px; text-align: center;">Phone se export karke laptop mein import kar do. Sab sync ho jayega</div>
+    <div id="trading" class="hidden">
+      <div class="card">
+        <div class="toggle-row">
+          <div class="toggle-label">Auto Trading</div>
+          <div class="toggle" id="autoToggle" onclick="toggleAuto()"><div class="toggle-dot"></div></div>
         </div>
-        <div class="card">
-          <h3 style="margin-bottom: 12px;">Reset Paper Trading</h3>
-          <button class="btn btn-reset" onclick="resetBalance()">🔄 Reset Balance to $10,000</button>
-          <div style="font-size: 11px; color: #64748b; margin-top: 8px; text-align: center;">Ye balance, holdings, P&L aur trades reset kar dega</div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:12px;text-align:center;" id="autoStatusText">Auto trading OFF</div>
+        <div class="stats">
+          <div class="stat"><div class="stat-label">Balance USD</div><div class="stat-value" id="balance">$10000.00</div></div>
+          <div class="stat"><div class="stat-label">Holdings</div><div class="stat-value" id="coinHold">0.000</div></div>
+          <div class="stat"><div class="stat-label">Total P&L</div><div class="stat-value" id="pnl">+$0.00</div></div>
+          <div class="stat"><div class="stat-label">Trades</div><div class="stat-value" id="trades">0</div></div>
         </div>
-        <div class="card">
-          <h3 style="margin-bottom: 12px;">Telegram Alerts</h3>
-          <input class="input" id="tgToken" placeholder="Bot Token">
-          <input class="input" id="tgChat" placeholder="Chat ID">
-          <button class="btn btn-buy" onclick="saveTelegram()">Save Telegram</button>
-          <button class="btn btn-buy" onclick="testTelegram()">Test Alert</button>
+        <button class="btn btn-buy" onclick="manualTrade('BUY')">Manual BUY</button>
+        <button class="btn btn-sell" onclick="manualTrade('SELL')">Manual SELL</button>
+      </div>
+    </div>
+
+    <div id="strategies" class="hidden">
+      <div class="card">
+        <h3 style="margin-bottom: 12px;">Create Strategy</h3>
+        <input class="input" id="strategyName" placeholder="Strategy Name - Ex: Pump Hunter">
+        <select class="input" id="strategyType">
+          <option value="custom">Custom - 24h % Change</option>
+        </select>
+        <div id="customConfig">
+          <input class="input" id="buyCondition" placeholder="BUY when 24h change > X% - Ex: 3">
+          <input class="input" id="sellCondition" placeholder="SELL when 24h change < X% - Ex: -3">
         </div>
+        <button class="btn btn-buy" onclick="saveStrategy()">💾 Save Strategy</button>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom: 12px;">Saved Strategies</h3>
+        <div id="strategyList"></div>
+      </div>
+    </div>
+
+    <div id="logs" class="hidden">
+      <div class="card">
+        <h3 style="margin-bottom: 12px;">Trade Logs</h3>
+        <div class="log" id="logBox"></div>
+      </div>
+    </div>
+
+    <div id="settings" class="hidden">
+      <div class="card">
+        <h3 style="margin-bottom: 12px;">Data Backup</h3>
+        <button class="btn btn-blue" onclick="exportData()">📤 Export Data</button>
+        <input type="file" id="importFile" class="input" accept=".json">
+        <button class="btn btn-blue" onclick="importData()">📥 Import Data</button>
+        <div style="font-size: 11px; color: #64748b; margin-top: 8px; text-align: center;">Phone se export karke laptop mein import kar do</div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom: 12px;">Reset Paper Trading</h3>
+        <button class="btn btn-reset" onclick="resetBalance()">🔄 Reset Balance to $10,000</button>
+        <div style="font-size: 11px; color: #64748b; margin-top: 8px; text-align: center;">Ye balance, holdings, P&L aur trades reset kar dega</div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom: 12px;">Telegram Alerts</h3>
+        <input class="input" id="tgToken" placeholder="Bot Token">
+        <input class="input" id="tgChat" placeholder="Chat ID">
+        <button class="btn btn-buy" onclick="saveTelegram()">Save Telegram</button>
+        <button class="btn btn-buy" onclick="testTelegram()">Test Alert</button>
       </div>
     </div>
   </div>
 
 <script>
-let CURRENT_USER_UID = null; // Firebase UID store karne ke liye
+const DEVICE_ID = 'alertpro_single_user'; // Single user ke liye fixed ID
 
 const STATE = { coinId: 'bitcoin', coinSymbol: 'BTC', currency: 'usd', price: 0, high24h: 0, low24h: 0, change24h: 0, signal: 'HOLD', balance: 10000, coinHolding: 0, trades: 0, autoTrade: false, tgToken: '', tgChat: '', lastFetchSuccess: false, lastTradeTime: 0 };
 const COIN_DATA = { 'bitcoin': { symbol: 'BTC', rank: 1, cgId: 'bitcoin' }, 'ethereum': { symbol: 'ETH', rank: 2, cgId: 'ethereum' }, 'binancecoin': { symbol: 'BNB', rank: 4, cgId: 'binancecoin' } };
@@ -198,21 +188,21 @@ function log(msg) {
   logBox.prepend(item);
 }
 
-// FIREBASE SE LOAD KAREGA AB
+// FIREBASE SE LOAD
 async function loadConfig() {
   document.getElementById('syncStatus').textContent = '☁️ Loading...';
 
-  // Pehle local se load
+  // Pehle local
   STATE.tgToken = localStorage.getItem('tgToken') || '';
   STATE.tgChat = localStorage.getItem('tgChat') || '';
   STATE.autoTrade = localStorage.getItem('autoTrade') === 'true';
   STATE.coinId = localStorage.getItem('currentCoin') || 'bitcoin';
   STATE.currency = localStorage.getItem('currency') || 'usd';
 
-  // Phir Firebase se load - agar hai to overwrite kar dega
-  if(CURRENT_USER_UID && window.db) {
+  // Phir Firebase
+  if(window.db) {
     try {
-      const snapshot = await window.db.ref('users/' + CURRENT_USER_UID).once('value');
+      const snapshot = await window.db.ref('users/' + DEVICE_ID).once('value');
       const data = snapshot.val();
       if(data) {
         STATE.balance = data.balance || 10000;
@@ -242,9 +232,8 @@ async function loadConfig() {
   document.getElementById('syncStatus').textContent = '☁️ Synced';
 }
 
-// FIREBASE + LOCAL DONO ME SAVE KAREGA
+// FIREBASE + LOCAL ME SAVE
 async function saveAllToLocal() {
-  // Local me bhi
   localStorage.setItem('balance', STATE.balance);
   localStorage.setItem('coinHolding', STATE.coinHolding);
   localStorage.setItem('trades', STATE.trades);
@@ -255,11 +244,10 @@ async function saveAllToLocal() {
   localStorage.setItem('currentCoin', STATE.coinId);
   localStorage.setItem('currency', STATE.currency);
 
-  // Firebase me bhi
-  if(CURRENT_USER_UID && window.db) {
+  if(window.db) {
     document.getElementById('syncStatus').textContent = '☁️ Saving...';
     try {
-      await window.db.ref('users/' + CURRENT_USER_UID).set({
+      await window.db.ref('users/' + DEVICE_ID).set({
         balance: STATE.balance, coinHolding: STATE.coinHolding, trades: STATE.trades,
         strategies: STRATEGIES, tgToken: STATE.tgToken, tgChat: STATE.tgChat,
         autoTrade: STATE.autoTrade, coinId: STATE.coinId, currency: STATE.currency,
@@ -273,35 +261,9 @@ async function saveAllToLocal() {
   }
 }
 
-function updateUI() {
-  document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2);
-  document.getElementById('coinHold').textContent = STATE.coinHolding.toFixed(6);
-  document.getElementById('trades').textContent = STATE.trades;
-  const pnl = (STATE.coinHolding * STATE.price + STATE.balance - 10000);
-  document.getElementById('pnl').textContent = (pnl >= 0? '+' : '') + '$' + pnl.toFixed(2);
-  document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0? 'green' : 'red');
-}
-
-function exportData() {
-  const data = { balance: STATE.balance, coinHolding: STATE.coinHolding, trades: STATE.trades, strategies: STRATEGIES, tgToken: STATE.tgToken, tgChat: STATE.tgChat, autoTrade: STATE.autoTrade, coinId: STATE.coinId, currency: STATE.currency };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'alertpro_backup.json'; a.click();
-  log('✅ Data exported');
-}
-
-function importData() {
-  const file = document.getElementById('importFile').files[0];
-  if (!file) { log('⚠️ Pehle file select karo'); return; }
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const data = JSON.parse(e.target.result);
-    Object.assign(STATE, data); STRATEGIES = data.strategies;
-    saveAllToLocal(); loadConfig(); log('✅ Data imported successfully!');
-  };
-  reader.readAsText(file);
-}
-
+function updateUI() { document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2); document.getElementById('coinHold').textContent = STATE.coinHolding.toFixed(6); document.getElementById('trades').textContent = STATE.trades; const pnl = (STATE.coinHolding * STATE.price + STATE.balance - 10000); document.getElementById('pnl').textContent = (pnl >= 0? '+' : '') + '$' + pnl.toFixed(2); document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0? 'green' : 'red'); }
+function exportData() { const data = { balance: STATE.balance, coinHolding: STATE.coinHolding, trades: STATE.trades, strategies: STRATEGIES, tgToken: STATE.tgToken, tgChat: STATE.tgChat, autoTrade: STATE.autoTrade, coinId: STATE.coinId, currency: STATE.currency }; const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'alertpro_backup.json'; a.click(); log('✅ Data exported'); }
+function importData() { const file = document.getElementById('importFile').files[0]; if (!file) { log('⚠️ Pehle file select karo'); return; } const reader = new FileReader(); reader.onload = function(e) { const data = JSON.parse(e.target.result); Object.assign(STATE, data); STRATEGIES = data.strategies; saveAllToLocal(); loadConfig(); log('✅ Data imported successfully!'); }; reader.readAsText(file); }
 function saveTelegram() { STATE.tgToken = document.getElementById('tgToken').value; STATE.tgChat = document.getElementById('tgChat').value; saveAllToLocal(); log('✅ Telegram saved'); }
 async function sendTelegram(msg) { if (!STATE.tgToken ||!STATE.tgChat) return; try { await fetch(`https://api.telegram.org/bot${STATE.tgToken}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: STATE.tgChat, text: msg, parse_mode: 'HTML' }) }); } catch(e) { console.log(e); } }
 function testTelegram() { sendTelegram('🧪 <b>AlertPro Test</b>\nBot connected successfully!'); log('📤 Test alert sent'); }
@@ -320,16 +282,15 @@ function renderStrategies() { const list = document.getElementById('strategyList
 window.toggleStrat = function(i){ STRATEGIES[i].is_active =!STRATEGIES[i].is_active; saveAllToLocal(); renderStrategies(); }
 </script>
 
-<!-- FIREBASE AUTH + DATABASE -->
+<!-- SIRF FIREBASE DATABASE -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDIPtw7gur2viWc4k39N3HBK_aPJ4EBWqk",
     authDomain: "alertpro-bot.firebaseapp.com",
-    databaseURL: "https://alertpro-bot-default-rtdb.firebaseio.com", // YE LINE NAYI HAI
+    databaseURL: "https://alertpro-bot-default-rtdb.firebaseio.com",
     projectId: "alertpro-bot",
     storageBucket: "alertpro-bot.firebasestorage.app",
     messagingSenderId: "834804229548",
@@ -337,44 +298,13 @@ window.toggleStrat = function(i){ STRATEGIES[i].is_active =!STRATEGIES[i].is_act
   };
 
   const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
   const db = getDatabase(app);
-  window.db = db; // Global banaya taki upar wale function use kar sake
+  window.db = db;
 
-  window.signup = function() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    createUserWithEmailAndPassword(auth, email, password)
-   .then(() => alert("Signup Ho Gaya ✅"))
-   .catch((error) => alert("Error: " + error.message));
-  }
-
-  window.login = function() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    signInWithEmailAndPassword(auth, email, password)
-   .then(() => alert("Login Ho Gaya ✅"))
-   .catch((error) => alert("Error: " + error.message));
-  }
-
-  window.logout = function() {
-    signOut(auth).then(() => location.reload());
-  }
-
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      CURRENT_USER_UID = user.uid; // UID save kar liya
-      document.getElementById('authBox').classList.add('hidden');
-      document.getElementById('app').classList.remove('hidden');
-      loadConfig();
-      fetchCoinData();
-      setInterval(fetchCoinData, FETCH_INTERVAL);
-    } else {
-      CURRENT_USER_UID = null;
-      document.getElementById('authBox').classList.remove('hidden');
-      document.getElementById('app').classList.add('hidden');
-    }
-  });
+  // Sidha load kar de login ke bina
+  loadConfig();
+  fetchCoinData();
+  setInterval(fetchCoinData, FETCH_INTERVAL);
 </script>
 </body>
 </html>
