@@ -5,48 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AlertPro Auto Bot</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow-x: hidden; }
     body { font-family: 'Inter', sans-serif; background: #0a0e1a; color: #e2e8f0; padding: 16px; }
- .container { max-width: 600px; width: 100%; margin: 0 auto; position: relative; z-index: 1; }
- .header { text-align: center; margin-bottom: 24px; }
- .logo { font-size: 28px; font-weight: 800; margin-bottom: 8px; color: #10b981; }
- .subtitle { color: #94a3b8; font-size: 13px; font-weight: 500; }
- .card { background: rgba(19, 27, 46, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
- .price-box { text-align: center; }
- .price-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
- .price-main { font-size: 42px; font-weight: 800; color: #f59e0b; line-height: 1; }
- .price-change { font-size: 18px; margin-top: 12px; font-weight: 700; }
- .green { color: #10b981; }
- .red { color: #ef4444; }
- .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
- .stat { background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 12px; text-align: center; }
- .stat-label { font-size: 11px; color: #64748b; margin-bottom: 6px; }
- .stat-value { font-size: 20px; font-weight: 700; }
- .toggle-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
- .toggle-label { font-size: 14px; font-weight: 600; }
- .toggle { width: 50px; height: 26px; background: #334155; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s; }
- .toggle.active { background: #10b981; }
- .toggle-dot { width: 22px; height: 22px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
- .toggle.active.toggle-dot { left: 26px; }
- .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px; }
- .btn-buy { background: #10b981; color: white; }
- .btn-sell { background: #ef4444; color: white; }
- .btn-reset { background: #f59e0b; color: white; }
- .btn:active { transform: scale(0.98); }
- .input { width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; color: #e2e8f0; margin: 8px 0; font-size: 14px; }
- .log { background: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 12px; max-height: 200px; overflow-y: auto; font-size: 11px; font-family: monospace; }
- .log-item { padding: 4px 0; border-bottom: 1px solid #1e293b; }
- .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
- .tab { flex: 1; min-width: 70px; padding: 10px; background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; text-align: center; font-size: 12px; font-weight: 600; cursor: pointer; }
- .tab.active { background: #10b981; border-color: #10b981; color: white; }
- .hidden { display: none; }
- .select-row { display: flex; gap: 8px; margin-bottom: 12px; }
-    select.input { flex: 1; }
- .status-banner { background: rgba(251, 191, 36, 0.15); border: 1px solid #fbbf24; padding: 8px; border-radius: 8px; margin-bottom: 12px; text-align: center; font-size: 12px; display: none; }
- .strategy-badge { display: inline-block; padding: 4px 8px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; border-radius: 6px; font-size: 11px; font-weight: 600; color: #10b981; margin-left: 8px; }
+.container { max-width: 600px; width: 100%; margin: 0 auto; position: relative; z-index: 1; }
+.header { text-align: center; margin-bottom: 24px; }
+.logo { font-size: 28px; font-weight: 800; margin-bottom: 8px; color: #10b981; }
+.subtitle { color: #94a3b8; font-size: 13px; font-weight: 500; }
+.card { background: rgba(19, 27, 46, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(30, 41, 59, 0.8); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+.price-box { text-align: center; }
+.price-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+.price-main { font-size: 42px; font-weight: 800; color: #f59e0b; line-height: 1; }
+.price-change { font-size: 18px; margin-top: 12px; font-weight: 700; }
+.green { color: #10b981; }
+.red { color: #ef4444; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+.stat { background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 12px; text-align: center; }
+.stat-label { font-size: 11px; color: #64748b; margin-bottom: 6px; }
+.stat-value { font-size: 20px; font-weight: 700; }
+.toggle-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
+.toggle-label { font-size: 14px; font-weight: 600; }
+.toggle { width: 50px; height: 26px; background: #334155; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s; }
+.toggle.active { background: #10b981; }
+.toggle-dot { width: 22px; height: 22px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
+.toggle.active.toggle-dot { left: 26px; }
+.btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px; }
+.btn-buy { background: #10b981; color: white; }
+.btn-sell { background: #ef4444; color: white; }
+.btn-reset { background: #f59e0b; color: white; }
+.btn-blue { background: #3b82f6; color: white; }
+.btn:active { transform: scale(0.98); }
+.input { width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; color: #e2e8f0; margin: 8px 0; font-size: 14px; }
+.log { background: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 12px; max-height: 200px; overflow-y: auto; font-size: 11px; font-family: monospace; }
+.log-item { padding: 4px 0; border-bottom: 1px solid #1e293b; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab { flex: 1; min-width: 70px; padding: 10px; background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; text-align: center; font-size: 12px; font-weight: 600; cursor: pointer; }
+.tab.active { background: #10b981; border-color: #10b981; color: white; }
+.hidden { display: none; }
+.select-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  select.input { flex: 1; }
+.status-banner { background: rgba(251, 191, 36, 0.15); border: 1px solid #fbbf24; padding: 8px; border-radius: 8px; margin-bottom: 12px; text-align: center; font-size: 12px; display: none; }
+.strategy-badge { display: inline-block; padding: 4px 8px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; border-radius: 6px; font-size: 11px; font-weight: 600; color: #10b981; margin-left: 8px; }
   </style>
 </head>
 <body>
@@ -114,8 +114,6 @@
         <input class="input" id="strategyName" placeholder="Strategy Name - Ex: Pump Hunter">
         <select class="input" id="strategyType">
           <option value="custom">Custom - 24h % Change</option>
-          <option value="manual">Manual - Price Based</option>
-          <option value="preset">Preset - MA Cross</option>
         </select>
         <div id="customConfig">
           <input class="input" id="buyCondition" placeholder="BUY when 24h change > X% - Ex: 3">
@@ -138,15 +136,16 @@
 
     <div id="settings" class="hidden">
       <div class="card">
+        <h3 style="margin-bottom: 12px;">Data Backup</h3>
+        <button class="btn btn-blue" onclick="exportData()">📤 Export Data</button>
+        <input type="file" id="importFile" class="input" accept=".json">
+        <button class="btn btn-blue" onclick="importData()">📥 Import Data</button>
+        <div style="font-size: 11px; color: #64748b; margin-top: 8px; text-align: center;">Phone se export karke laptop mein import kar do. Sab sync ho jayega</div>
+      </div>
+      <div class="card">
         <h3 style="margin-bottom: 12px;">Reset Paper Trading</h3>
         <button class="btn btn-reset" onclick="resetBalance()">🔄 Reset Balance to $10,000</button>
         <div style="font-size: 11px; color: #64748b; margin-top: 8px; text-align: center;">Ye balance, holdings, P&L aur trades reset kar dega</div>
-      </div>
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">Supabase Config</h3>
-        <input class="input" id="sbUrl" placeholder="Supabase URL">
-        <input class="input" id="sbKey" placeholder="Supabase Anon Key">
-        <button class="btn btn-buy" onclick="saveSupabase()">Save Supabase</button>
       </div>
       <div class="card">
         <h3 style="margin-bottom: 12px;">Telegram Alerts</h3>
@@ -159,7 +158,7 @@
   </div>
 
 <script>
-const STATE = { coinId: 'bitcoin', coinSymbol: 'BTC', currency: 'usd', price: 0, high24h: 0, low24h: 0, change24h: 0, signal: 'HOLD', balance: 10000, coinHolding: 0, trades: 0, autoTrade: false, supabase: null, tgToken: '', tgChat: '', sbUrl: '', sbKey: '', lastFetchSuccess: false, lastTradeTime: 0 };
+const STATE = { coinId: 'bitcoin', coinSymbol: 'BTC', currency: 'usd', price: 0, high24h: 0, low24h: 0, change24h: 0, signal: 'HOLD', balance: 10000, coinHolding: 0, trades: 0, autoTrade: false, tgToken: '', tgChat: '', lastFetchSuccess: false, lastTradeTime: 0 };
 const COIN_DATA = { 'bitcoin': { symbol: 'BTC', rank: 1, cgId: 'bitcoin' }, 'ethereum': { symbol: 'ETH', rank: 2, cgId: 'ethereum' }, 'binancecoin': { symbol: 'BNB', rank: 4, cgId: 'binancecoin' } };
 const FETCH_INTERVAL = 60000;
 const TRADE_COOLDOWN = 300000;
@@ -176,9 +175,7 @@ function showTab(tab, event) {
   document.getElementById(tab).classList.remove('hidden');
 }
 
-async function loadConfig() {
-  STATE.sbUrl = localStorage.getItem('sbUrl') || '';
-  STATE.sbKey = localStorage.getItem('sbKey') || '';
+function loadConfig() {
   STATE.tgToken = localStorage.getItem('tgToken') || '';
   STATE.tgChat = localStorage.getItem('tgChat') || '';
   STATE.autoTrade = localStorage.getItem('autoTrade') === 'true';
@@ -187,86 +184,66 @@ async function loadConfig() {
   STATE.balance = parseFloat(localStorage.getItem('balance') || '10000');
   STATE.coinHolding = parseFloat(localStorage.getItem('coinHolding') || '0');
   STATE.trades = parseInt(localStorage.getItem('trades') || '0');
+  STRATEGIES = JSON.parse(localStorage.getItem('strategies') || '[]');
 
-  if (STATE.sbUrl && STATE.sbKey) {
-    try {
-      STATE.supabase = supabase.createClient(STATE.sbUrl, STATE.sbKey);
-      const { data, error } = await STATE.supabase.from('app_settings').select('*').eq('id', 1).single();
-      if (!error && data) {
-        STATE.balance = data.paper_balance || STATE.balance;
-        STATE.coinHolding = data.coin_holding || STATE.coinHolding;
-        STATE.trades = data.trades || STATE.trades;
-        log('✅ Cloud se Balance/Trades load ho gaya');
-      }
-    } catch(e) { log('⚠️ Cloud load fail'); }
-    try { await loadStrategies(); } catch(e) { log('⚠️ Strategies table nahi mila'); }
-  }
   document.getElementById('coinSelect').value = STATE.coinId;
   document.getElementById('currencySelect').value = STATE.currency;
   STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol;
   document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
-  document.getElementById('sbUrl').value = STATE.sbUrl;
-  document.getElementById('sbKey').value = STATE.sbKey;
   document.getElementById('tgToken').value = STATE.tgToken;
   document.getElementById('tgChat').value = STATE.tgChat;
   if (STATE.autoTrade) document.getElementById('autoToggle').classList.add('active');
   updateAutoStatusText();
+  renderStrategies();
   updateUI();
+  log('✅ Data loaded from device');
 }
 
-// YE FINAL NUCLEAR FIX HAI
-async function saveSupabase() {
-  const url = document.getElementById('sbUrl').value.trim();
-  const key = document.getElementById('sbKey').value.trim();
-  if (!url ||!key) { log('⚠️ URL/Key daal bhai'); return; }
+function exportData() {
+  const data = {
+    balance: STATE.balance, coinHolding: STATE.coinHolding, trades: STATE.trades,
+    strategies: STRATEGIES, tgToken: STATE.tgToken, tgChat: STATE.tgChat,
+    autoTrade: STATE.autoTrade, coinId: STATE.coinId, currency: STATE.currency
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'alertpro_backup.json'; a.click();
+  log('✅ Data exported. Isko dusre device mein import kar do');
+}
 
-  localStorage.setItem('sbUrl', url);
-  localStorage.setItem('sbKey', key);
+function importData() {
+  const file = document.getElementById('importFile').files[0];
+  if (!file) { log('⚠️ Pehle file select karo'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = JSON.parse(e.target.result);
+    STATE.balance = data.balance; STATE.coinHolding = data.coinHolding; STATE.trades = data.trades;
+    STRATEGIES = data.strategies; STATE.tgToken = data.tgToken; STATE.tgChat = data.tgChat;
+    STATE.autoTrade = data.autoTrade; STATE.coinId = data.coinId; STATE.currency = data.currency;
+    saveAllToLocal();
+    loadConfig();
+    log('✅ Data imported successfully!');
+  };
+  reader.readAsText(file);
+}
 
-  try {
-    log('⏳ Testing Supabase...');
-
-    const payload = {
-      id: 1, supabase_url: url, supabase_key: key, telegram_token: STATE.tgToken,
-      telegram_chat_id: STATE.tgChat, paper_balance: STATE.balance,
-      coin_holding: STATE.coinHolding, trades: STATE.trades,
-      updated_at: new Date().toISOString()
-    };
-
-    const response = await fetch(`${url}/rest/v1/app_settings`, {
-      method: 'POST',
-      headers: {
-        'apikey': key,
-        'Authorization': `Bearer ${key}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (response.status!== 201 && response.status!== 409) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    STATE.supabase = supabase.createClient(url, key);
-    STATE.sbUrl = url; STATE.sbKey = key;
-    log('✅ HO GAYA BHAI!!! Supabase Connected!');
-    log('✅ Ab phone aur laptop dono sync rahenge');
-    sendTelegram('✅ <b>Cloud Sync ON</b>\nAb phone/laptop sab sync rahega');
-    await loadStrategies();
-
-  } catch (e) {
-    log('❌ Save failed: ' + e.message);
-    log('❌ URL mein / mat lagana end mein. Key anon wali ho.');
-    STATE.supabase = null;
-  }
+function saveAllToLocal() {
+  localStorage.setItem('balance', STATE.balance);
+  localStorage.setItem('coinHolding', STATE.coinHolding);
+  localStorage.setItem('trades', STATE.trades);
+  localStorage.setItem('strategies', JSON.stringify(STRATEGIES));
+  localStorage.setItem('tgToken', STATE.tgToken);
+  localStorage.setItem('tgChat', STATE.tgChat);
+  localStorage.setItem('autoTrade', STATE.autoTrade);
+  localStorage.setItem('currentCoin', STATE.coinId);
+  localStorage.setItem('currency', STATE.currency);
 }
 
 function saveTelegram() {
   STATE.tgToken = document.getElementById('tgToken').value;
   STATE.tgChat = document.getElementById('tgChat').value;
-  localStorage.setItem('tgToken', STATE.tgToken);
-  localStorage.setItem('tgChat', STATE.tgChat);
+  saveAllToLocal();
   log('✅ Telegram saved');
 }
 
@@ -280,8 +257,7 @@ function testTelegram() { sendTelegram('🧪 <b>AlertPro Test</b>\nBot connected
 function resetBalance() {
   if (confirm('Balance $10,000 reset karna hai?')) {
     STATE.balance = 10000; STATE.coinHolding = 0; STATE.trades = 0;
-    localStorage.setItem('balance', '10000'); localStorage.setItem('coinHolding', '0'); localStorage.setItem('trades', '0');
-    updateUI(); log('🔄 Balance reset to $10,000');
+    saveAllToLocal(); updateUI(); log('🔄 Balance reset to $10,000');
   }
 }
 
@@ -290,7 +266,7 @@ function changeCoin() {
   localStorage.setItem('currentCoin', STATE.coinId);
   STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol;
   document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
-  STATE.coinHolding = 0; localStorage.setItem('coinHolding', '0');
+  STATE.coinHolding = 0; saveAllToLocal();
   updateUI(); fetchCoinData(); log(`🔄 Switched to ${STATE.coinSymbol}`);
 }
 
@@ -358,14 +334,14 @@ function executeTrade(type, strategyName = 'Manual') {
   if (type === 'BUY' && STATE.balance > 10) {
     const coinBuy = amount / STATE.price;
     STATE.coinHolding += coinBuy; STATE.balance -= amount; STATE.trades++;
-    localStorage.setItem('balance', STATE.balance); localStorage.setItem('coinHolding', STATE.coinHolding); localStorage.setItem('trades', STATE.trades);
+    saveAllToLocal();
     log(`✅ BUY: ${coinBuy.toFixed(6)} ${STATE.coinSymbol} @ ${STATE.currency.toUpperCase()}${STATE.price.toFixed(2)} [${strategyName}]`);
     sendTelegram(`🟢 <b>BUY ALERT - ${strategyName}</b>\n\nPair: ${STATE.coinSymbol}/${STATE.currency.toUpperCase()}\nAction: BUY @ ${STATE.currency === 'usd'? '$' : '₹'}${STATE.price.toFixed(2)}\nQty: ${coinBuy.toFixed(6)} ${STATE.coinSymbol}\nValue: ${STATE.currency === 'usd'? '$' : '₹'}${amount.toFixed(2)}\n24h Change: ${STATE.change24h.toFixed(2)}%\nTime: ${new Date().toLocaleString('en-IN')}`);
   } else if (type === 'SELL' && STATE.coinHolding > 0) {
     const coinSell = STATE.coinHolding;
     const amountSell = coinSell * STATE.price;
     STATE.balance += amountSell; STATE.coinHolding = 0; STATE.trades++;
-    localStorage.setItem('balance', STATE.balance); localStorage.setItem('coinHolding', STATE.coinHolding); localStorage.setItem('trades', STATE.trades);
+    saveAllToLocal();
     log(`🔴 SELL: ${coinSell.toFixed(6)} ${STATE.coinSymbol} @ ${STATE.currency.toUpperCase()}${STATE.price.toFixed(2)} [${strategyName}]`);
     sendTelegram(`🔴 <b>SELL ALERT - ${strategyName}</b>\n\nPair: ${STATE.coinSymbol}/${STATE.currency.toUpperCase()}\nAction: SELL @ ${STATE.currency === 'usd'? '$' : '₹'}${STATE.price.toFixed(2)}\nQty: ${coinSell.toFixed(6)} ${STATE.coinSymbol}\nValue: ${STATE.currency === 'usd'? '$' : '₹'}${amountSell.toFixed(2)}\n24h Change: ${STATE.change24h.toFixed(2)}%\nTime: ${new Date().toLocaleString('en-IN')}`);
   }
@@ -377,7 +353,7 @@ function manualTrade(type) { executeTrade(type, 'Manual'); }
 function toggleAuto() {
   STATE.autoTrade =!STATE.autoTrade;
   document.getElementById('autoToggle').classList.toggle('active');
-  localStorage.setItem('autoTrade', STATE.autoTrade);
+  saveAllToLocal();
   updateAutoStatusText();
   log(STATE.autoTrade? '✅ Auto Trading ON' : '❌ Auto Trading OFF');
 }
@@ -401,20 +377,16 @@ function log(msg) {
   logBox.innerHTML = `<div class="log-item">[${time}] ${msg}</div>` + logBox.innerHTML;
 }
 
-async function saveStrategy() {
+function saveStrategy() {
   const name = document.getElementById('strategyName').value;
-  const type = document.getElementById('strategyType').value;
   const buy = parseFloat(document.getElementById('buyCondition').value);
   const sell = parseFloat(document.getElementById('sellCondition').value);
   if (!name || isNaN(buy) || isNaN(sell)) { log('⚠️ Saare fields bharo'); return; }
-  const strategy = { name, type, config: { buy, sell }, is_active: false };
+  const strategy = { name, type: 'custom', config: { buy, sell }, is_active: false };
   STRATEGIES.push(strategy);
-  localStorage.setItem('strategies', JSON.stringify(STRATEGIES));
-  if (STATE.supabase) {
-    await STATE.supabase.from('strategies').insert(strategy);
-  }
+  saveAllToLocal();
   renderStrategies();
-  log(`✅ Strategy "${name}" saved`);
+  log(`✅ Strategy "${name}" SAVED PERMANENTLY`);
 }
 
 function renderStrategies() {
@@ -432,14 +404,7 @@ function renderStrategies() {
 
 function toggleStrategy(i) {
   STRATEGIES[i].is_active =!STRATEGIES[i].is_active;
-  localStorage.setItem('strategies', JSON.stringify(STRATEGIES));
-  renderStrategies();
-}
-
-async function loadStrategies() {
-  if (!STATE.supabase) return;
-  const { data, error } = await STATE.supabase.from('strategies').select('*');
-  if (!error) STRATEGIES = data;
+  saveAllToLocal();
   renderStrategies();
 }
 
