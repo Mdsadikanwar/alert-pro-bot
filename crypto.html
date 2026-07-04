@@ -29,7 +29,7 @@
 .toggle { width: 50px; height: 26px; background: #334155; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s; }
 .toggle.active { background: #10b981; }
 .toggle-dot { width: 22px; height: 22px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
-.toggle.active.toggle-dot { left: 26px; } /* YAHI TYPO FIX KIYA */
+.toggle.active.toggle-dot { left: 26px; } /* TYPO FIX KIYA */
 .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px; }
 .btn-buy { background: #10b981; color: white; }
 .btn-sell { background: #ef4444; color: white; }
@@ -198,23 +198,9 @@ async function loadConfig() {
   STATE.trades = parseInt(localStorage.getItem('trades') || '0');
   STRATEGIES = JSON.parse(localStorage.getItem('strategies') || '[]');
 
-  if(window.db) {
-    try {
-      const snapshot = await window.db.ref('users/' + DEVICE_ID).once('value');
-      const data = snapshot.val();
-      if(data) {
-        STATE.balance = data.balance || 10000;
-        STATE.coinHolding = data.coinHolding || 0;
-        STATE.trades = data.trades || 0;
-        STRATEGIES = data.strategies || [];
-        STATE.tgToken = data.tgToken || '';
-        STATE.tgChat = data.tgChat || '';
-        STATE.autoTrade = data.autoTrade || false;
-        STATE.coinId = data.coinId || 'bitcoin';
-        STATE.currency = data.currency || 'usd';
-        log('✅ Data loaded from Firebase Cloud');
-      }
-    } catch(e) { log('⚠️ Firebase load error: ' + e.message); }
+  // FIREBASE SE LOAD
+  if(window.dbLoad) {
+    await window.dbLoad();
   }
 
   document.getElementById('coinSelect').value = STATE.coinId;
@@ -241,20 +227,9 @@ async function saveAllToLocal() {
   localStorage.setItem('currentCoin', STATE.coinId);
   localStorage.setItem('currency', STATE.currency);
 
-  if(window.db) {
-    document.getElementById('syncStatus').textContent = '☁️ Saving...';
-    try {
-      await window.db.ref('users/' + DEVICE_ID).set({
-        balance: STATE.balance, coinHolding: STATE.coinHolding, trades: STATE.trades,
-        strategies: STRATEGIES, tgToken: STATE.tgToken, tgChat: STATE.tgChat,
-        autoTrade: STATE.autoTrade, coinId: STATE.coinId, currency: STATE.currency,
-        lastUpdated: new Date().toISOString()
-      });
-      document.getElementById('syncStatus').textContent = '☁️ Synced';
-    } catch(e) {
-      document.getElementById('syncStatus').textContent = '❌ Sync Error';
-      log('❌ Firebase save error: ' + e.message);
-    }
+  // FIREBASE ME SAVE
+  if(window.dbSave) {
+    await window.dbSave();
   }
 }
 
@@ -417,7 +392,7 @@ function updateUI() { document.getElementById('balance').textContent = '$' + STA
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDIPtw7gur2viWc4k39N3HBK_aPJ4EBWqk",
@@ -431,7 +406,47 @@ function updateUI() { document.getElementById('balance').textContent = '$' + STA
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
-  window.db = db;
+
+  // FIREBASE SAVE FUNCTION
+  window.dbSave = async function() {
+    document.getElementById('syncStatus').textContent = '☁️ Saving...';
+    try {
+      const userRef = ref(db, 'users/' + DEVICE_ID);
+      await set(userRef, {
+        balance: STATE.balance, coinHolding: STATE.coinHolding, trades: STATE.trades,
+        strategies: STRATEGIES, tgToken: STATE.tgToken, tgChat: STATE.tgChat,
+        autoTrade: STATE.autoTrade, coinId: STATE.coinId, currency: STATE.currency,
+        lastUpdated: new Date().toISOString()
+      });
+      document.getElementById('syncStatus').textContent = '☁️ Synced';
+    } catch(e) {
+      document.getElementById('syncStatus').textContent = '❌ Sync Error';
+      log('❌ Firebase save error: ' + e.message);
+    }
+  }
+
+  // FIREBASE LOAD FUNCTION
+  window.dbLoad = async function() {
+    try {
+      const userRef = ref(db, 'users/' + DEVICE_ID);
+      const snapshot = await get(userRef);
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        STATE.balance = data.balance || 10000;
+        STATE.coinHolding = data.coinHolding || 0;
+        STATE.trades = data.trades || 0;
+        STRATEGIES = data.strategies || [];
+        STATE.tgToken = data.tgToken || '';
+        STATE.tgChat = data.tgChat || '';
+        STATE.autoTrade = data.autoTrade || false;
+        STATE.coinId = data.coinId || 'bitcoin';
+        STATE.currency = data.currency || 'usd';
+        log('✅ Data loaded from Firebase Cloud');
+      } else {
+        window.dbSave(); // pehli baar data bana dega
+      }
+    } catch(e) { log('⚠️ Firebase load error: ' + e.message); }
+  }
 
   loadConfig();
   fetchCoinData();
