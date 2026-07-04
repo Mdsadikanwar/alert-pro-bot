@@ -44,7 +44,7 @@
  .tab.active { background: #10b981; border-color: #10b981; color: white; }
  .hidden { display: none; }
  .select-row { display: flex; gap: 8px; margin-bottom: 12px; }
-  select.input { flex: 1; }
+    select.input { flex: 1; }
  .status-banner { background: rgba(251, 191, 36, 0.15); border: 1px solid #fbbf24; padding: 8px; border-radius: 8px; margin-bottom: 12px; text-align: center; font-size: 12px; display: none; }
  .strategy-badge { display: inline-block; padding: 4px 8px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; border-radius: 6px; font-size: 11px; font-weight: 600; color: #10b981; margin-left: 8px; }
   </style>
@@ -190,10 +190,7 @@ async function loadConfig() {
 
   if (STATE.sbUrl && STATE.sbKey) {
     try {
-      STATE.supabase = supabase.createClient(STATE.sbUrl, STATE.sbKey, {
-        auth: { persistSession: false },
-        global: { fetch: (...args) => fetch(...args) }
-      });
+      STATE.supabase = supabase.createClient(STATE.sbUrl, STATE.sbKey);
       const { data, error } = await STATE.supabase.from('app_settings').select('*').eq('id', 1).single();
       if (!error && data) {
         STATE.balance = data.paper_balance || STATE.balance;
@@ -217,7 +214,7 @@ async function loadConfig() {
   updateUI();
 }
 
-// YE FINAL FIXED FUNCTION HAI
+// YE FINAL NUCLEAR FIX HAI
 async function saveSupabase() {
   const url = document.getElementById('sbUrl').value.trim();
   const key = document.getElementById('sbKey').value.trim();
@@ -228,31 +225,39 @@ async function saveSupabase() {
 
   try {
     log('⏳ Testing Supabase...');
-    const response = await fetch(`${url}/rest/v1/app_settings?id=eq.1`, {
-      method: 'PATCH',
+
+    const payload = {
+      id: 1, supabase_url: url, supabase_key: key, telegram_token: STATE.tgToken,
+      telegram_chat_id: STATE.tgChat, paper_balance: STATE.balance,
+      coin_holding: STATE.coinHolding, trades: STATE.trades,
+      updated_at: new Date().toISOString()
+    };
+
+    const response = await fetch(`${url}/rest/v1/app_settings`, {
+      method: 'POST',
       headers: {
         'apikey': key,
         'Authorization': `Bearer ${key}`,
         'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
+        'Prefer': 'resolution=merge-duplicates'
       },
-      body: JSON.stringify({
-        supabase_url: url, supabase_key: key, telegram_token: STATE.tgToken,
-        telegram_chat_id: STATE.tgChat, paper_balance: STATE.balance,
-        coin_holding: STATE.coinHolding, trades: STATE.trades,
-        updated_at: new Date().toISOString()
-      })
+      body: JSON.stringify(payload)
     });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    if (response.status!== 201 && response.status!== 409) {
+      throw new Error(`HTTP ${response.status}`);
+    }
 
     STATE.supabase = supabase.createClient(url, key);
     STATE.sbUrl = url; STATE.sbKey = key;
-    log('✅ HO GAYA BHAI! Supabase Connected!');
+    log('✅ HO GAYA BHAI!!! Supabase Connected!');
     log('✅ Ab phone aur laptop dono sync rahenge');
     sendTelegram('✅ <b>Cloud Sync ON</b>\nAb phone/laptop sab sync rahega');
     await loadStrategies();
+
   } catch (e) {
     log('❌ Save failed: ' + e.message);
+    log('❌ URL mein / mat lagana end mein. Key anon wali ho.');
     STATE.supabase = null;
   }
 }
