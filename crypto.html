@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AlertPro Auto Bot</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow-x: hidden; }
@@ -30,13 +29,12 @@
 .toggle { width: 50px; height: 26px; background: #334155; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s; }
 .toggle.active { background: #10b981; }
 .toggle-dot { width: 22px; height: 22px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
-.toggle.active.toggle-dot { left: 26px; }
+.toggle.active.toggle-dot { left: 26px; } /* BUG FIX */
 .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px; }
 .btn-buy { background: #10b981; color: white; }
 .btn-sell { background: #ef4444; color: white; }
 .btn-reset { background: #f59e0b; color: white; }
 .btn-blue { background: #3b82f6; color: white; }
-.btn-orange { background: #f59e0b; color: white; }
 .btn:active { transform: scale(0.98); }
 .input { width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; color: #e2e8f0; margin: 8px 0; font-size: 14px; }
 .log { background: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 12px; max-height: 200px; overflow-y: auto; font-size: 11px; font-family: monospace; }
@@ -50,18 +48,6 @@
 .status-banner { background: rgba(251, 191, 36, 0.15); border: 1px solid #fbbf24; padding: 8px; border-radius: 8px; margin-bottom: 12px; text-align: center; font-size: 12px; display: none; }
 .strategy-badge { display: inline-block; padding: 4px 8px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; border-radius: 6px; font-size: 11px; font-weight: 600; color: #10b981; margin-left: 8px; }
 .sync-badge { font-size: 10px; color: #10b981; margin-left: 5px; }
-
-/* BACKTEST CSS */
-.radio-label {display:flex; gap:10px; padding:12px; border:1px solid #334155; border-radius:10px; margin-bottom:10px; cursor:pointer; background: rgba(15, 23, 42, 0.4);}
-.radio-label:hover {background:#2a2a2a;}
-.grid-3 {display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
-.grid-4 {display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px;}
-.stats-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:16px;}
-.stat-box{background:#0f172a; padding:12px; border-radius:10px; text-align:center; border:1px solid #334155;}
-.stat-box span{display:block; font-size:20px; color:#f59e0b; margin-top:4px; font-weight:700;}
-.table-wrap{overflow-x:auto; max-height:300px;}
-table{width:100%; border-collapse:collapse; font-size:12px;} th,td{padding:8px; text-align:left; border-bottom:1px solid #334155;}
-.checkbox-group label{display:block; margin:8px 0;}
   </style>
 </head>
 <body>
@@ -75,7 +61,6 @@ table{width:100%; border-collapse:collapse; font-size:12px;} th,td{padding:8px; 
       <div class="tab active" onclick="showTab('dashboard', event)">Dashboard</div>
       <div class="tab" onclick="showTab('trading', event)">Trading</div>
       <div class="tab" onclick="showTab('strategies', event)">Strategies</div>
-      <div class="tab" onclick="showTab('backtest', event)">Backtest</div>
       <div class="tab" onclick="showTab('settings', event)">Settings</div>
       <div class="tab" onclick="showTab('logs', event)">Logs</div>
     </div>
@@ -141,53 +126,28 @@ table{width:100%; border-collapse:collapse; font-size:12px;} th,td{padding:8px; 
         <h3 style="margin-bottom: 12px;">Saved Strategies</h3>
         <div id="strategyList"></div>
       </div>
-    </div>
 
-    <!-- NAYA BACKTEST TAB -->
-    <div id="backtest" class="hidden">
+      <!-- NAYA BACKTEST CARD -->
       <div class="card">
-        <h3>1. Data Source</h3>
-        <label class="radio-label"><input type="radio" name="dataSource" value="liveCoin" checked onchange="toggleDataSource()"> <div><b>Option 1: Live Coin - CoinGecko</b><p>App ka current coin</p></div></label>
-        <label class="radio-label"><input type="radio" name="dataSource" value="cryptoCompare" onchange="toggleDataSource()"> <div><b>Option 2: CryptoCompare API</b><p>Direct fetch 1h,4h,1D</p></div></label>
-        <label class="radio-label"><input type="radio" name="dataSource" value="csvUpload" onchange="toggleDataSource()"> <div><b>Option 3: CSV Upload</b><p>TradingView CSV</p><input type="file" id="csvFile" accept=".csv" class="input hidden"></div></label>
-      </div>
-      <div class="card">
-        <h3>2. Coin & Timeframe & Risk</h3>
-        <div class="grid-3">
-          <div><label>Coin</label><select id="backtestCoin" class="input"><option>BTC</option><option>ETH</option><option>BNB</option></select></div>
-          <div><label>Timeframe</label><select id="backtestTF" class="input"><option value="1d">1 Day</option></select></div>
-          <div><label>Days</label><select id="backtestDays" class="input"><option value="365">1 Year</option></select></div>
+        <h3 style="margin-bottom: 12px;">Backtest Strategy</h3>
+        <div class="select-row">
+          <select class="input" id="backtestLimit">
+            <option value="30">Last 30 Days</option>
+            <option value="90">Last 3 Months</option>
+            <option value="180">Last 6 Months</option>
+            <option value="365" selected>Last 1 Year</option>
+            <option value="1000">All Time ~1000 Days</option>
+          </select>
         </div>
-        <div class="grid-4" style="margin-top:12px;">
-          <div><label>Capital $</label><input type="number" id="capital" class="input" value="10000"></div>
-          <div><label>Fees %</label><input type="number" id="fees" class="input" value="0.1" step="0.01"></div>
-          <div><label>Slippage %</label><input type="number" id="slippage" class="input" value="0.2" step="0.01"></div>
-          <div><label>Risk</label><select id="riskType" class="input"><option value="1:2">1:2 RR</option><option value="1:3">1:3 RR</option></select></div>
+        <div class="select-row">
+          <select class="input" id="backtestStrategy">
+            <option value="-1">Select Strategy</option>
+          </select>
         </div>
+        <button class="btn btn-blue" onclick="runBacktest()">📊 Run Backtest</button>
+        <div id="backtestResult" style="margin-top:12px; font-size:13px;"></div>
       </div>
-      <div class="card">
-        <h3>3. Strategy Select</h3>
-        <div class="checkbox-group" id="backtestStrategyList"></div>
-      </div>
-      <div class="card">
-        <h3>4. Results</h3>
-        <div class="stats-grid">
-          <div class="stat-box"><b>Final P&L</b><span id="finalPL">0%</span></div>
-          <div class="stat-box"><b>Win Rate</b><span id="winRate">0%</span></div>
-          <div class="stat-box"><b>Profit Factor</b><span id="profitFactor">0</span></div>
-          <div class="stat-box"><b>Max DD</b><span id="maxDD">0%</span></div>
-          <div class="stat-box"><b>Best Trade</b><span id="bestTrade">$0</span></div>
-          <div class="stat-box"><b>Worst Trade</b><span id="worstTrade">$0</span></div>
-        </div>
-        <p>Consec Win: <b id="conWin">0</b> | Consec Loss: <b id="conLoss">0</b> | Total: <b id="totalTradesBT">0</b></p>
-        <canvas id="equityChart" height="180"></canvas>
-      </div>
-      <div class="card">
-        <h3>5. Trade Log</h3>
-        <div class="table-wrap"><table id="tradeTable"><thead><tr><th>Date</th><th>Action</th><th>Price</th><th>PnL $</th><th>Balance</th></tr></thead><tbody></tbody></table></div>
-      </div>
-      <button class="btn btn-orange" onclick="runBacktest()">📊 Run Backtest</button>
-      <button class="btn btn-blue" onclick="exportCSV()">📥 Export CSV</button>
+
     </div>
 
     <div id="logs" class="hidden">
@@ -227,8 +187,6 @@ const COIN_DATA = { 'bitcoin': { symbol: 'BTC', rank: 1, cgId: 'bitcoin' }, 'eth
 const FETCH_INTERVAL = 60000;
 const TRADE_COOLDOWN = 300000;
 let STRATEGIES = [];
-let backtestTrades = [];
-let equityChart;
 
 function showTab(tab, event) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -238,7 +196,6 @@ function showTab(tab, event) {
   document.getElementById('settings').classList.add('hidden');
   document.getElementById('logs').classList.add('hidden');
   document.getElementById('strategies').classList.add('hidden');
-  document.getElementById('backtest').classList.add('hidden');
   document.getElementById(tab).classList.remove('hidden');
 }
 
@@ -272,7 +229,7 @@ async function loadConfig() {
   if (STATE.autoTrade) document.getElementById('autoToggle').classList.add('active');
   updateAutoStatusText();
   renderStrategies();
-  renderBacktestStrategies();
+  updateBacktestDropdown(); // NAYA
   updateUI();
   document.getElementById('syncStatus').textContent = '☁️ Synced';
 }
@@ -291,9 +248,14 @@ async function saveAllToLocal() {
 }
 
 function exportData() {
-  const data = {balance: STATE.balance, coinHolding: STATE.coinHolding, trades: STATE.trades,strategies: STRATEGIES, tgToken: STATE.tgToken, tgChat: STATE.tgChat,autoTrade: STATE.autoTrade, coinId: STATE.coinId, currency: STATE.currency};
+  const data = {
+    balance: STATE.balance, coinHolding: STATE.coinHolding, trades: STATE.trades,
+    strategies: STRATEGIES, tgToken: STATE.tgToken, tgChat: STATE.tgChat,
+    autoTrade: STATE.autoTrade, coinId: STATE.coinId, currency: STATE.currency
+  };
   const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-  const url = URL.createObjectURL(blob); const a = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
   a.href = url; a.download = 'alertpro_backup.json'; a.click();
   log('✅ Data exported. Isko dusre device mein import kar do');
 }
@@ -307,65 +269,257 @@ function importData() {
     STATE.balance = data.balance; STATE.coinHolding = data.coinHolding; STATE.trades = data.trades;
     STRATEGIES = data.strategies; STATE.tgToken = data.tgToken; STATE.tgChat = data.tgChat;
     STATE.autoTrade = data.autoTrade; STATE.coinId = data.coinId; STATE.currency = data.currency;
-    saveAllToLocal(); loadConfig(); log('✅ Data imported successfully!');
+    saveAllToLocal();
+    loadConfig();
+    log('✅ Data imported successfully!');
   };
   reader.readAsText(file);
 }
 
-function saveTelegram() {STATE.tgToken = document.getElementById('tgToken').value; STATE.tgChat = document.getElementById('tgChat').value; saveAllToLocal(); log('✅ Telegram saved');}
-async function sendTelegram(msg) {if (!STATE.tgToken ||!STATE.tgChat) return; try { await fetch(`https://api.telegram.org/bot${STATE.tgToken}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: STATE.tgChat, text: msg, parse_mode: 'HTML' }) }); } catch(e) { console.log(e); }}
-function testTelegram() { sendTelegram('🧪 <b>AlertPro Test</b>\nBot connected successfully!'); log('📤 Test alert sent');}
-function resetBalance() {if (confirm('Balance $10,000 reset karna hai?')) {STATE.balance = 10000; STATE.coinHolding = 0; STATE.trades = 0; saveAllToLocal(); updateUI(); log('🔄 Balance reset to $10,000');}}
+function saveTelegram() {
+  STATE.tgToken = document.getElementById('tgToken').value;
+  STATE.tgChat = document.getElementById('tgChat').value;
+  saveAllToLocal();
+  log('✅ Telegram saved');
+}
 
-function changeCoin() {STATE.coinId = document.getElementById('coinSelect').value; localStorage.setItem('currentCoin', STATE.coinId); STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol; document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase(); STATE.coinHolding = 0; saveAllToLocal(); updateUI(); fetchCoinData(); log(`🔄 Switched to ${STATE.coinSymbol}`);}
-function updatePrices() {STATE.currency = document.getElementById('currencySelect').value; localStorage.setItem('currency', STATE.currency); document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase(); displayPrices();}
-function displayPrices() {const symbol = STATE.currency === 'usd'? '$' : '₹'; document.getElementById('coinPrice').textContent = symbol + STATE.price.toFixed(2); document.getElementById('coinChange').textContent = (STATE.change24h >= 0? '▲ ' : '▼ ') + STATE.change24h.toFixed(2) + '% (24h)'; document.getElementById('coinChange').className = 'price-change ' + (STATE.change24h >= 0? 'green' : 'red'); document.getElementById('high24h').textContent = symbol + STATE.high24h.toFixed(2); document.getElementById('low24h').textContent = symbol + STATE.low24h.toFixed(2);}
+async function sendTelegram(msg) {
+  if (!STATE.tgToken ||!STATE.tgChat) return;
+  try { await fetch(`https://api.telegram.org/bot${STATE.tgToken}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: STATE.tgChat, text: msg, parse_mode: 'HTML' }) }); } catch(e) { console.log(e); }
+}
+
+function testTelegram() { sendTelegram('🧪 <b>AlertPro Test</b>\nBot connected successfully!'); log('📤 Test alert sent'); }
+
+function resetBalance() {
+  if (confirm('Balance $10,000 reset karna hai?')) {
+    STATE.balance = 10000; STATE.coinHolding = 0; STATE.trades = 0;
+    saveAllToLocal(); updateUI(); log('🔄 Balance reset to $10,000');
+  }
+}
+
+function changeCoin() {
+  STATE.coinId = document.getElementById('coinSelect').value;
+  localStorage.setItem('currentCoin', STATE.coinId);
+  STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol;
+  document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
+  STATE.coinHolding = 0; saveAllToLocal();
+  updateUI(); fetchCoinData(); log(`🔄 Switched to ${STATE.coinSymbol}`);
+}
+
+function updatePrices() {
+  STATE.currency = document.getElementById('currencySelect').value;
+  localStorage.setItem('currency', STATE.currency);
+  document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
+  displayPrices();
+}
+
+function displayPrices() {
+  const symbol = STATE.currency === 'usd'? '$' : '₹';
+  document.getElementById('coinPrice').textContent = symbol + STATE.price.toFixed(2);
+  document.getElementById('coinChange').textContent = (STATE.change24h >= 0? '▲ ' : '▼ ') + STATE.change24h.toFixed(2) + '% (24h)';
+  document.getElementById('coinChange').className = 'price-change ' + (STATE.change24h >= 0? 'green' : 'red');
+  document.getElementById('high24h').textContent = symbol + STATE.high24h.toFixed(2);
+  document.getElementById('low24h').textContent = symbol + STATE.low24h.toFixed(2);
+}
 
 async function fetchCoinData() {
-  try {document.getElementById('coinChange').textContent = 'Fetching...';
+  try {
+    document.getElementById('coinChange').textContent = 'Fetching...';
     let url = `https://api.coingecko.com/api/v3/coins/${COIN_DATA[STATE.coinId].cgId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false`;
-    let res = await fetch(url); if (!res.ok) throw new Error(`CoinGecko HTTP ${res.status}`);
+    let res = await fetch(url);
+    if (!res.ok) throw new Error(`CoinGecko HTTP ${res.status}`);
     const data = await res.json(); const m = data.market_data;
     STATE.price = m.current_price[STATE.currency]; STATE.high24h = m.high_24h[STATE.currency]; STATE.low24h = m.low_24h[STATE.currency]; STATE.change24h = m.price_change_percentage_24h; STATE.lastFetchSuccess = true;
-    document.getElementById('statusBanner').style.display = 'none'; displayPrices(); updateSignal(); updateUI(); log(`✅ Price updated: ${STATE.currency.toUpperCase()}${STATE.price.toFixed(2)}`);
-  } catch(e) {STATE.lastFetchSuccess = false; document.getElementById('statusBanner').style.display = 'block'; document.getElementById('coinChange').textContent = 'API Error - Check Logs'; log('❌ Fetch error: ' + e.message);}
+    document.getElementById('statusBanner').style.display = 'none';
+    displayPrices(); updateSignal(); updateUI(); log(`✅ Price updated: ${STATE.currency.toUpperCase()}${STATE.price.toFixed(2)}`);
+  } catch(e) {
+    STATE.lastFetchSuccess = false; document.getElementById('statusBanner').style.display = 'block';
+    document.getElementById('coinChange').textContent = 'API Error - Check Logs';
+    log('❌ Fetch error: ' + e.message);
+  }
 }
 
 function updateSignal() {
   const activeStrategies = STRATEGIES.filter(s => s.is_active);
-  if (activeStrategies.length === 0) {STATE.signal = 'HOLD'; document.getElementById('activeStrategyText').textContent = 'No active strategy'; updateAutoStatusText(); return;}
-  const now = Date.now(); if (now - STATE.lastTradeTime < TRADE_COOLDOWN) {const remaining = Math.ceil((TRADE_COOLDOWN - (now - STATE.lastTradeTime)) / 1000); document.getElementById('activeStrategyText').textContent = `Cooldown: ${remaining}s remaining`; return;}
-  for (let s of activeStrategies) {const buyThreshold = s.config.buy || 3; const sellThreshold = s.config.sell || -3; document.getElementById('activeStrategyText').innerHTML = `Active: <span class="strategy-badge">${s.name}</span>`;
-    if (STATE.change24h > buyThreshold && STATE.signal!== 'BUY') {STATE.signal = 'BUY'; log(`🎯 Strategy Trigger: ${s.name} - BUY @ ${STATE.change24h.toFixed(2)}%`); if (STATE.autoTrade) { executeTrade('BUY', s.name); STATE.lastTradeTime = now; } break;
-    } else if (STATE.change24h < sellThreshold && STATE.signal!== 'SELL') {STATE.signal = 'SELL'; log(`🎯 Strategy Trigger: ${s.name} - SELL @ ${STATE.change24h.toFixed(2)}%`); if (STATE.autoTrade) { executeTrade('SELL', s.name); STATE.lastTradeTime = now; } break;}
+  if (activeStrategies.length === 0) {
+    STATE.signal = 'HOLD'; document.getElementById('activeStrategyText').textContent = 'No active strategy'; updateAutoStatusText(); return;
+  }
+  const now = Date.now();
+  if (now - STATE.lastTradeTime < TRADE_COOLDOWN) {
+    const remaining = Math.ceil((TRADE_COOLDOWN - (now - STATE.lastTradeTime)) / 1000);
+    document.getElementById('activeStrategyText').textContent = `Cooldown: ${remaining}s remaining`; return;
+  }
+  for (let s of activeStrategies) {
+    const buyThreshold = s.config.buy || 3; const sellThreshold = s.config.sell || -3;
+    document.getElementById('activeStrategyText').innerHTML = `Active: <span class="strategy-badge">${s.name}</span>`;
+    if (STATE.change24h > buyThreshold && STATE.signal!== 'BUY') {
+      STATE.signal = 'BUY'; log(`🎯 Strategy Trigger: ${s.name} - BUY @ ${STATE.change24h.toFixed(2)}%`);
+      if (STATE.autoTrade) { executeTrade('BUY', s.name); STATE.lastTradeTime = now; }
+      break;
+    } else if (STATE.change24h < sellThreshold && STATE.signal!== 'SELL') {
+      STATE.signal = 'SELL'; log(`🎯 Strategy Trigger: ${s.name} - SELL @ ${STATE.change24h.toFixed(2)}%`);
+      if (STATE.autoTrade) { executeTrade('SELL', s.name); STATE.lastTradeTime = now; }
+      break;
+    }
   }
   updateAutoStatusText();
 }
 
 function executeTrade(type, strategyName = 'Manual') {
   const amount = STATE.balance * 0.95;
-  if (type === 'BUY' && STATE.balance > 10) {const coinBuy = amount / STATE.price; STATE.coinHolding += coinBuy; STATE.balance -= amount; STATE.trades++; saveAllToLocal(); log(`✅ BUY: ${coinBuy.toFixed(6)} ${STATE.coinSymbol} @ ${STATE.currency.toUpperCase()}${STATE.price.toFixed(2)} [${strategyName}]`); sendTelegram(`🟢 <b>BUY ALERT - ${strategyName}</b>\n\nPair: ${STATE.coinSymbol}/${STATE.currency.toUpperCase()}\nAction: BUY @ ${STATE.currency === 'usd'? '$' : '₹'}${STATE.price.toFixed(2)}\nQty: ${coinBuy.toFixed(6)} ${STATE.coinSymbol}\nValue: ${STATE.currency === 'usd'? '$' : '₹'}${amount.toFixed(2)}\n24h Change: ${STATE.change24h.toFixed(2)}%\nTime: ${new Date().toLocaleString('en-IN')}`);
-  } else if (type === 'SELL' && STATE.coinHolding > 0) {const coinSell = STATE.coinHolding; const amountSell = coinSell * STATE.price; STATE.balance += amountSell; STATE.coinHolding = 0; STATE.trades++; saveAllToLocal(); log(`🔴 SELL: ${coinSell.toFixed(6)} ${STATE.coinSymbol} @ ${STATE.currency.toUpperCase()}${STATE.price.toFixed(2)} [${strategyName}]`); sendTelegram(`🔴 <b>SELL ALERT - ${strategyName}</b>\n\nPair: ${STATE.coinSymbol}/${STATE.currency.toUpperCase()}\nAction: SELL @ ${STATE.currency === 'usd'? '$' : '₹'}${STATE.price.toFixed(2)}\nQty: ${coinSell.toFixed(6)} ${STATE.coinSymbol}\nValue: ${STATE.currency === 'usd'? '$' : '₹'}${amountSell.toFixed(2)}\n24h Change: ${STATE.change24h.toFixed(2)}%\nTime: ${new Date().toLocaleString('en-IN')}`);}
+  if (type === 'BUY' && STATE.balance > 10) {
+    const coinBuy = amount / STATE.price;
+    STATE.coinHolding += coinBuy; STATE.balance -= amount; STATE.trades++;
+    saveAllToLocal();
+    log(`✅ BUY: ${coinBuy.toFixed(6)} ${STATE.coinSymbol} @ ${STATE.currency.toUpperCase()}${STATE.price.toFixed(2)} [${strategyName}]`);
+    sendTelegram(`🟢 <b>BUY ALERT - ${strategyName}</b>\n\nPair: ${STATE.coinSymbol}/${STATE.currency.toUpperCase()}\nAction: BUY @ ${STATE.currency === 'usd'? '$' : '₹'}${STATE.price.toFixed(2)}\nQty: ${coinBuy.toFixed(6)} ${STATE.coinSymbol}\nValue: ${STATE.currency === 'usd'? '$' : '₹'}${amount.toFixed(2)}\n24h Change: ${STATE.change24h.toFixed(2)}%\nTime: ${new Date().toLocaleString('en-IN')}`);
+  } else if (type === 'SELL' && STATE.coinHolding > 0) {
+    const coinSell = STATE.coinHolding;
+    const amountSell = coinSell * STATE.price;
+    STATE.balance += amountSell; STATE.coinHolding = 0; STATE.trades++;
+    saveAllToLocal();
+    log(`🔴 SELL: ${coinSell.toFixed(6)} ${STATE.coinSymbol} @ ${STATE.currency.toUpperCase()}${STATE.price.toFixed(2)} [${strategyName}]`);
+    sendTelegram(`🔴 <b>SELL ALERT - ${strategyName}</b>\n\nPair: ${STATE.coinSymbol}/${STATE.currency.toUpperCase()}\nAction: SELL @ ${STATE.currency === 'usd'? '$' : '₹'}${STATE.price.toFixed(2)}\nQty: ${coinSell.toFixed(6)} ${STATE.coinSymbol}\nValue: ${STATE.currency === 'usd'? '$' : '₹'}${amountSell.toFixed(2)}\n24h Change: ${STATE.change24h.toFixed(2)}%\nTime: ${new Date().toLocaleString('en-IN')}`);
+  }
   updateUI();
 }
 
 function manualTrade(type) { executeTrade(type, 'Manual'); }
-function toggleAuto() {STATE.autoTrade =!STATE.autoTrade; document.getElementById('autoToggle').classList.toggle('active'); saveAllToLocal(); updateAutoStatusText(); log(STATE.autoTrade? '✅ Auto Trading ON' : '❌ Auto Trading OFF');}
-function updateAutoStatusText() {document.getElementById('autoStatusText').textContent = STATE.autoTrade? 'Auto trading ON - ' + STATE.signal : 'Auto trading OFF';}
-function saveStrategy() { const name = document.getElementById('strategyName').value; const buy = parseFloat(document.getElementById('buyCondition').value); const sell = parseFloat(document.getElementById('sellCondition').value); if(!name) return alert('Name dalo'); STRATEGIES.push({name, config:{buy,sell}, is_active:false}); saveAllToLocal(); renderStrategies(); renderBacktestStrategies(); log('✅ Strategy saved'); }
+
+function toggleAuto() {
+  STATE.autoTrade =!STATE.autoTrade;
+  document.getElementById('autoToggle').classList.toggle('active');
+  saveAllToLocal();
+  updateAutoStatusText();
+  log(STATE.autoTrade? '✅ Auto Trading ON' : '❌ Auto Trading OFF');
+}
+
+function updateAutoStatusText() {
+  document.getElementById('autoStatusText').textContent = STATE.autoTrade? 'Auto trading ON - ' + STATE.signal : 'Auto trading OFF';
+}
+
+function saveStrategy() { const name = document.getElementById('strategyName').value; const buy = parseFloat(document.getElementById('buyCondition').value); const sell = parseFloat(document.getElementById('sellCondition').value); if(!name) return alert('Name dalo'); STRATEGIES.push({name, config:{buy,sell}, is_active:false}); saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); log('✅ Strategy saved'); } // updateBacktestDropdown add kiya
 function renderStrategies() { const list = document.getElementById('strategyList'); if(!list) return; list.innerHTML = STRATEGIES.map((s,i)=>`<div class="card" style="padding:10px;"><b>${s.name}</b><br>BUY >${s.config.buy}% | SELL <${s.config.sell}% <button onclick="toggleStrat(${i})" class="btn btn-blue" style="padding:6px; margin-top:6px;">${s.is_active?'Deactivate':'Activate'}</button></div>`).join(''); }
-function toggleStrat(i){ STRATEGIES[i].is_active =!STRATEGIES[i].is_active; saveAllToLocal(); renderStrategies(); renderBacktestStrategies(); }
+function toggleStrat(i){ STRATEGIES[i].is_active =!STRATEGIES[i].is_active; saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); } // updateBacktestDropdown add kiya
 function updateUI() { document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2); document.getElementById('coinHold').textContent = STATE.coinHolding.toFixed(6); document.getElementById('trades').textContent = STATE.trades; const pnl = (STATE.coinHolding * STATE.price + STATE.balance - 10000); document.getElementById('pnl').textContent = (pnl >= 0? '+' : '') + '$' + pnl.toFixed(2); document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0? 'green' : 'red'); }
 
-// ====== BACKTEST FUNCTIONS ======
-function toggleDataSource() {const source = document.querySelector('input[name="dataSource"]:checked').value; const csvInput = document.getElementById('csvFile'); if(source === 'csvUpload'){csvInput.classList.remove('hidden');} else {csvInput.classList.add('hidden');}}
-function renderBacktestStrategies() {const list = document.getElementById('backtestStrategyList'); if(!list) return; list.innerHTML = STRATEGIES.map((s,i)=>`<label><input type="checkbox" value="${i}" checked> ${s.name}</label>`).join('');}
-async function runBacktest() {log('📊 Backtest Started...'); alert('Backtest logic abhi demo hai. Data fetch + calc add karna hai');}
-function exportCSV() {let csv = 'Date,Action,Price,PnL $,Balance\n'; backtestTrades.forEach(t => csv += `${t.date},${t.action},${t.price},${t.pnl},${t.balance}\n`); const blob = new Blob([csv], {type: 'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Backtest_${new Date().toISOString().split('T')[0]}.csv`; a.click(); log('📥 CSV Downloaded');}
+// ====== NAYE 2 FUNCTION ADD KIYE ======
+function updateBacktestDropdown() {
+  const select = document.getElementById('backtestStrategy');
+  if(!select) return;
+  select.innerHTML = '<option value="-1">Select Strategy</option>' +
+    STRATEGIES.map((s,i)=>`<option value="${i}">${s.name}</option>`).join('');
+}
 
-loadConfig(); fetchCoinData(); setInterval(fetchCoinData, FETCH_INTERVAL);
+async function runBacktest() {
+  const stratIndex = document.getElementById('backtestStrategy').value;
+  const days = parseInt(document.getElementById('backtestLimit').value);
+  const resultDiv = document.getElementById('backtestResult');
+  if(stratIndex == -1) { alert('Pehle strategy select karo'); return; }
+  const strat = STRATEGIES[stratIndex];
+  resultDiv.innerHTML = '⏳ Fetching ' + days + ' days data...';
+  log(`📊 Backtest started: ${strat.name} for ${days} days`);
+  try {
+    let url = `https://api.coingecko.com/api/v3/coins/${COIN_DATA[STATE.coinId].cgId}/market_chart?vs_currency=${STATE.currency}&days=${days}`;
+    let res = await fetch(url);
+    const data = await res.json();
+    const prices = data.prices;
+    let virtualBalance = 10000;
+    let virtualCoin = 0;
+    let trades = 0;
+    for(let i = 24; i < prices.length; i++) {
+      const priceNow = prices[i][1];
+      const price24hAgo = prices[i-24][1];
+      const change24h = ((priceNow - price24hAgo) / price24hAgo) * 100;
+      const buyThreshold = strat.config.buy || 3;
+      const sellThreshold = strat.config.sell || -3;
+      if(change24h > buyThreshold && virtualBalance > 10) {
+        const amount = virtualBalance * 0.95;
+        const coinBuy = amount / priceNow;
+        virtualCoin += coinBuy;
+        virtualBalance -= amount;
+        trades++;
+      }
+      else if(change24h < sellThreshold && virtualCoin > 0) {
+        const amountSell = virtualCoin * priceNow;
+        virtualBalance += amountSell;
+        virtualCoin = 0;
+        trades++;
+      }
+    }
+    const finalValue = virtualBalance + (virtualCoin * prices[prices.length-1][1]);
+    const profit = finalValue - 10000;
+    const profitPct = (profit / 10000) * 100;
+    resultDiv.innerHTML = `
+      <div style="background:rgba(16,185,129,0.1); padding:10px; border-radius:8px;">
+        <b>Result for ${days} days:</b><br>
+        Final Balance: ${STATE.currency === 'usd'? '$' : '₹'}${finalValue.toFixed(2)}<br>
+        P&L: <span class="${profit>=0?'green':'red'}">${profit>=0?'+':''}${profitPct.toFixed(2)}%</span><br>
+        Total Trades: ${trades}
+      </div>
+    `;
+    log(`✅ Backtest done: ${profitPct.toFixed(2)}% profit in ${trades} trades`);
+  } catch(e) {
+    resultDiv.innerHTML = '❌ Error fetching data. API limit lag gayi hogi';
+    log('❌ Backtest error: ' + e.message);
+  }
+}
 </script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, set, get } from "
+  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDIPtw7gur2viWc4k39N3HBK_aPJ4EBWqk",
+    authDomain: "alertpro-bot.firebaseapp.com",
+    databaseURL: "https://alertpro-bot-default-rtdb.firebaseio.com",
+    projectId: "alertpro-bot",
+    storageBucket: "alertpro-bot.firebasestorage.app",
+    messagingSenderId: "834804229548",
+    appId: "1:834804229548:web:e46f165bd57b66e92f0609"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  window.dbSave = async function() {
+    document.getElementById('syncStatus').textContent = '☁️ Saving...';
+    try {
+      const userRef = ref(db, 'users/' + DEVICE_ID);
+      await set(userRef, {
+        balance: STATE.balance, coinHolding: STATE.coinHolding, trades: STATE.trades,
+        strategies: STRATEGIES, tgToken: STATE.tgToken, tgChat: STATE.tgChat,
+        autoTrade: STATE.autoTrade, coinId: STATE.coinId, currency: STATE.currency,
+        lastUpdated: new Date().toISOString()
+      });
+      document.getElementById('syncStatus').textContent = '☁️ Synced';
+    } catch(e) {
+      document.getElementById('syncStatus').textContent = '❌ Sync Error';
+      log('❌ Firebase save error: ' + e.message);
+    }
+  }
+  window.dbLoad = async function() {
+    try {
+      const userRef = ref(db, 'users/' + DEVICE_ID);
+      const snapshot = await get(userRef);
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        STATE.balance = data.balance || 10000;
+        STATE.coinHolding = data.coinHolding || 0;
+        STATE.trades = data.trades || 0;
+        STRATEGIES = data.strategies || [];
+        STATE.tgToken = data.tgToken || '';
+        STATE.tgChat = data.tgChat || '';
+        STATE.autoTrade = data.autoTrade || false;
+        STATE.coinId = data.coinId || 'bitcoin';
+        STATE.currency = data.currency || 'usd';
+        log('✅ Data loaded from Firebase Cloud');
+      } else {
+        window.dbSave();
+      }
+    } catch(e) { log('⚠️ Firebase load error: ' + e.message); }
+  }
+  loadConfig();
+  fetchCoinData();
+  setInterval(fetchCoinData, FETCH_INTERVAL);
+</script>
+</body>
+</html>
