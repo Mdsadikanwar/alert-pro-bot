@@ -61,6 +61,7 @@
       <div class="tab active" onclick="showTab('dashboard', event)">Dashboard</div>
       <div class="tab" onclick="showTab('trading', event)">Trading</div>
       <div class="tab" onclick="showTab('strategies', event)">Strategies</div>
+      <div class="tab" onclick="showTab('backtest', event)">Backtest</div> <!-- NAYA TAB -->
       <div class="tab" onclick="showTab('settings', event)">Settings</div>
       <div class="tab" onclick="showTab('logs', event)">Logs</div>
     </div>
@@ -126,10 +127,14 @@
         <h3 style="margin-bottom: 12px;">Saved Strategies</h3>
         <div id="strategyList"></div>
       </div>
+      <!-- BACKTEST CARD HATA DIYA YAHAN SE -->
+    </div>
 
-      <!-- NAYA BACKTEST CARD -->
+    <!-- NAYA BACKTEST TAB -->
+    <div id="backtest" class="hidden">
       <div class="card">
-        <h3 style="margin-bottom: 12px;">Backtest Strategy</h3>
+        <h3 style="margin-bottom: 12px;">📊 Backtest Engine</h3>
+        <p style="font-size:12px; color:#64748b; margin-bottom:12px;">Apni strategy ko pichle data par test karo</p>
         <div class="select-row">
           <select class="input" id="backtestLimit">
             <option value="30">Last 30 Days</option>
@@ -144,10 +149,9 @@
             <option value="-1">Select Strategy</option>
           </select>
         </div>
-        <button class="btn btn-blue" onclick="runBacktest()">📊 Run Backtest</button>
+        <button class="btn btn-blue" onclick="runBacktest()">🚀 Run Backtest</button>
         <div id="backtestResult" style="margin-top:12px; font-size:13px;"></div>
       </div>
-
     </div>
 
     <div id="logs" class="hidden">
@@ -196,6 +200,7 @@ function showTab(tab, event) {
   document.getElementById('settings').classList.add('hidden');
   document.getElementById('logs').classList.add('hidden');
   document.getElementById('strategies').classList.add('hidden');
+  document.getElementById('backtest').classList.add('hidden'); // NAYA
   document.getElementById(tab).classList.remove('hidden');
 }
 
@@ -229,7 +234,7 @@ async function loadConfig() {
   if (STATE.autoTrade) document.getElementById('autoToggle').classList.add('active');
   updateAutoStatusText();
   renderStrategies();
-  updateBacktestDropdown(); // NAYA
+  updateBacktestDropdown();
   updateUI();
   document.getElementById('syncStatus').textContent = '☁️ Synced';
 }
@@ -398,12 +403,12 @@ function updateAutoStatusText() {
   document.getElementById('autoStatusText').textContent = STATE.autoTrade? 'Auto trading ON - ' + STATE.signal : 'Auto trading OFF';
 }
 
-function saveStrategy() { const name = document.getElementById('strategyName').value; const buy = parseFloat(document.getElementById('buyCondition').value); const sell = parseFloat(document.getElementById('sellCondition').value); if(!name) return alert('Name dalo'); STRATEGIES.push({name, config:{buy,sell}, is_active:false}); saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); log('✅ Strategy saved'); } // updateBacktestDropdown add kiya
+function saveStrategy() { const name = document.getElementById('strategyName').value; const buy = parseFloat(document.getElementById('buyCondition').value); const sell = parseFloat(document.getElementById('sellCondition').value); if(!name) return alert('Name dalo'); STRATEGIES.push({name, config:{buy,sell}, is_active:false}); saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); log('✅ Strategy saved'); }
 function renderStrategies() { const list = document.getElementById('strategyList'); if(!list) return; list.innerHTML = STRATEGIES.map((s,i)=>`<div class="card" style="padding:10px;"><b>${s.name}</b><br>BUY >${s.config.buy}% | SELL <${s.config.sell}% <button onclick="toggleStrat(${i})" class="btn btn-blue" style="padding:6px; margin-top:6px;">${s.is_active?'Deactivate':'Activate'}</button></div>`).join(''); }
-function toggleStrat(i){ STRATEGIES[i].is_active =!STRATEGIES[i].is_active; saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); } // updateBacktestDropdown add kiya
+function toggleStrat(i){ STRATEGIES[i].is_active =!STRATEGIES[i].is_active; saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); }
 function updateUI() { document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2); document.getElementById('coinHold').textContent = STATE.coinHolding.toFixed(6); document.getElementById('trades').textContent = STATE.trades; const pnl = (STATE.coinHolding * STATE.price + STATE.balance - 10000); document.getElementById('pnl').textContent = (pnl >= 0? '+' : '') + '$' + pnl.toFixed(2); document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0? 'green' : 'red'); }
 
-// ====== NAYE 2 FUNCTION ADD KIYE ======
+// ====== BACKTEST FUNCTIONS ======
 function updateBacktestDropdown() {
   const select = document.getElementById('backtestStrategy');
   if(!select) return;
@@ -522,4 +527,4 @@ async function runBacktest() {
   setInterval(fetchCoinData, FETCH_INTERVAL);
 </script>
 </body>
-</html>
+</
