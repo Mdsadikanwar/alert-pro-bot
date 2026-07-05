@@ -29,7 +29,7 @@
 .toggle { width: 50px; height: 26px; background: #334155; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s; }
 .toggle.active { background: #10b981; }
 .toggle-dot { width: 22px; height: 22px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
-.toggle.active.toggle-dot { left: 26px; } /* BUG FIX */
+.toggle.active.toggle-dot { left: 26px; } /* BUG FIX KIYA THA */
 .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px; }
 .btn-buy { background: #10b981; color: white; }
 .btn-sell { background: #ef4444; color: white; }
@@ -127,7 +127,7 @@
         <div id="strategyList"></div>
       </div>
 
-      <!-- NAYA BACKTEST CARD -->
+      <!-- BACKTEST CARD - NAYA ADD KIYA -->
       <div class="card">
         <h3 style="margin-bottom: 12px;">Backtest Strategy</h3>
         <div class="select-row">
@@ -398,12 +398,12 @@ function updateAutoStatusText() {
   document.getElementById('autoStatusText').textContent = STATE.autoTrade? 'Auto trading ON - ' + STATE.signal : 'Auto trading OFF';
 }
 
-function saveStrategy() { const name = document.getElementById('strategyName').value; const buy = parseFloat(document.getElementById('buyCondition').value); const sell = parseFloat(document.getElementById('sellCondition').value); if(!name) return alert('Name dalo'); STRATEGIES.push({name, config:{buy,sell}, is_active:false}); saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); log('✅ Strategy saved'); } // updateBacktestDropdown add kiya
+function saveStrategy() { const name = document.getElementById('strategyName').value; const buy = parseFloat(document.getElementById('buyCondition').value); const sell = parseFloat(document.getElementById('sellCondition').value); if(!name) return alert('Name dalo'); STRATEGIES.push({name, config:{buy,sell}, is_active:false}); saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); log('✅ Strategy saved'); }
 function renderStrategies() { const list = document.getElementById('strategyList'); if(!list) return; list.innerHTML = STRATEGIES.map((s,i)=>`<div class="card" style="padding:10px;"><b>${s.name}</b><br>BUY >${s.config.buy}% | SELL <${s.config.sell}% <button onclick="toggleStrat(${i})" class="btn btn-blue" style="padding:6px; margin-top:6px;">${s.is_active?'Deactivate':'Activate'}</button></div>`).join(''); }
-function toggleStrat(i){ STRATEGIES[i].is_active =!STRATEGIES[i].is_active; saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); } // updateBacktestDropdown add kiya
+function toggleStrat(i){ STRATEGIES[i].is_active =!STRATEGIES[i].is_active; saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); }
 function updateUI() { document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2); document.getElementById('coinHold').textContent = STATE.coinHolding.toFixed(6); document.getElementById('trades').textContent = STATE.trades; const pnl = (STATE.coinHolding * STATE.price + STATE.balance - 10000); document.getElementById('pnl').textContent = (pnl >= 0? '+' : '') + '$' + pnl.toFixed(2); document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0? 'green' : 'red'); }
 
-// ====== NAYE 2 FUNCTION ADD KIYE ======
+// ====== BACKTEST KE 2 FUNCTION ======
 function updateBacktestDropdown() {
   const select = document.getElementById('backtestStrategy');
   if(!select) return;
