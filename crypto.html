@@ -29,7 +29,7 @@
 .toggle { width: 50px; height: 26px; background: #334155; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s; }
 .toggle.active { background: #10b981; }
 .toggle-dot { width: 22px; height: 22px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
-.toggle.active .toggle-dot { left: 26px; } /* FIXED - space add */
+.toggle.active.toggle-dot { left: 26px; }
 .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px; }
 .btn-buy { background: #10b981; color: white; }
 .btn-sell { background: #ef4444; color: white; }
@@ -91,7 +91,7 @@
         <div class="price-label" id="pairLabel">BTC/USD</div>
         <div class="price-main" id="coinPrice">$0.00</div>
         <div class="price-change" id="coinChange">Loading...</div>
-        <div style="margin-top:8px;font-size:12px;color:#64748b;" id="activeStrategyText"></div>
+        <div style="margin-top:8px;font-size:12px;color:#64748b;" id="activeStrategyText">No active strategy</div>
         <div class="stats">
           <div class="stat"><div class="stat-label">24h High</div><div class="stat-value" id="high24h">$0</div></div>
           <div class="stat"><div class="stat-label">24h Low</div><div class="stat-value" id="low24h">$0</div></div>
@@ -134,10 +134,14 @@
     <div id="backtest" class="hidden">
       <div class="card">
         <h3 style="margin-bottom: 12px;">📊 Backtest Engine</h3>
+        <p style="font-size:12px; color:#64748b; margin-bottom:12px;">Apni strategy ko pichle data par test karo</p>
         <div class="select-row">
           <select class="input" id="backtestLimit">
             <option value="30">Last 30 Days</option>
+            <option value="90">Last 3 Months</option>
+            <option value="180">Last 6 Months</option>
             <option value="365" selected>Last 1 Year</option>
+            <option value="1000">All Time ~1000 Days</option>
           </select>
         </div>
         <div class="select-row">
@@ -163,6 +167,7 @@
         <button class="btn btn-blue" onclick="exportData()">📤 Export Data</button>
         <input type="file" id="importFile" class="input" accept=".json">
         <button class="btn btn-blue" onclick="importData()">📥 Import Data</button>
+        <div style="font-size: 11px; color: #64748b; margin-top: 8px; text-align: center;">Phone se export karke laptop mein import kar do</div>
       </div>
       <div class="card">
         <h3 style="margin-bottom: 12px;">Reset Paper Trading</h3>
@@ -193,7 +198,12 @@ let STRATEGIES = [];
 function showTab(tab, event) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   event.target.classList.add('active');
-  ['dashboard','trading','strategies','backtest','settings','logs'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('trading').classList.add('hidden');
+  document.getElementById('settings').classList.add('hidden');
+  document.getElementById('logs').classList.add('hidden');
+  document.getElementById('strategies').classList.add('hidden');
+  document.getElementById('backtest').classList.add('hidden');
   document.getElementById(tab).classList.remove('hidden');
 }
 
@@ -217,7 +227,7 @@ async function loadConfig() {
   STATE.coinHolding = parseFloat(localStorage.getItem('coinHolding') || '0');
   STATE.trades = parseInt(localStorage.getItem('trades') || '0');
   STRATEGIES = JSON.parse(localStorage.getItem('strategies') || '[]');
-  try{ if(window.dbLoad) { await window.dbLoad(); }catch(e){}
+  try{ if(window.dbLoad) { await window.dbLoad(); }}catch(e){}
   document.getElementById('coinSelect').value = STATE.coinId;
   document.getElementById('currencySelect').value = STATE.currency;
   STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol;
@@ -229,7 +239,7 @@ async function loadConfig() {
   renderStrategies();
   updateBacktestDropdown();
   updateUI();
-  document.getElementById('syncStatus').textContent = '☁️ Synced'; // FIXED
+  document.getElementById('syncStatus').textContent = '☁️ Synced';
 }
 
 async function saveAllToLocal() {
@@ -242,22 +252,33 @@ async function saveAllToLocal() {
   localStorage.setItem('autoTrade', STATE.autoTrade);
   localStorage.setItem('currentCoin', STATE.coinId);
   localStorage.setItem('currency', STATE.currency);
-  try{ if(window.dbSave) { await window.dbSave(); }catch(e){}
+  try{ if(window.dbSave) { await window.dbSave(); }}catch(e){}
 }
 
-function exportData() { /* same */ }
-function importData() { /* same */ }
+function exportData() {
+  const data = {balance: STATE.balance, coinHolding: STATE.coinHolding, trades: STATE.trades, strategies: STRATEGIES, tgToken: STATE.tgToken, tgChat: STATE.tgChat, autoTrade: STATE.autoTrade, coinId: STATE.coinId, currency: STATE.currency};
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a');
+  a.href = url; a.download = 'alertpro_backup.json'; a.click(); log('✅ Data exported');
+}
+
+function importData() {
+  const file = document.getElementById('importFile').files[0]; if (!file) { log('⚠️ Pehle file select karo'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) { const data = JSON.parse(e.target.result); Object.assign(STATE, data); STRATEGIES = data.strategies; saveAllToLocal(); loadConfig(); log('✅ Data imported!'); };
+  reader.readAsText(file);
+}
+
 function saveTelegram() { STATE.tgToken = document.getElementById('tgToken').value; STATE.tgChat = document.getElementById('tgChat').value; saveAllToLocal(); log('✅ Telegram saved'); }
 async function sendTelegram(msg) { if (!STATE.tgToken ||!STATE.tgChat) return; try { await fetch(`https://api.telegram.org/bot${STATE.tgToken}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: STATE.tgChat, text: msg, parse_mode: 'HTML' }) }); } catch(e) { console.log(e); } }
-function testTelegram() { sendTelegram('🧪 <b>AlertPro Test</b>\nBot connected successfully!'); log('📤 Test alert sent'); }
-function resetBalance() { if (confirm('Reset?')) { STATE.balance = 10000; STATE.coinHolding = 0; STATE.trades = 0; saveAllToLocal(); updateUI(); log('🔄 Balance reset'); } }
+function testTelegram() { sendTelegram('🧪 <b>AlertPro Test</b>\nBot connected!'); log('📤 Test alert sent'); }
+function resetBalance() { if (confirm('Reset karna hai?')) { STATE.balance = 10000; STATE.coinHolding = 0; STATE.trades = 0; saveAllToLocal(); updateUI(); log('🔄 Balance reset'); } }
 
 function changeCoin() {
   STATE.coinId = document.getElementById('coinSelect').value;
   localStorage.setItem('currentCoin', STATE.coinId);
   STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol;
   document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
-  // coinHolding reset HATA DIYA
   saveAllToLocal(); updateUI(); fetchCoinData(); log(`🔄 Switched to ${STATE.coinSymbol}`);
 }
 
@@ -278,11 +299,9 @@ async function fetchCoinData() {
 
 function updateSignal() {
   const activeStrategies = STRATEGIES.filter(s => s.is_active);
-  if (activeStrategies.length === 0) {
-    STATE.signal = 'HOLD'; document.getElementById('activeStrategyText').textContent = 'No active strategy'; updateAutoStatusText(); return;
-  }
+  if (activeStrategies.length === 0) { STATE.signal = 'HOLD'; document.getElementById('activeStrategyText').textContent = 'No active strategy'; updateAutoStatusText(); return; }
   const now = Date.now();
-  if (now - STATE.lastTradeTime < TRADE_COOLDOWN) { document.getElementById('activeStrategyText').textContent = `Cooldown...`; return; }
+  if (now - STATE.lastTradeTime < TRADE_COOLDOWN) { document.getElementById('activeStrategyText').textContent = `Cooldown: ${Math.ceil((TRADE_COOLDOWN - (now - STATE.lastTradeTime)) / 1000)}s`; return; }
   for (let s of activeStrategies) {
     const buyThreshold = s.config.buy || 3; const sellThreshold = s.config.sell || -3;
     document.getElementById('activeStrategyText').innerHTML = `Active: <span class="strategy-badge">${s.name}</span>`;
@@ -297,13 +316,13 @@ function executeTrade(type, strategyName = 'Manual') {
   const amount = STATE.balance * 0.95;
   if (type === 'BUY' && STATE.balance > 10) {
     const coinBuy = amount / STATE.price; STATE.coinHolding += coinBuy; STATE.balance -= amount; STATE.trades++;
-    saveAllToLocal(); log(`✅ BUY: ${coinBuy.toFixed(6)} ${STATE.coinSymbol}`);
-    sendTelegram(`🟢 BUY: ${STATE.coinSymbol} @ ${STATE.price.toFixed(2)}`);
+    saveAllToLocal(); log(`✅ BUY: ${coinBuy.toFixed(6)} ${STATE.coinSymbol} @ ${STATE.price.toFixed(2)}`);
+    sendTelegram(`🟢 <b>BUY - ${strategyName}</b>\n${STATE.coinSymbol} @ ${STATE.price.toFixed(2)}\nQty: ${coinBuy.toFixed(6)}`);
   } else if (type === 'SELL' && STATE.coinHolding > 0) {
     const coinSell = STATE.coinHolding; const amountSell = coinSell * STATE.price;
     STATE.balance += amountSell; STATE.coinHolding = 0; STATE.trades++;
-    saveAllToLocal(); log(`🔴 SELL: ${coinSell.toFixed(6)} ${STATE.coinSymbol}`);
-    sendTelegram(`🔴 SELL: ${STATE.coinSymbol} @ ${STATE.price.toFixed(2)}`);
+    saveAllToLocal(); log(`🔴 SELL: ${coinSell.toFixed(6)} ${STATE.coinSymbol} @ ${STATE.price.toFixed(2)}`);
+    sendTelegram(`🔴 <b>SELL - ${strategyName}</b>\n${STATE.coinSymbol} @ ${STATE.price.toFixed(2)}\nQty: ${coinSell.toFixed(6)}`);
   }
   updateUI();
 }
@@ -311,13 +330,31 @@ function executeTrade(type, strategyName = 'Manual') {
 function manualTrade(type) { executeTrade(type, 'Manual'); }
 function toggleAuto() { STATE.autoTrade =!STATE.autoTrade; document.getElementById('autoToggle').classList.toggle('active'); saveAllToLocal(); updateAutoStatusText(); log(STATE.autoTrade? '✅ Auto ON' : '❌ Auto OFF'); }
 function updateAutoStatusText() { document.getElementById('autoStatusText').textContent = STATE.autoTrade? 'Auto trading ON - ' + STATE.signal : 'Auto trading OFF'; }
-function saveStrategy() { const name = document.getElementById('strategyName').value; const buy = parseFloat(document.getElementById('buyCondition').value); const sell = parseFloat(document.getElementById('sellCondition').value); if(!name) return alert('Name dalo'); STRATEGIES.push({name, config:{buy,sell}, is_active:false}); saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); log('✅ Strategy saved'); }
+function saveStrategy() { const name = document.getElementById('strategyName').value; const buy = parseFloat(document.getElementById('buyCondition').value); const sell = parseFloat(document.getElementById('sellCondition').value); if(!name || isNaN(buy) || isNaN(sell)) return alert('Sab bharo'); STRATEGIES.push({name, config:{buy,sell}, is_active:false}); saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); log('✅ Strategy saved'); }
 function renderStrategies() { const list = document.getElementById('strategyList'); if(!list) return; list.innerHTML = STRATEGIES.map((s,i)=>`<div class="card" style="padding:10px;"><b>${s.name}</b><br>BUY >${s.config.buy}% | SELL <${s.config.sell}% <button onclick="toggleStrat(${i})" class="btn btn-blue" style="padding:6px; margin-top:6px;">${s.is_active?'Deactivate':'Activate'}</button></div>`).join(''); }
 function toggleStrat(i){ STRATEGIES[i].is_active =!STRATEGIES[i].is_active; saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); }
 function updateUI() { document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2); document.getElementById('coinHold').textContent = STATE.coinHolding.toFixed(6); document.getElementById('trades').textContent = STATE.trades; const pnl = (STATE.coinHolding * STATE.price + STATE.balance - 10000); document.getElementById('pnl').textContent = (pnl >= 0? '+' : '') + '$' + pnl.toFixed(2); document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0? 'green' : 'red'); }
 
 function updateBacktestDropdown() { const select = document.getElementById('backtestStrategy'); if(!select) return; select.innerHTML = '<option value="-1">Select Strategy</option>' + STRATEGIES.map((s,i)=>`<option value="${i}">${s.name}</option>`).join(''); }
-async function runBacktest() { /* same as before */ }
+async function runBacktest() {
+  const stratIndex = document.getElementById('backtestStrategy').value; const days = parseInt(document.getElementById('backtestLimit').value); const resultDiv = document.getElementById('backtestResult');
+  if(stratIndex == -1) { alert('Pehle strategy select karo'); return; } const strat = STRATEGIES[stratIndex];
+  resultDiv.innerHTML = '⏳ Fetching ' + days + ' days data...'; log(`📊 Backtest: ${strat.name}`);
+  try {
+    let url = `https://api.coingecko.com/api/v3/coins/${COIN_DATA[STATE.coinId].cgId}/market_chart?vs_currency=${STATE.currency}&days=${days}`;
+    let res = await fetch(url); const data = await res.json(); const prices = data.prices;
+    let virtualBalance = 10000; let virtualCoin = 0; let trades = 0;
+    for(let i = 24; i < prices.length; i++) {
+      const priceNow = prices[i][1]; const price24hAgo = prices[i-24][1]; const change24h = ((priceNow - price24hAgo) / price24hAgo) * 100;
+      const buyThreshold = strat.config.buy || 3; const sellThreshold = strat.config.sell || -3;
+      if(change24h > buyThreshold && virtualBalance > 10) { const amount = virtualBalance * 0.95; virtualCoin += amount / priceNow; virtualBalance -= amount; trades++; }
+      else if(change24h < sellThreshold && virtualCoin > 0) { virtualBalance += virtualCoin * priceNow; virtualCoin = 0; trades++; }
+    }
+    const finalValue = virtualBalance + (virtualCoin * prices[prices.length-1][1]); const profitPct = ((finalValue - 10000) / 10000) * 100;
+    resultDiv.innerHTML = `<div style="background:rgba(16,185,129,0.1); padding:10px; border-radius:8px;"><b>Result:</b><br>Final: ${STATE.currency === 'usd'? '$' : '₹'}${finalValue.toFixed(2)}<br>P&L: <span class="${profitPct>=0?'green':'red'}">${profitPct>=0?'+':''}${profitPct.toFixed(2)}%</span><br>Trades: ${trades}</div>`;
+    log(`✅ Backtest: ${profitPct.toFixed(2)}% profit`);
+  } catch(e) { resultDiv.innerHTML = '❌ API Error'; log('❌ Backtest error'); }
+}
 </script>
 
 <script type="module">
@@ -326,7 +363,7 @@ async function runBacktest() { /* same as before */ }
   const firebaseConfig = { apiKey: "AIzaSyDIPtw7gur2viWc4k39N3HBK_aPJ4EBWqk", authDomain: "alertpro-bot.firebaseapp.com", databaseURL: "https://alertpro-bot-default-rtdb.firebaseio.com", projectId: "alertpro-bot", storageBucket: "alertpro-bot.firebasestorage.app", messagingSenderId: "834804229548", appId: "1:834804229548:web:e46f165bd57b66e92f0609" };
   const app = initializeApp(firebaseConfig); const db = getDatabase(app);
   window.dbSave = async function() { document.getElementById('syncStatus').textContent = '☁️ Saving...'; try { await set(ref(db, 'users/' + DEVICE_ID), STATE); document.getElementById('syncStatus').textContent = '☁️ Synced'; } catch(e) { document.getElementById('syncStatus').textContent = '❌ Sync Error'; } }
-  window.dbLoad = async function() { try { const snap = await get(ref(db, 'users/' + DEVICE_ID)); if (snap.exists()) { Object.assign(STATE, snap.val()); log('✅ Data loaded from Firebase'); } catch(e) { log('⚠️ Firebase load error'); } }
+  window.dbLoad = async function() { try { const snap = await get(ref(db, 'users/' + DEVICE_ID)); if (snap.exists()) { Object.assign(STATE, snap.val()); STRATEGIES = snap.val().strategies || []; log('✅ Firebase se data load hua'); }} catch(e) { log('⚠️ Firebase error'); } }
   loadConfig(); fetchCoinData(); setInterval(fetchCoinData, FETCH_INTERVAL);
 </script>
 </body>
