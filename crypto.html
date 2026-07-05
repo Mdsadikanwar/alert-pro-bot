@@ -29,7 +29,7 @@
 .toggle { width: 50px; height: 26px; background: #334155; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s; }
 .toggle.active { background: #10b981; }
 .toggle-dot { width: 22px; height: 22px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
-.toggle.active.toggle-dot { left: 26px; } /* TYPO FIX KIYA */
+.toggle.active.toggle-dot { left: 26px; } /* FIX KIYA */
 .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px; }
 .btn-buy { background: #10b981; color: white; }
 .btn-sell { background: #ef4444; color: white; }
@@ -126,6 +126,29 @@
         <h3 style="margin-bottom: 12px;">Saved Strategies</h3>
         <div id="strategyList"></div>
       </div>
+
+      <!-- NAYA BACKTEST CARD START -->
+      <div class="card">
+        <h3 style="margin-bottom: 12px;">Backtest Strategy</h3>
+        <div class="select-row">
+          <select class="input" id="backtestLimit">
+            <option value="30">Last 30 Days</option>
+            <option value="90">Last 3 Months</option>
+            <option value="180">Last 6 Months</option>
+            <option value="365" selected>Last 1 Year</option>
+            <option value="1000">All Time ~1000 Days</option>
+          </select>
+        </div>
+        <div class="select-row">
+          <select class="input" id="backtestStrategy">
+            <option value="-1">Select Strategy</option>
+          </select>
+        </div>
+        <button class="btn btn-blue" onclick="runBacktest()">📊 Run Backtest</button>
+        <div id="backtestResult" style="margin-top:12px; font-size:13px;"></div>
+      </div>
+      <!-- NAYA BACKTEST CARD END -->
+
     </div>
 
     <div id="logs" class="hidden">
@@ -198,7 +221,6 @@ async function loadConfig() {
   STATE.trades = parseInt(localStorage.getItem('trades') || '0');
   STRATEGIES = JSON.parse(localStorage.getItem('strategies') || '[]');
 
-  // FIREBASE SE LOAD
   if(window.dbLoad) {
     await window.dbLoad();
   }
@@ -226,8 +248,6 @@ async function saveAllToLocal() {
   localStorage.setItem('autoTrade', STATE.autoTrade);
   localStorage.setItem('currentCoin', STATE.coinId);
   localStorage.setItem('currency', STATE.currency);
-
-  // FIREBASE ME SAVE
   if(window.dbSave) {
     await window.dbSave();
   }
@@ -385,9 +405,86 @@ function updateAutoStatusText() {
 }
 
 function saveStrategy() { const name = document.getElementById('strategyName').value; const buy = parseFloat(document.getElementById('buyCondition').value); const sell = parseFloat(document.getElementById('sellCondition').value); if(!name) return alert('Name dalo'); STRATEGIES.push({name, config:{buy,sell}, is_active:false}); saveAllToLocal(); renderStrategies(); log('✅ Strategy saved'); }
-function renderStrategies() { const list = document.getElementById('strategyList'); if(!list) return; list.innerHTML = STRATEGIES.map((s,i)=>`<div class="card" style="padding:10px;"><b>${s.name}</b><br>BUY >${s.config.buy}% | SELL <${s.config.sell}% <button onclick="toggleStrat(${i})" class="btn btn-blue" style="padding:6px; margin-top:6px;">${s.is_active?'Deactivate':'Activate'}</button></div>`).join(''); }
+
+function updateBacktestDropdown() {
+  const select = document.getElementById('backtestStrategy');
+  if(!select) return;
+  select.innerHTML = '<option value="-1">Select Strategy</option>' +
+    STRATEGIES.map((s,i)=>`<option value="${i}">${s.name}</option>`).join('');
+}
+
+function renderStrategies() {
+  const list = document.getElementById('strategyList');
+  if(!list) return;
+  list.innerHTML = STRATEGIES.map((s,i)=>`<div class="card" style="padding:10px;"><b>${s.name}</b><br>BUY >${s.config.buy}% | SELL <${s.config.sell}% <button onclick="toggleStrat(${i})" class="btn btn-blue" style="padding:6px; margin-top:6px;">${s.is_active?'Deactivate':'Activate'}</button></div>`).join('');
+  updateBacktestDropdown();
+}
+
 function toggleStrat(i){ STRATEGIES[i].is_active =!STRATEGIES[i].is_active; saveAllToLocal(); renderStrategies(); }
+
 function updateUI() { document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2); document.getElementById('coinHold').textContent = STATE.coinHolding.toFixed(6); document.getElementById('trades').textContent = STATE.trades; const pnl = (STATE.coinHolding * STATE.price + STATE.balance - 10000); document.getElementById('pnl').textContent = (pnl >= 0? '+' : '') + '$' + pnl.toFixed(2); document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0? 'green' : 'red'); }
+
+// NAYA BACKTEST FUNCTION
+async function runBacktest() {
+  const stratIndex = document.getElementById('backtestStrategy').value;
+  const days = parseInt(document.getElementById('backtestLimit').value);
+  const resultDiv = document.getElementById('backtestResult');
+
+  if(stratIndex == -1) { alert('Pehle strategy select karo'); return; }
+  const strat = STRATEGIES[stratIndex];
+  resultDiv.innerHTML = '⏳ Fetching ' + days + ' days data...';
+  log(`📊 Backtest started: ${strat.name} for ${days} days`);
+
+  try {
+    let url = `https://api.coingecko.com/api/v3/coins/${COIN_DATA[STATE.coinId].cgId}/market_chart?vs_currency=${STATE.currency}&days=${days}`;
+    let res = await fetch(url);
+    const data = await res.json();
+    const prices = data.prices;
+
+    let virtualBalance = 10000;
+    let virtualCoin = 0;
+    let trades = 0;
+
+    for(let i = 24; i < prices.length; i++) {
+      const priceNow = prices[i][1];
+      const price24hAgo = prices[i-24][1];
+      const change24h = ((priceNow - price24hAgo) / price24hAgo) * 100;
+      const buyThreshold = strat.config.buy || 3;
+      const sellThreshold = strat.config.sell || -3;
+
+      if(change24h > buyThreshold && virtualBalance > 10) {
+        const amount = virtualBalance * 0.95;
+        const coinBuy = amount / priceNow;
+        virtualCoin += coinBuy;
+        virtualBalance -= amount;
+        trades++;
+      }
+      else if(change24h < sellThreshold && virtualCoin > 0) {
+        const amountSell = virtualCoin * priceNow;
+        virtualBalance += amountSell;
+        virtualCoin = 0;
+        trades++;
+      }
+    }
+
+    const finalValue = virtualBalance + (virtualCoin * prices[prices.length-1][1]);
+    const profit = finalValue - 10000;
+    const profitPct = (profit / 10000) * 100;
+
+    resultDiv.innerHTML = `
+      <div style="background:rgba(16,185,129,0.1); padding:10px; border-radius:8px;">
+        <b>Result for ${days} days:</b><br>
+        Final Balance: ${STATE.currency === 'usd'? '$' : '₹'}${finalValue.toFixed(2)}<br>
+        P&L: <span class="${profit>=0?'green':'red'}">${profit>=0?'+':''}${profitPct.toFixed(2)}%</span><br>
+        Total Trades: ${trades}
+      </div>
+    `;
+    log(`✅ Backtest done: ${profitPct.toFixed(2)}% profit in ${trades} trades`);
+  } catch(e) {
+    resultDiv.innerHTML = '❌ Error fetching data. API limit lag gayi hogi';
+    log('❌ Backtest error: ' + e.message);
+  }
+}
 </script>
 
 <script type="module">
@@ -407,7 +504,6 @@ function updateUI() { document.getElementById('balance').textContent = '$' + STA
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // FIREBASE SAVE FUNCTION
   window.dbSave = async function() {
     document.getElementById('syncStatus').textContent = '☁️ Saving...';
     try {
@@ -425,7 +521,6 @@ function updateUI() { document.getElementById('balance').textContent = '$' + STA
     }
   }
 
-  // FIREBASE LOAD FUNCTION
   window.dbLoad = async function() {
     try {
       const userRef = ref(db, 'users/' + DEVICE_ID);
@@ -443,7 +538,7 @@ function updateUI() { document.getElementById('balance').textContent = '$' + STA
         STATE.currency = data.currency || 'usd';
         log('✅ Data loaded from Firebase Cloud');
       } else {
-        window.dbSave(); // pehli baar data bana dega
+        window.dbSave();
       }
     } catch(e) { log('⚠️ Firebase load error: ' + e.message); }
   }
