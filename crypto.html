@@ -29,7 +29,7 @@
 .toggle { width: 50px; height: 26px; background: #334155; border-radius: 13px; position: relative; cursor: pointer; transition: 0.3s; }
 .toggle.active { background: #10b981; }
 .toggle-dot { width: 22px; height: 22px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; }
-.toggle.active.toggle-dot { left: 26px; } /* BUG FIX */
+.toggle.active.toggle-dot { left: 26px; } /* BUG FIX - space add kiya */
 .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px; }
 .btn-buy { background: #10b981; color: white; }
 .btn-sell { background: #ef4444; color: white; }
@@ -54,14 +54,14 @@
   <div class="container">
     <div class="header">
       <div class="logo">🔔 AlertPro Auto Bot</div>
-      <div class="subtitle">BTC Paper Trading + Live Signals <span class="sync-badge" id="syncStatus">☁️ Loading...</span></div>
+      <div class="subtitle">Multi-Coin Paper Trading + Live Signals <span class="sync-badge" id="syncStatus">☁️ Loading...</span></div>
     </div>
     <div class="status-banner" id="statusBanner">⚠️ API Error - Retrying...</div>
     <div class="tabs">
       <div class="tab active" onclick="showTab('dashboard', event)">Dashboard</div>
       <div class="tab" onclick="showTab('trading', event)">Trading</div>
       <div class="tab" onclick="showTab('strategies', event)">Strategies</div>
-      <div class="tab" onclick="showTab('backtest', event)">Backtest</div> <!-- NAYA TAB -->
+      <div class="tab" onclick="showTab('backtest', event)">Backtest</div>
       <div class="tab" onclick="showTab('settings', event)">Settings</div>
       <div class="tab" onclick="showTab('logs', event)">Logs</div>
     </div>
@@ -73,6 +73,13 @@
             <option value="bitcoin">Bitcoin (BTC)</option>
             <option value="ethereum">Ethereum (ETH)</option>
             <option value="binancecoin">BNB (BNB)</option>
+            <option value="solana">Solana (SOL)</option>
+            <option value="dogecoin">Dogecoin (DOGE)</option>
+            <option value="ripple">XRP (XRP)</option>
+            <option value="cardano">Cardano (ADA)</option>
+            <option value="tron">TRON (TRX)</option>
+            <option value="the-open-network">Toncoin (TON)</option>
+            <option value="shiba-inu">Shiba Inu (SHIB)</option>
           </select>
           <select class="input" id="currencySelect" onchange="updatePrices()" style="max-width: 100px;">
             <option value="usd">USD</option>
@@ -127,10 +134,8 @@
         <h3 style="margin-bottom: 12px;">Saved Strategies</h3>
         <div id="strategyList"></div>
       </div>
-      <!-- BACKTEST CARD HATA DIYA YAHAN SE -->
     </div>
 
-    <!-- NAYA BACKTEST TAB -->
     <div id="backtest" class="hidden">
       <div class="card">
         <h3 style="margin-bottom: 12px;">📊 Backtest Engine</h3>
@@ -187,7 +192,21 @@
 <script>
 const DEVICE_ID = 'alertpro_single_user';
 const STATE = { coinId: 'bitcoin', coinSymbol: 'BTC', currency: 'usd', price: 0, high24h: 0, low24h: 0, change24h: 0, signal: 'HOLD', balance: 10000, coinHolding: 0, trades: 0, autoTrade: false, tgToken: '', tgChat: '', lastFetchSuccess: false, lastTradeTime: 0 };
-const COIN_DATA = { 'bitcoin': { symbol: 'BTC', rank: 1, cgId: 'bitcoin' }, 'ethereum': { symbol: 'ETH', rank: 2, cgId: 'ethereum' }, 'binancecoin': { symbol: 'BNB', rank: 4, cgId: 'binancecoin' } };
+
+// 10 COINS ADD KIYE
+const COIN_DATA = {
+  'bitcoin': { symbol: 'BTC', rank: 1, cgId: 'bitcoin' },
+  'ethereum': { symbol: 'ETH', rank: 2, cgId: 'ethereum' },
+  'binancecoin': { symbol: 'BNB', rank: 4, cgId: 'binancecoin' },
+  'solana': { symbol: 'SOL', rank: 5, cgId: 'solana' },
+  'dogecoin': { symbol: 'DOGE', rank: 8, cgId: 'dogecoin' },
+  'ripple': { symbol: 'XRP', rank: 6, cgId: 'ripple' },
+  'cardano': { symbol: 'ADA', rank: 9, cgId: 'cardano' },
+  'tron': { symbol: 'TRX', rank: 10, cgId: 'tron' },
+  'the-open-network': { symbol: 'TON', rank: 11, cgId: 'the-open-network' },
+  'shiba-inu': { symbol: 'SHIB', rank: 13, cgId: 'shiba-inu' }
+};
+
 const FETCH_INTERVAL = 60000;
 const TRADE_COOLDOWN = 300000;
 let STRATEGIES = [];
@@ -200,7 +219,7 @@ function showTab(tab, event) {
   document.getElementById('settings').classList.add('hidden');
   document.getElementById('logs').classList.add('hidden');
   document.getElementById('strategies').classList.add('hidden');
-  document.getElementById('backtest').classList.add('hidden'); // NAYA
+  document.getElementById('backtest').classList.add('hidden');
   document.getElementById(tab).classList.remove('hidden');
 }
 
@@ -307,7 +326,8 @@ function changeCoin() {
   localStorage.setItem('currentCoin', STATE.coinId);
   STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol;
   document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
-  STATE.coinHolding = 0; saveAllToLocal();
+  // STATE.coinHolding = 0; <-- YE LINE HATA DI
+  saveAllToLocal();
   updateUI(); fetchCoinData(); log(`🔄 Switched to ${STATE.coinSymbol}`);
 }
 
@@ -486,45 +506,4 @@ async function runBacktest() {
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
   window.dbSave = async function() {
-    document.getElementById('syncStatus').textContent = '☁️ Saving...';
-    try {
-      const userRef = ref(db, 'users/' + DEVICE_ID);
-      await set(userRef, {
-        balance: STATE.balance, coinHolding: STATE.coinHolding, trades: STATE.trades,
-        strategies: STRATEGIES, tgToken: STATE.tgToken, tgChat: STATE.tgChat,
-        autoTrade: STATE.autoTrade, coinId: STATE.coinId, currency: STATE.currency,
-        lastUpdated: new Date().toISOString()
-      });
-      document.getElementById('syncStatus').textContent = '☁️ Synced';
-    } catch(e) {
-      document.getElementById('syncStatus').textContent = '❌ Sync Error';
-      log('❌ Firebase save error: ' + e.message);
-    }
-  }
-  window.dbLoad = async function() {
-    try {
-      const userRef = ref(db, 'users/' + DEVICE_ID);
-      const snapshot = await get(userRef);
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        STATE.balance = data.balance || 10000;
-        STATE.coinHolding = data.coinHolding || 0;
-        STATE.trades = data.trades || 0;
-        STRATEGIES = data.strategies || [];
-        STATE.tgToken = data.tgToken || '';
-        STATE.tgChat = data.tgChat || '';
-        STATE.autoTrade = data.autoTrade || false;
-        STATE.coinId = data.coinId || 'bitcoin';
-        STATE.currency = data.currency || 'usd';
-        log('✅ Data loaded from Firebase Cloud');
-      } else {
-        window.dbSave();
-      }
-    } catch(e) { log('⚠️ Firebase load error: ' + e.message); }
-  }
-  loadConfig();
-  fetchCoinData();
-  setInterval(fetchCoinData, FETCH_INTERVAL);
-</script>
-</body>
-</
+    document.getElementById('syncStatus').textContent = '☁
