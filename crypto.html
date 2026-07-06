@@ -171,10 +171,12 @@
           <option value="firebase">☁️ Firebase Cloud</option>
         </select>
 
-        <button class="btn btn-blue" onclick="exportData()">📤 Export Data</button>
-        <input type="file" id="importFile" class="input" accept=".json">
-        <button class="btn btn-blue" onclick="importData()">📥 Import Data</button>
-        <div style="font-size: 11px; color: #64748b; margin-top: 8px; text-align: center;">Phone se export karke laptop mein import kar do</div>
+        <div id="firebaseOptions" style="margin-top: 12px;"> <!-- WRAPPER ADDED -->
+          <button class="btn btn-blue" onclick="exportData()">📤 Export Data</button>
+          <input type="file" id="importFile" class="input" accept=".json">
+          <button class="btn btn-blue" onclick="importData()">📥 Import Data</button>
+          <div style="font-size: 11px; color: #64748b; margin-top: 8px; text-align: center;">Phone se export karke laptop mein import kar do</div>
+        </div>
       </div>
       <div class="card">
         <h3 style="margin-bottom: 12px;">Reset Paper Trading</h3>
@@ -182,7 +184,7 @@
       </div>
       <div class="card">
         <h3 style="margin-bottom: 12px;">Telegram Alerts</h3>
-        <input class="input" id="tgToken" placeholder="Bot Token">
+        <input class="input" id="tgToken" placeholder="Bot Token" type="password"> <!-- type=password added -->
         <input class="input" id="tgChat" placeholder="Chat ID">
         <button class="btn btn-buy" onclick="saveTelegram()">Save Telegram</button>
         <button class="btn btn-buy" onclick="testTelegram()">Test Alert</button>
@@ -201,7 +203,7 @@ const COIN_DATA = {
 const FETCH_INTERVAL = 60000;
 const TRADE_COOLDOWN = 300000;
 let STRATEGIES = [];
-let storageMode = localStorage.getItem("storageMode") || "firebase"; // NEW
+let storageMode = localStorage.getItem("storageMode") || "firebase";
 
 function showTab(tab, event) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -224,9 +226,21 @@ function log(msg) {
   logBox.prepend(item);
 }
 
+function maskToken() { // NEW
+  let token = document.getElementById('tgToken').value;
+  if(token && token.length > 10) {
+    document.getElementById('tgToken').value = token.substring(0,4) + '********' + token.slice(-4);
+  }
+}
+
+function toggleBackupUI() { // NEW
+  const firebaseDiv = document.getElementById("firebaseOptions");
+  firebaseDiv.style.display = storageMode === "firebase" ? "block" : "none";
+}
+
 async function loadConfig() {
   document.getElementById('syncStatus').textContent = '☁️ Loading...';
-  document.getElementById('storageMode').value = storageMode; // NEW
+  document.getElementById('storageMode').value = storageMode;
   STATE.tgToken = localStorage.getItem('tgToken') || '';
   STATE.tgChat = localStorage.getItem('tgChat') || '';
   STATE.autoTrade = localStorage.getItem('autoTrade') === 'true';
@@ -249,6 +263,8 @@ async function loadConfig() {
   updateBacktestDropdown();
   updateUI();
   document.getElementById('syncStatus').textContent = '☁️ Synced';
+  maskToken(); // NEW
+  toggleBackupUI(); // NEW
 }
 
 async function saveAllToLocal() {
@@ -261,13 +277,14 @@ async function saveAllToLocal() {
   localStorage.setItem('autoTrade', STATE.autoTrade);
   localStorage.setItem('currentCoin', STATE.coinId);
   localStorage.setItem('currency', STATE.currency);
-  if(storageMode === "firebase"){ try{ if(window.dbSave) { await window.dbSave(); }}catch(e){} } // UPDATED
+  if(storageMode === "firebase"){ try{ if(window.dbSave) { await window.dbSave(); }}catch(e){} }
 }
 
-async function changeStorageMode() { // NEW FUNCTION
+async function changeStorageMode() {
   storageMode = document.getElementById("storageMode").value;
   localStorage.setItem("storageMode", storageMode);
   log(`✅ Switched to: ${storageMode === 'firebase' ? 'Firebase Cloud' : 'Local Storage'}`);
+  toggleBackupUI(); // NEW
   await loadConfig();
 }
 
@@ -285,7 +302,16 @@ function importData() {
   reader.readAsText(file);
 }
 
-function saveTelegram() { STATE.tgToken = document.getElementById('tgToken').value; STATE.tgChat = document.getElementById('tgChat').value; saveAllToLocal(); log('✅ Telegram saved'); }
+function saveTelegram() { 
+  let tokenInput = document.getElementById('tgToken').value;
+  if(!tokenInput.includes('********')) { // agar user ne naya token dala ho
+    STATE.tgToken = tokenInput; 
+  }
+  STATE.tgChat = document.getElementById('tgChat').value; 
+  saveAllToLocal(); 
+  log('✅ Telegram saved'); 
+  maskToken(); // save ke baad hide kar de
+}
 async function sendTelegram(msg) { if (!STATE.tgToken ||!STATE.tgChat) return; try { await fetch(`https://api.telegram.org/bot${STATE.tgToken}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: STATE.tgChat, text: msg, parse_mode: 'HTML' }) }); } catch(e) { console.log(e); } }
 function testTelegram() { sendTelegram('🧪 <b>AlertPro Test</b>\nBot connected!'); log('📤 Test alert sent'); }
 function resetBalance() { if (confirm('Reset karna hai?')) { STATE.balance = 10000; STATE.coinHolding = 0; STATE.trades = 0; saveAllToLocal(); updateUI(); log('🔄 Balance reset'); } }
