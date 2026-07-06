@@ -164,6 +164,13 @@
     <div id="settings" class="hidden">
       <div class="card">
         <h3 style="margin-bottom: 12px;">Data Backup</h3>
+        
+        <label style="font-size: 12px; color: #94a3b8;">Save Mode:</label>
+        <select class="input" id="storageMode" onchange="changeStorageMode()">
+          <option value="local">📱 Local Storage</option>
+          <option value="firebase">☁️ Firebase Cloud</option>
+        </select>
+
         <button class="btn btn-blue" onclick="exportData()">📤 Export Data</button>
         <input type="file" id="importFile" class="input" accept=".json">
         <button class="btn btn-blue" onclick="importData()">📥 Import Data</button>
@@ -194,6 +201,7 @@ const COIN_DATA = {
 const FETCH_INTERVAL = 60000;
 const TRADE_COOLDOWN = 300000;
 let STRATEGIES = [];
+let storageMode = localStorage.getItem("storageMode") || "firebase"; // NEW
 
 function showTab(tab, event) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -218,6 +226,7 @@ function log(msg) {
 
 async function loadConfig() {
   document.getElementById('syncStatus').textContent = '☁️ Loading...';
+  document.getElementById('storageMode').value = storageMode; // NEW
   STATE.tgToken = localStorage.getItem('tgToken') || '';
   STATE.tgChat = localStorage.getItem('tgChat') || '';
   STATE.autoTrade = localStorage.getItem('autoTrade') === 'true';
@@ -252,7 +261,14 @@ async function saveAllToLocal() {
   localStorage.setItem('autoTrade', STATE.autoTrade);
   localStorage.setItem('currentCoin', STATE.coinId);
   localStorage.setItem('currency', STATE.currency);
-  try{ if(window.dbSave) { await window.dbSave(); }}catch(e){}
+  if(storageMode === "firebase"){ try{ if(window.dbSave) { await window.dbSave(); }}catch(e){} } // UPDATED
+}
+
+async function changeStorageMode() { // NEW FUNCTION
+  storageMode = document.getElementById("storageMode").value;
+  localStorage.setItem("storageMode", storageMode);
+  log(`✅ Switched to: ${storageMode === 'firebase' ? 'Firebase Cloud' : 'Local Storage'}`);
+  await loadConfig();
 }
 
 function exportData() {
@@ -362,8 +378,8 @@ async function runBacktest() {
   import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
   const firebaseConfig = { apiKey: "AIzaSyDIPtw7gur2viWc4k39N3HBK_aPJ4EBWqk", authDomain: "alertpro-bot.firebaseapp.com", databaseURL: "https://alertpro-bot-default-rtdb.firebaseio.com", projectId: "alertpro-bot", storageBucket: "alertpro-bot.firebasestorage.app", messagingSenderId: "834804229548", appId: "1:834804229548:web:e46f165bd57b66e92f0609" };
   const app = initializeApp(firebaseConfig); const db = getDatabase(app);
-  window.dbSave = async function() { document.getElementById('syncStatus').textContent = '☁️ Saving...'; try { await set(ref(db, 'users/' + DEVICE_ID), STATE); document.getElementById('syncStatus').textContent = '☁️ Synced'; } catch(e) { document.getElementById('syncStatus').textContent = '❌ Sync Error'; } }
-  window.dbLoad = async function() { try { const snap = await get(ref(db, 'users/' + DEVICE_ID)); if (snap.exists()) { Object.assign(STATE, snap.val()); STRATEGIES = snap.val().strategies || []; log('✅ Firebase se data load hua'); }} catch(e) { log('⚠️ Firebase error'); } }
+  window.dbSave = async function() { if(storageMode !== "firebase") return; document.getElementById('syncStatus').textContent = '☁️ Saving...'; try { await set(ref(db, 'users/' + DEVICE_ID), STATE); document.getElementById('syncStatus').textContent = '☁️ Synced'; } catch(e) { document.getElementById('syncStatus').textContent = '❌ Sync Error'; } }
+  window.dbLoad = async function() { if(storageMode !== "firebase") return; try { const snap = await get(ref(db, 'users/' + DEVICE_ID)); if (snap.exists()) { Object.assign(STATE, snap.val()); STRATEGIES = snap.val().strategies || []; log('✅ Firebase se data load hua'); }} catch(e) { log('⚠️ Firebase error'); } }
   loadConfig(); fetchCoinData(); setInterval(fetchCoinData, FETCH_INTERVAL);
 </script>
 </body>
