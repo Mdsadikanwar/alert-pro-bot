@@ -408,4 +408,39 @@ async function runBacktest() {
   import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
   const firebaseConfig = { apiKey: "AIzaSyDIPtw7gur2viWc4k39N3HBK_aPJ4EBWqk", authDomain: "alertpro-bot.firebaseapp.com", databaseURL: "https://alertpro-bot-default-rtdb.firebaseio.com", projectId: "alertpro-bot", storageBucket: "alertpro-bot.firebasestorage.app", messagingSenderId: "834804229548", appId: "1:834804229548:web:e46f165bd57b66e92f0609" };
   const app = initializeApp(firebaseConfig); const db = getDatabase(app);
-  window.dbSave = async function() { if(storageMode !== "firebase") return; document.getElementById('syncStatus').textContent = '☁️ Saving...'; try { await set(ref(db, 'users/' + DEVICE_ID), STATE); document.getElementById
+
+  window.dbSave = async function() {
+    if(storageMode!== "firebase") return;
+    document.getElementById('syncStatus').textContent = '☁️ Saving...';
+    try {
+      await set(ref(db, 'users/' + DEVICE_ID), STATE);
+      document.getElementById('syncStatus').textContent = '☁️ Synced';
+    } catch(e) {
+      document.getElementById('syncStatus').textContent = '❌ Sync Error';
+    }
+  }
+
+  window.dbLoad = async function() {
+    if(storageMode!== "firebase") return;
+    try {
+      const snap = await get(ref(db, 'users/' + DEVICE_ID));
+      if (snap.exists()) {
+        Object.assign(STATE, snap.val());
+        STRATEGIES = snap.val().strategies || [];
+      }
+    } catch(e) {
+      log('⚠️ Firebase error');
+    }
+  }
+
+  // YAHAN SE HATA DIYA: loadConfig() aur setInterval
+</script>
+
+<!-- ========== 12. APP INIT SECTION ========== -->
+<script>
+  // SIRF 1 BAAR CHALEGA PAGE LOAD PE
+  document.addEventListener('DOMContentLoaded', () => {
+    loadConfig();
+    setInterval(fetchCoinData, FETCH_INTERVAL); // 1 min me 1 baar price update
+  });
+</script>
