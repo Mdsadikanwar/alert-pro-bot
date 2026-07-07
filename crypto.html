@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AlertPro Auto Bot</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+<!-- ========== 1. CSS START ========== -->
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow-x: hidden; }
@@ -51,14 +53,19 @@ select.input { flex: 1; }
 .sync-badge { font-size: 10px; color: #10b981; margin-left: 5px; }
 .status-text { text-align: center; font-size: 12px; color: #10b981; margin-top: 8px; font-weight: 600; }
   </style>
+<!-- ========== 1. CSS END ========== -->
 </head>
 <body>
   <div class="container">
+    
+<!-- ========== 2. HEADER SECTION ========== -->
     <div class="header">
       <div class="logo">🔔 AlertPro Auto Bot</div>
       <div class="subtitle">Multi-Coin Paper Trading + Live Signals <span class="sync-badge" id="syncStatus">☁️ Loading...</span></div>
     </div>
     <div class="status-banner" id="statusBanner">⚠️ API Error - Retrying...</div>
+
+<!-- ========== 3. TABS NAVIGATION SECTION ========== -->
     <div class="tabs">
       <div class="tab active" onclick="showTab('dashboard', event)">Dashboard</div>
       <div class="tab" onclick="showTab('trading', event)">Trading</div>
@@ -68,6 +75,7 @@ select.input { flex: 1; }
       <div class="tab" onclick="showTab('logs', event)">Logs</div>
     </div>
 
+<!-- ========== 4. DASHBOARD TAB SECTION ========== -->
     <div id="dashboard">
       <div class="card">
         <div class="select-row">
@@ -101,6 +109,7 @@ select.input { flex: 1; }
       </div>
     </div>
 
+<!-- ========== 5. TRADING TAB SECTION ========== -->
     <div id="trading" class="hidden">
       <div class="card">
         <div class="toggle-row">
@@ -119,6 +128,7 @@ select.input { flex: 1; }
       </div>
     </div>
 
+<!-- ========== 6. STRATEGIES TAB SECTION ========== -->
     <div id="strategies" class="hidden">
       <div class="card">
         <h3 style="margin-bottom: 12px;">Create Strategy</h3>
@@ -133,6 +143,7 @@ select.input { flex: 1; }
       </div>
     </div>
 
+<!-- ========== 7. BACKTEST TAB SECTION ========== -->
     <div id="backtest" class="hidden">
       <div class="card">
         <h3 style="margin-bottom: 12px;">📊 Backtest Engine</h3>
@@ -156,6 +167,7 @@ select.input { flex: 1; }
       </div>
     </div>
 
+<!-- ========== 8. SETTINGS TAB SECTION ========== -->
     <div id="settings" class="hidden">
       <div class="card">
         <h3 style="margin-bottom: 12px;">Data Backup</h3>
@@ -185,6 +197,7 @@ select.input { flex: 1; }
       </div>
     </div>
 
+<!-- ========== 9. LOGS TAB SECTION ========== -->
     <div id="logs" class="hidden">
       <div class="card">
         <h3 style="margin-bottom: 12px;">Trade Logs</h3>
@@ -193,6 +206,7 @@ select.input { flex: 1; }
     </div>
   </div>
 
+<!-- ========== 10. JAVASCRIPT MAIN LOGIC SECTION ========== -->
 <script>
 const DEVICE_ID = 'alertpro_single_user';
 const STATE = { coinId: 'bitcoin', coinSymbol: 'BTC', currency: 'usd', price: 0, high24h: 0, low24h: 0, change24h: 0, signal: 'HOLD', balance: 10000, coinHolding: 0, trades: 0, autoTrade: false, tgToken: '', tgChat: '', lastFetchSuccess: false, lastTradeTime: 0 };
@@ -206,6 +220,7 @@ const TRADE_COOLDOWN = 300000;
 let STRATEGIES = [];
 let storageMode = localStorage.getItem("storageMode") || "firebase";
 
+// ========== 10.1 HELPER FUNCTIONS ==========
 function showTab(tab, event) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   event.target.classList.add('active');
@@ -226,6 +241,8 @@ function maskToken() {
     document.getElementById('tgToken').value = token.substring(0,4) + '********' + token.slice(-4);
   }
 }
+
+// ========== 10.2 STORAGE + BACKUP FUNCTIONS ==========
 function toggleBackupUI() {
   const firebaseDiv = document.getElementById("firebaseOptions");
   const statusText = document.getElementById("storageStatusText");
@@ -293,6 +310,8 @@ function importData() {
   reader.onload = function(e) { const data = JSON.parse(e.target.result); Object.assign(STATE, data); STRATEGIES = data.strategies; saveAllToLocal(); loadConfig(); log('✅ Data imported!'); };
   reader.readAsText(file);
 }
+
+// ========== 10.3 TELEGRAM FUNCTIONS ==========
 function saveTelegram() { 
   let tokenInput = document.getElementById('tgToken').value;
   if(!tokenInput.includes('********')) { STATE.tgToken = tokenInput; }
@@ -302,6 +321,8 @@ function saveTelegram() {
 async function sendTelegram(msg) { if (!STATE.tgToken ||!STATE.tgChat) return; try { await fetch(`https://api.telegram.org/bot${STATE.tgToken}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: STATE.tgChat, text: msg, parse_mode: 'HTML' }) }); } catch(e) { console.log(e); } }
 function testTelegram() { sendTelegram('🧪 <b>AlertPro Test</b>\nBot connected!'); log('📤 Test alert sent'); }
 function resetBalance() { if (confirm('Reset karna hai?')) { STATE.balance = 10000; STATE.coinHolding = 0; STATE.trades = 0; saveAllToLocal(); updateUI(); log('🔄 Balance reset'); } }
+
+// ========== 10.4 TRADING + PRICE FUNCTIONS ==========
 function changeCoin() {
   STATE.coinId = document.getElementById('coinSelect').value;
   localStorage.setItem('currentCoin', STATE.coinId);
@@ -354,6 +375,8 @@ function manualTrade(type) { executeTrade(type, 'Manual'); }
 function toggleAuto() { STATE.autoTrade =!STATE.autoTrade; document.getElementById('autoToggle').classList.toggle('active'); saveAllToLocal(); updateAutoStatusText(); log(STATE.autoTrade? '✅ Auto ON' : '❌ Auto OFF'); }
 function updateAutoStatusText() { document.getElementById('autoStatusText').textContent = STATE.autoTrade? 'Auto trading ON - ' + STATE.signal : 'Auto trading OFF'; }
 function updateUI() { document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2); document.getElementById('coinHold').textContent = STATE.coinHolding.toFixed(6); document.getElementById('trades').textContent = STATE.trades; const pnl = (STATE.coinHolding * STATE.price + STATE.balance - 10000); document.getElementById('pnl').textContent = (pnl >= 0? '+' : '') + '$' + pnl.toFixed(2); document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0? 'green' : 'red'); }
+
+// ========== 10.5 STRATEGY + BACKTEST FUNCTIONS ==========
 function saveStrategy() { const name = document.getElementById('strategyName').value; const buy = parseFloat(document.getElementById('buyCondition').value); const sell = parseFloat(document.getElementById('sellCondition').value); if(!name || isNaN(buy) || isNaN(sell)) return alert('Sab bharo'); STRATEGIES.push({name, config:{buy,sell}, is_active:false}); saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); log('✅ Strategy saved'); }
 function renderStrategies() { const list = document.getElementById('strategyList'); if(!list) return; list.innerHTML = STRATEGIES.map((s,i)=>`<div class="card" style="padding:10px;"><b>${s.name}</b><br>BUY >${s.config.buy}% | SELL <${s.config.sell}% <button onclick="toggleStrat(${i})" class="btn btn-blue" style="padding:6px; margin-top:6px;">${s.is_active?'Deactivate':'Activate'}</button></div>`).join(''); }
 function toggleStrat(i){ STRATEGIES[i].is_active =!STRATEGIES[i].is_active; saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); }
@@ -379,14 +402,10 @@ async function runBacktest() {
 }
 </script>
 
+<!-- ========== 11. FIREBASE MODULE SECTION ========== -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
   const firebaseConfig = { apiKey: "AIzaSyDIPtw7gur2viWc4k39N3HBK_aPJ4EBWqk", authDomain: "alertpro-bot.firebaseapp.com", databaseURL: "https://alertpro-bot-default-rtdb.firebaseio.com", projectId: "alertpro-bot", storageBucket: "alertpro-bot.firebasestorage.app", messagingSenderId: "834804229548", appId: "1:834804229548:web:e46f165bd57b66e92f0609" };
   const app = initializeApp(firebaseConfig); const db = getDatabase(app);
-  window.dbSave = async function() { if(storageMode !== "firebase") return; document.getElementById('syncStatus').textContent = '☁️ Saving...'; try { await set(ref(db, 'users/' + DEVICE_ID), STATE); document.getElementById('syncStatus').textContent = '☁️ Synced'; } catch(e) { document.getElementById('syncStatus').textContent = '❌ Sync Error'; } }
-  window.dbLoad = async function() { if(storageMode !== "firebase") return; try { const snap = await get(ref(db, 'users/' + DEVICE_ID)); if (snap.exists()) { Object.assign(STATE, snap.val()); STRATEGIES = snap.val().strategies || []; log('✅ Firebase se data load hua'); }} catch(e) { log('⚠️ Firebase error'); } }
-  loadConfig(); fetchCoinData(); setInterval(fetchCoinData, FETCH_INTERVAL);
-</script>
-</body>
-</html>
+  window.dbSave = async function() { if(storageMode !== "firebase") return; document.getElementById('syncStatus').textContent = '☁️ Saving...'; try { await set(ref(db, 'users/' + DEVICE_ID), STATE); document.getElementById
