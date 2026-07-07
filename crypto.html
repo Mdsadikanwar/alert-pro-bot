@@ -256,9 +256,15 @@ function toggleBackupUI() {
     statusText.style.color = "#3b82f6";
   }
 }
+
 async function loadConfig() {
+  if(window.appLoaded) return; // DOUBLE LOAD ROKEGA - YE NAYI LINE HAI
+  window.appLoaded = true;
+
   document.getElementById('syncStatus').textContent = '☁️ Loading...';
   document.getElementById('storageMode').value = storageMode;
+
+  // PEHLE LOCAL SE LOAD
   STATE.tgToken = localStorage.getItem('tgToken') || '';
   STATE.tgChat = localStorage.getItem('tgChat') || '';
   STATE.autoTrade = localStorage.getItem('autoTrade') === 'true';
@@ -268,7 +274,17 @@ async function loadConfig() {
   STATE.coinHolding = parseFloat(localStorage.getItem('coinHolding') || '0');
   STATE.trades = parseInt(localStorage.getItem('trades') || '0');
   STRATEGIES = JSON.parse(localStorage.getItem('strategies') || '[]');
-  try{ if(window.dbLoad) { await window.dbLoad(); }}catch(e){}
+
+  // FIR FIREBASE SE OVERWRITE AGAR ON HAI
+  if(storageMode === "firebase"){
+    try{
+      if(window.dbLoad) {
+        await window.dbLoad();
+        log('✅ Firebase se data load hua');
+      }
+    }catch(e){}
+  }
+
   document.getElementById('coinSelect').value = STATE.coinId;
   document.getElementById('currencySelect').value = STATE.currency;
   STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol;
@@ -276,10 +292,17 @@ async function loadConfig() {
   document.getElementById('tgToken').value = STATE.tgToken;
   document.getElementById('tgChat').value = STATE.tgChat;
   if (STATE.autoTrade) document.getElementById('autoToggle').classList.add('active');
-  updateAutoStatusText(); renderStrategies(); updateBacktestDropdown(); updateUI();
+  updateAutoStatusText();
+  renderStrategies();
+  updateBacktestDropdown();
+  updateUI();
   document.getElementById('syncStatus').textContent = '☁️ Synced';
-  maskToken(); toggleBackupUI();
+  maskToken();
+  toggleBackupUI();
+
+  fetchCoinData(); // YE NAYI LINE - PEHLI BAAR PRICE LANE KE LIYE
 }
+
 async function saveAllToLocal() {
   localStorage.setItem('balance', STATE.balance);
   localStorage.setItem('coinHolding', STATE.coinHolding);
@@ -290,27 +313,45 @@ async function saveAllToLocal() {
   localStorage.setItem('autoTrade', STATE.autoTrade);
   localStorage.setItem('currentCoin', STATE.coinId);
   localStorage.setItem('currency', STATE.currency);
-  if(storageMode === "firebase"){ try{ if(window.dbSave) { await window.dbSave(); }}catch(e){} }
+
+  // Firebase ko 500ms baad save karo
+  if(storageMode === "firebase"){
+    setTimeout(async () => {
+      try{ if(window.dbSave) { await window.dbSave(); }}catch(e){}
+    }, 500);
+  }
 }
+
 async function changeStorageMode() {
   storageMode = document.getElementById("storageMode").value;
   localStorage.setItem("storageMode", storageMode);
-  log(`✅ Switched to: ${storageMode === 'firebase' ? 'Firebase Cloud' : 'Local Storage'}`);
-  toggleBackupUI(); await loadConfig();
+  log(`✅ Switched to: ${storageMode === 'firebase'? 'Firebase Cloud' : 'Local Storage'}`);
+  toggleBackupUI();
+  window.appLoaded = false; // MODE CHANGE PE FIR SE LOAD HONE DE
+  await loadConfig();
 }
+
 function exportData() {
   const data = {balance: STATE.balance, coinHolding: STATE.coinHolding, trades: STATE.trades, strategies: STRATEGIES, tgToken: STATE.tgToken, tgChat: STATE.tgChat, autoTrade: STATE.autoTrade, coinId: STATE.coinId, currency: STATE.currency};
   const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
   const url = URL.createObjectURL(blob); const a = document.createElement('a');
   a.href = url; a.download = 'alertpro_backup.json'; a.click(); log('✅ Data exported');
 }
+
 function importData() {
   const file = document.getElementById('importFile').files[0]; if (!file) { log('⚠️ Pehle file select karo'); return; }
   const reader = new FileReader();
-  reader.onload = function(e) { const data = JSON.parse(e.target.result); Object.assign(STATE, data); STRATEGIES = data.strategies; saveAllToLocal(); loadConfig(); log('✅ Data imported!'); };
+  reader.onload = function(e) {
+    const data = JSON.parse(e.target.result);
+    Object.assign(STATE, data);
+    STRATEGIES = data.strategies;
+    saveAllToLocal();
+    window.appLoaded = false; // IMPORT KE BAAD FIR SE LOAD
+    loadConfig();
+    log('✅ Data imported!');
+  };
   reader.readAsText(file);
 }
-
 // ========== 10.3 TELEGRAM FUNCTIONS ==========
 function saveTelegram() { 
   let tokenInput = document.getElementById('tgToken').value;
