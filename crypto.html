@@ -243,180 +243,116 @@ function maskToken() {
 }
 
 // ========== 10.2 STORAGE + BACKUP FUNCTIONS ==========
-
-let storageMode = localStorage.getItem("storageMode") || "firebase";
-
-// ================= SAVE =================
+  
 async function saveAllToLocal() {
+  localStorage.setItem('balance', STATE.balance);
+  localStorage.setItem('coinHolding', STATE.coinHolding);
+  localStorage.setItem('trades', STATE.trades);
+  localStorage.setItem('strategies', JSON.stringify(STRATEGIES));
+  localStorage.setItem('tgToken', STATE.tgToken);
+  localStorage.setItem('tgChat', STATE.tgChat);
+  localStorage.setItem('autoTrade', STATE.autoTrade);
+  localStorage.setItem('currentCoin', STATE.coinId);
+  localStorage.setItem('currency', STATE.currency);
 
-    localStorage.setItem("balance", STATE.balance);
-    localStorage.setItem("coinHolding", STATE.coinHolding);
-    localStorage.setItem("trades", STATE.trades);
-    localStorage.setItem("strategies", JSON.stringify(STRATEGIES));
-    localStorage.setItem("tgToken", STATE.tgToken);
-    localStorage.setItem("tgChat", STATE.tgChat);
-    localStorage.setItem("autoTrade", STATE.autoTrade);
-    localStorage.setItem("currentCoin", STATE.coinId);
-    localStorage.setItem("currency", STATE.currency);
-
-    // Firebase Save
-    if (storageMode === "firebase" && typeof window.dbSave === "function") {
-
-        try {
-
-            await window.dbSave();
-
-        } catch (e) {
-
-            console.error(e);
-
-            log("❌ Firebase Save Error");
-
-        }
-
-    }
-
+  // Firebase ko 500ms baad save karo
+  if(storageMode === "firebase"){
+    setTimeout(async () => {
+      try{ if(window.dbSave) { await window.dbSave(); }}catch(e){}
+    }, 500);
+  }
 }
 
-// ================= STORAGE MODE =================
 async function changeStorageMode() {
-
-    storageMode = document.getElementById("storageMode").value;
-
-    localStorage.setItem("storageMode", storageMode);
-
-    toggleBackupUI();
-
-    await loadConfig();
-
-    log("✅ Storage Mode : " + storageMode);
-
+  storageMode = document.getElementById("storageMode").value;
+  localStorage.setItem("storageMode", storageMode);
+  log(`✅ Switched to: ${storageMode === 'firebase'? 'Firebase Cloud' : 'Local Storage'}`);
+  toggleBackupUI();
+  window.appLoaded = false; // MODE CHANGE PE FIR SE LOAD HONE DE
+  await loadConfig();
 }
 
-// ================= EXPORT =================
 function exportData() {
-
-    const data = {
-
-        balance: STATE.balance,
-        coinHolding: STATE.coinHolding,
-        trades: STATE.trades,
-        strategies: STRATEGIES,
-        tgToken: STATE.tgToken,
-        tgChat: STATE.tgChat,
-        autoTrade: STATE.autoTrade,
-        coinId: STATE.coinId,
-        currency: STATE.currency
-
-    };
-
-    const blob = new Blob(
-        [JSON.stringify(data, null, 2)],
-        { type: "application/json" }
-    );
-
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-
-    a.href = url;
-
-    a.download = "alertpro_backup.json";
-
-    a.click();
-
-    URL.revokeObjectURL(url);
-
-    log("✅ Backup Exported");
-
+  const data = {balance: STATE.balance, coinHolding: STATE.coinHolding, trades: STATE.trades, strategies: STRATEGIES, tgToken: STATE.tgToken, tgChat: STATE.tgChat, autoTrade: STATE.autoTrade, coinId: STATE.coinId, currency: STATE.currency};
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a');
+  a.href = url; a.download = 'alertpro_backup.json'; a.click(); log('✅ Data exported');
 }
 
-// ================= IMPORT =================
 function importData() {
-
-    const file = document.getElementById("importFile").files[0];
-
-    if (!file) {
-
-        alert("Select Backup File");
-
-        return;
-
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = async function (e) {
-
-        try {
-
-            const data = JSON.parse(e.target.result);
-
-            STATE.balance = data.balance || 10000;
-            STATE.coinHolding = data.coinHolding || 0;
-            STATE.trades = data.trades || 0;
-            STATE.tgToken = data.tgToken || "";
-            STATE.tgChat = data.tgChat || "";
-            STATE.autoTrade = data.autoTrade || false;
-            STATE.coinId = data.coinId || "bitcoin";
-            STATE.currency = data.currency || "usd";
-
-            STRATEGIES = Array.isArray(data.strategies)
-                ? data.strategies
-                : [];
-
-            await saveAllToLocal();
-
-            updateUI();
-
-            renderStrategies();
-
-            updateBacktestDropdown();
-
-            log("✅ Backup Imported");
-
-        } catch (err) {
-
-            console.error(err);
-
-            alert("Invalid Backup File");
-
-            log("❌ Import Failed");
-
-        }
-
-    };
-
-    reader.readAsText(file);
-
+  const file = document.getElementById('importFile').files[0]; if (!file) { log('⚠️ Pehle file select karo'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = JSON.parse(e.target.result);
+    Object.assign(STATE, data);
+    STRATEGIES = data.strategies;
+    saveAllToLocal();
+    window.appLoaded = false; // IMPORT KE BAAD FIR SE LOAD
+    loadConfig();
+    log('✅ Data imported!');
+  };
+  reader.readAsText(file);
 }
-
-// ================= BACKUP UI =================
 function toggleBackupUI() {
-
-    const div = document.getElementById("firebaseOptions");
-
-    const txt = document.getElementById("storageStatusText");
-
-    if (storageMode === "firebase") {
-
-        div.classList.remove("hide");
-
-        txt.textContent = "☁️ Firebase Cloud Selected";
-
-        txt.style.color = "#10b981";
-
-    } else {
-
-        div.classList.add("hide");
-
-        txt.textContent = "📱 Local Storage Selected";
-
-        txt.style.color = "#3b82f6";
-
-    }
-
+  const firebaseDiv = document.getElementById("firebaseOptions");
+  const statusText = document.getElementById("storageStatusText");
+  if(storageMode === "firebase"){
+    firebaseDiv.classList.add("hide");
+    statusText.textContent = "☁️ Firebase Cloud Selected";
+    statusText.style.color = "#10b981";
+  } else {
+    firebaseDiv.classList.remove("hide");
+    statusText.textContent = "📱 Local Storage Selected";
+    statusText.style.color = "#3b82f6";
+  }
 }
+
+async function loadConfig() {
+  if(window.appLoaded) return; // DOUBLE LOAD ROKEGA - YE NAYI LINE HAI
+  window.appLoaded = true;
+
+  document.getElementById('syncStatus').textContent = '☁️ Loading...';
+  document.getElementById('storageMode').value = storageMode;
+
+  // PEHLE LOCAL SE LOAD
+  STATE.tgToken = localStorage.getItem('tgToken') || '';
+  STATE.tgChat = localStorage.getItem('tgChat') || '';
+  STATE.autoTrade = localStorage.getItem('autoTrade') === 'true';
+  STATE.coinId = localStorage.getItem('currentCoin') || 'bitcoin';
+  STATE.currency = localStorage.getItem('currency') || 'usd';
+  STATE.balance = parseFloat(localStorage.getItem('balance') || '10000');
+  STATE.coinHolding = parseFloat(localStorage.getItem('coinHolding') || '0');
+  STATE.trades = parseInt(localStorage.getItem('trades') || '0');
+  STRATEGIES = JSON.parse(localStorage.getItem('strategies') || '[]');
+
+  // FIR FIREBASE SE OVERWRITE AGAR ON HAI
+  if(storageMode === "firebase"){
+    try{
+      if(window.dbLoad) {
+        await window.dbLoad();
+        log('✅ Firebase se data load hua');
+      }
+    }catch(e){}
+  }
+
+  document.getElementById('coinSelect').value = STATE.coinId;
+  document.getElementById('currencySelect').value = STATE.currency;
+  STATE.coinSymbol = COIN_DATA[STATE.coinId].symbol;
+  document.getElementById('pairLabel').textContent = STATE.coinSymbol + '/' + STATE.currency.toUpperCase();
+  document.getElementById('tgToken').value = STATE.tgToken;
+  document.getElementById('tgChat').value = STATE.tgChat;
+  if (STATE.autoTrade) document.getElementById('autoToggle').classList.add('active');
+  updateAutoStatusText();
+  renderStrategies();
+  updateBacktestDropdown();
+  updateUI();
+  document.getElementById('syncStatus').textContent = '☁️ Synced';
+  maskToken();
+  toggleBackupUI();
+
+  fetchCoinData(); // YE NAYI LINE - PEHLI BAAR PRICE LANE KE LIYE
+}
+
 // ========== 10.3 TELEGRAM FUNCTIONS ==========
 function saveTelegram() { 
   let tokenInput = document.getElementById('tgToken').value;
@@ -508,99 +444,45 @@ async function runBacktest() {
 }
 </script>
 
-  <!-- ========== 11. FIREBASE MODULE SECTION ========== -->
+<!-- ========== 11. FIREBASE MODULE SECTION ========== -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  const firebaseConfig = { apiKey: "AIzaSyDIPtw7gur2viWc4k39N3HBK_aPJ4EBWqk", authDomain: "alertpro-bot.firebaseapp.com", databaseURL: "https://alertpro-bot-default-rtdb.firebaseio.com", projectId: "alertpro-bot", storageBucket: "alertpro-bot.firebasestorage.app", messagingSenderId: "834804229548", appId: "1:834804229548:web:e46f165bd57b66e92f0609" };
+  const app = initializeApp(firebaseConfig); const db = getDatabase(app);
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDIPtw7gur2viWc4k39N3HBK_aPJ4EBWqk",
-  authDomain: "alertpro-bot.firebaseapp.com",
-  databaseURL: "https://alertpro-bot-default-rtdb.firebaseio.com",
-  projectId: "alertpro-bot",
-  storageBucket: "alertpro-bot.firebasestorage.app",
-  messagingSenderId: "834804229548",
-  appId: "1:834804229548:web:e46f165bd57b66e92f0609"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// SAVE
-window.dbSave = async function () {
-
-    if (storageMode !== "firebase") return;
-
-    document.getElementById("syncStatus").textContent = "☁️ Saving...";
-
+  window.dbSave = async function() {
+    if(storageMode!== "firebase") return;
+    document.getElementById('syncStatus').textContent = '☁️ Saving...';
     try {
-
-        const saveData = {
-            ...STATE,
-            strategies: STRATEGIES
-        };
-
-        await set(
-            ref(db, "users/" + DEVICE_ID),
-            saveData
-        );
-
-        document.getElementById("syncStatus").textContent = "☁️ Synced";
-
-        log("✅ Firebase Save Success");
-
-    } catch (e) {
-
-        console.error(e);
-
-        document.getElementById("syncStatus").textContent = "❌ Sync Error";
-
-        log("❌ Firebase Save Failed");
-
+      await set(ref(db, 'users/' + DEVICE_ID), STATE);
+      document.getElementById('syncStatus').textContent = '☁️ Synced';
+    } catch(e) {
+      document.getElementById('syncStatus').textContent = '❌ Sync Error';
     }
+  }
 
-};
-
-// LOAD
-window.dbLoad = async function () {
-
-    if (storageMode !== "firebase") return;
-
-    document.getElementById("syncStatus").textContent = "☁️ Loading...";
-
+  window.dbLoad = async function() {
+    if(storageMode!== "firebase") return;
     try {
-
-        const snap = await get(ref(db, "users/" + DEVICE_ID));
-
-        if (snap.exists()) {
-
-            const data = snap.val();
-
-            Object.assign(STATE, data);
-
-            STRATEGIES = Array.isArray(data.strategies)
-                ? data.strategies
-                : [];
-
-            log("✅ Firebase Loaded");
-
-        } else {
-
-            log("ℹ️ No Cloud Backup Found");
-
-        }
-
-        document.getElementById("syncStatus").textContent = "☁️ Synced";
-
-    } catch (e) {
-
-        console.error(e);
-
-        document.getElementById("syncStatus").textContent = "❌ Sync Error";
-
-        log("❌ Firebase Load Failed");
-
+      const snap = await get(ref(db, 'users/' + DEVICE_ID));
+      if (snap.exists()) {
+        Object.assign(STATE, snap.val());
+        STRATEGIES = snap.val().strategies || [];
+      }
+    } catch(e) {
+      log('⚠️ Firebase error');
     }
+  }
 
-};
+  // YAHAN SE HATA DIYA: loadConfig() aur setInterval
+</script>
+
+<!-- ========== 12. APP INIT SECTION ========== -->
+<script>
+  // SIRF 1 BAAR CHALEGA PAGE LOAD PE
+  document.addEventListener('DOMContentLoaded', () => {
+    loadConfig();
+    setInterval(fetchCoinData, FETCH_INTERVAL); // 1 min me 1 baar price update
+  });
 </script>
