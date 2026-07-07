@@ -508,7 +508,7 @@ async function runBacktest() {
 }
 </script>
 
-<!-- ========== 11. FIREBASE MODULE SECTION ========== -->
+  <!-- ========== 11. FIREBASE MODULE SECTION ========== -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -526,15 +526,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Device ID (First time generate, then reuse)
-let DEVICE_ID = localStorage.getItem("alertpro_device_id");
-
-if (!DEVICE_ID) {
-    DEVICE_ID = crypto.randomUUID();
-    localStorage.setItem("alertpro_device_id", DEVICE_ID);
-}
-
-// ================= SAVE =================
+// SAVE
 window.dbSave = async function () {
 
     if (storageMode !== "firebase") return;
@@ -548,23 +540,28 @@ window.dbSave = async function () {
             strategies: STRATEGIES
         };
 
-        await set(ref(db, "users/" + DEVICE_ID), saveData);
+        await set(
+            ref(db, "users/" + DEVICE_ID),
+            saveData
+        );
 
         document.getElementById("syncStatus").textContent = "☁️ Synced";
 
         log("✅ Firebase Save Success");
 
-    } catch (err) {
+    } catch (e) {
 
-        console.error(err);
+        console.error(e);
 
         document.getElementById("syncStatus").textContent = "❌ Sync Error";
 
         log("❌ Firebase Save Failed");
+
     }
+
 };
 
-// ================= LOAD =================
+// LOAD
 window.dbLoad = async function () {
 
     if (storageMode !== "firebase") return;
@@ -585,26 +582,25 @@ window.dbLoad = async function () {
                 ? data.strategies
                 : [];
 
-            document.getElementById("syncStatus").textContent = "☁️ Synced";
-
-            log("✅ Firebase Load Success");
+            log("✅ Firebase Loaded");
 
         } else {
 
-            document.getElementById("syncStatus").textContent = "☁️ New User";
-
-            log("ℹ️ No Firebase Backup Found");
+            log("ℹ️ No Cloud Backup Found");
 
         }
 
-    } catch (err) {
+        document.getElementById("syncStatus").textContent = "☁️ Synced";
 
-        console.error(err);
+    } catch (e) {
 
-        document.getElementById("syncStatus").textContent = "❌ Load Error";
+        console.error(e);
+
+        document.getElementById("syncStatus").textContent = "❌ Sync Error";
 
         log("❌ Firebase Load Failed");
 
     }
+
 };
 </script>
