@@ -539,9 +539,16 @@ function simulateBacktest(strategy, data, fee, slippage, risk) {
       const qty = holding*0.5;
       const amount = (qty*price)*(1-fee);
       holding -= qty; balance += amount;
+// PURANA DELETE KARO:
+const buyTrade = BACKTEST_TRADES.findLast(t => t.type==='BUY');
+const pnl = buyTrade? ((price-buyTrade.price)/buyTrade.price)*100 : 0;
 
-      const buyTrade = BACKTEST_TRADES.findLast(t => t.type==='BUY');
-      const pnl = buyTrade? ((price-buyTrade.price)/buyTrade.price)*100 : 0;
+// NAYA YE LIKHO:
+let buyTrade = null;
+for(let j = BACKTEST_TRADES.length - 1; j >= 0; j--){
+  if(BACKTEST_TRADES[j].type === 'BUY'){ buyTrade = BACKTEST_TRADES[j]; break; }
+}
+const pnl = buyTrade? ((price-buyTrade.price)/buyTrade.price)*100 : 0;
       BACKTEST_TRADES.push({type:'SELL', price, time:data[i].time, qty, pnl});
 
       if(pnl>0){wins++; grossP+=pnl; cWin++; cLoss=0;} else {losses++; grossL+=Math.abs(pnl); cLoss++; cWin=0;}
