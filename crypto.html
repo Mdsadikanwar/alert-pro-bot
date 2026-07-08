@@ -144,29 +144,44 @@ select.input { flex: 1; }
     </div>
 
 <!-- ========== 7. BACKTEST TAB SECTION ========== -->
-    <div id="backtest" class="hidden">
-      <div class="card">
-        <h3 style="margin-bottom: 12px;">📊 Backtest Engine</h3>
-        <p style="font-size:12px; color:#64748b; margin-bottom:12px;">Apni strategy ko pichle data par test karo</p>
-        <div class="select-row">
-          <select class="input" id="backtestLimit">
-            <option value="30">Last 30 Days</option>
-            <option value="90">Last 3 Months</option>
-            <option value="180">Last 6 Months</option>
-            <option value="365" selected>Last 1 Year</option>
-            <option value="1000">All Time ~1000 Days</option>
-          </select>
-        </div>
-        <div class="select-row">
-          <select class="input" id="backtestStrategy">
-            <option value="-1">Select Strategy</option>
-          </select>
-        </div>
-        <button class="btn btn-blue" onclick="runBacktest()">🚀 Run Backtest</button>
-        <div id="backtestResult" style="margin-top:12px; font-size:13px;"></div>
-      </div>
+<div id="backtest" class="hidden">
+  <div class="card">
+    <h3 style="margin-bottom: 12px;">📊 PRO Backtest Engine</h3>
+    
+    <div class="select-row">
+      <select class="input" id="backtestStrategy">
+        <option value="-1">Select Strategy</option>
+      </select>
+    </div>
+    <div class="select-row">
+      <select class="input" id="backtestCoin"></select>
+    </div>
+    <div class="select-row">
+      <select class="input" id="backtestLimit">
+        <option value="30">Last 30 Days</option>
+        <option value="90">Last 3 Months</option>
+        <option value="180">Last 6 Months</option>
+        <option value="365" selected>Last 1 Year</option>
+        <option value="1000">All Time ~1000 Days</option>
+      </select>
+    </div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <input class="input" id="backtestFee" type="number" value="0.1" step="0.01" placeholder="Fees %">
+      <input class="input" id="backtestSlippage" type="number" value="0.05" step="0.01" placeholder="Slippage %">
+      <select class="input" id="backtestRisk">
+        <option value="0.1">Risk 10%</option>
+        <option value="0.05">Risk 5%</option>
+        <option value="0.02">Risk 2%</option>
+      </select>
     </div>
 
+    <button class="btn btn-blue" onclick="runBacktest()">🚀 Run Backtest</button>
+    <div id="backtestResult" style="margin-top:12px; font-size:13px;"></div>
+    <div id="backtestTradeTable" style="margin-top:12px; max-height:200px; overflow:auto;"></div>
+  </div>
+</div>
+  
 <!-- ========== 8. SETTINGS TAB SECTION ========== -->
     <div id="settings" class="hidden">
       <div class="card">
@@ -438,31 +453,138 @@ function toggleAuto() { STATE.autoTrade =!STATE.autoTrade; document.getElementBy
 function updateAutoStatusText() { document.getElementById('autoStatusText').textContent = STATE.autoTrade? 'Auto trading ON - ' + STATE.signal : 'Auto trading OFF'; }
 function updateUI() { document.getElementById('balance').textContent = '$' + STATE.balance.toFixed(2); document.getElementById('coinHold').textContent = STATE.coinHolding.toFixed(6); document.getElementById('trades').textContent = STATE.trades; const pnl = (STATE.coinHolding * STATE.price + STATE.balance - 10000); document.getElementById('pnl').textContent = (pnl >= 0? '+' : '') + '$' + pnl.toFixed(2); document.getElementById('pnl').className = 'stat-value ' + (pnl >= 0? 'green' : 'red'); }
 
-// ========== 10.5 STRATEGY + BACKTEST FUNCTIONS ==========
-function saveStrategy() { const name = document.getElementById('strategyName').value; const buy = parseFloat(document.getElementById('buyCondition').value); const sell = parseFloat(document.getElementById('sellCondition').value); if(!name || isNaN(buy) || isNaN(sell)) return alert('Sab bharo'); STRATEGIES.push({name, config:{buy,sell}, is_active:false}); saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); log('✅ Strategy saved'); }
-function renderStrategies() { const list = document.getElementById('strategyList'); if(!list) return; list.innerHTML = STRATEGIES.map((s,i)=>`<div class="card" style="padding:10px;"><b>${s.name}</b><br>BUY >${s.config.buy}% | SELL <${s.config.sell}% <button onclick="toggleStrat(${i})" class="btn btn-blue" style="padding:6px; margin-top:6px;">${s.is_active?'Deactivate':'Activate'}</button></div>`).join(''); }
-function toggleStrat(i){ STRATEGIES[i].is_active =!STRATEGIES[i].is_active; saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); }
-function updateBacktestDropdown() { const select = document.getElementById('backtestStrategy'); if(!select) return; select.innerHTML = '<option value="-1">Select Strategy</option>' + STRATEGIES.map((s,i)=>`<option value="${i}">${s.name}</option>`).join(''); }
-async function runBacktest() {
-  const stratIndex = document.getElementById('backtestStrategy').value; const days = parseInt(document.getElementById('backtestLimit').value); const resultDiv = document.getElementById('backtestResult');
-  if(stratIndex == -1) { alert('Pehle strategy select karo'); return; } const strat = STRATEGIES[stratIndex];
-  resultDiv.innerHTML = '⏳ Fetching ' + days + ' days data...'; log(`📊 Backtest: ${strat.name}`);
-  try {
-    let url = `https://api.coingecko.com/api/v3/coins/${COIN_DATA[STATE.coinId].cgId}/market_chart?vs_currency=${STATE.currency}&days=${days}`;
-    let res = await fetch(url); const data = await res.json(); const prices = data.prices;
-    let virtualBalance = 10000; let virtualCoin = 0; let trades = 0;
-    for(let i = 24; i < prices.length; i++) {
-      const priceNow = prices[i][1]; const price24hAgo = prices[i-24][1]; const change24h = ((priceNow - price24hAgo) / price24hAgo) * 100;
-      const buyThreshold = strat.config.buy || 3; const sellThreshold = strat.config.sell || -3;
-      if(change24h > buyThreshold && virtualBalance > 10) { const amount = virtualBalance * 0.95; virtualCoin += amount / priceNow; virtualBalance -= amount; trades++; }
-      else if(change24h < sellThreshold && virtualCoin > 0) { virtualBalance += virtualCoin * priceNow; virtualCoin = 0; trades++; }
-    }
-    const finalValue = virtualBalance + (virtualCoin * prices[prices.length-1][1]); const profitPct = ((finalValue - 10000) / 10000) * 100;
-    resultDiv.innerHTML = `<div style="background:rgba(16,185,129,0.1); padding:10px; border-radius:8px;"><b>Result:</b><br>Final: ${STATE.currency === 'usd'? '$' : '₹'}${finalValue.toFixed(2)}<br>P&L: <span class="${profitPct>=0?'green':'red'}">${profitPct>=0?'+':''}${profitPct.toFixed(2)}%</span><br>Trades: ${trades}</div>`;
-    log(`✅ Backtest: ${profitPct.toFixed(2)}% profit`);
-  } catch(e) { resultDiv.innerHTML = '❌ API Error'; log('❌ Backtest error'); }
+// ========== 10.5 PRO BACKTEST FUNCTIONS ==========
+let BACKTEST_DATA = [];
+let BACKTEST_TRADES = [];
+
+function saveStrategy() {
+  const name = document.getElementById('strategyName').value;
+  const buy = parseFloat(document.getElementById('buyCondition').value);
+  const sell = parseFloat(document.getElementById('sellCondition').value);
+  if(!name || isNaN(buy) || isNaN(sell)) return alert('Sab bharo');
+  STRATEGIES.push({id: Date.now(), name, type:'change', buyThreshold: buy, sellThreshold: Math.abs(sell), config:{buy,sell}, is_active:false});
+  saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); log('✅ Strategy saved');
 }
-</script>
+
+function renderStrategies() {
+  const list = document.getElementById('strategyList');
+  if(!list) return;
+  list.innerHTML = STRATEGIES.map((s,i)=>`<div class="card" style="padding:10px;"><b>${s.name}</b><br>BUY >${s.config.buy}% | SELL <${s.config.sell}% <button onclick="toggleStrat(${i})" class="btn btn-blue" style="padding:6px; margin-top:6px;">${s.is_active?'Deactivate':'Activate'}</button> <button onclick="deleteStrat(${i})" class="btn btn-sell" style="padding:6px; margin-top:6px;">Delete</button></div>`).join('');
+}
+
+function toggleStrat(i){ STRATEGIES[i].is_active =!STRATEGIES[i].is_active; saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); }
+function deleteStrat(i){ STRATEGIES.splice(i,1); saveAllToLocal(); renderStrategies(); updateBacktestDropdown(); }
+
+function updateBacktestDropdown() {
+  const sSelect = document.getElementById('backtestStrategy');
+  const cSelect = document.getElementById('backtestCoin');
+  if(sSelect){ sSelect.innerHTML = '<option value="-1">Select Strategy</option>' + STRATEGIES.map((s)=>`<option value="${s.id}">${s.name}</option>`).join(''); }
+  if(cSelect){ cSelect.innerHTML = Object.keys(COIN_DATA).map(id => `<option value="${id}">${COIN_DATA[id].symbol}</option>`).join(''); cSelect.value = STATE.coinId; }
+}
+
+async function runBacktest() {
+  const stratId = parseInt(document.getElementById('backtestStrategy').value);
+  const coinId = document.getElementById('backtestCoin').value;
+  const days = parseInt(document.getElementById('backtestLimit').value);
+  const fee = parseFloat(document.getElementById('backtestFee').value) / 100;
+  const slippage = parseFloat(document.getElementById('backtestSlippage').value) / 100;
+  const risk = parseFloat(document.getElementById('backtestRisk').value);
+  const resultDiv = document.getElementById('backtestResult');
+
+  if(stratId == -1) { alert('Pehle strategy select karo'); return; }
+  const strat = STRATEGIES.find(s => s.id === stratId);
+
+  resultDiv.innerHTML = '⏳ Fetching ' + days + ' days data...';
+  log(`📊 Backtest: ${strat.name} on ${COIN_DATA[coinId].symbol}`);
+
+  await fetchBacktestData(coinId, STATE.currency, days);
+  if(BACKTEST_DATA.length < 50) { resultDiv.innerHTML = '❌ Data Error'; return; }
+
+  const r = simulateBacktest(strat, BACKTEST_DATA, fee, slippage, risk);
+  showBacktestResult(r);
+  showTradeTable();
+  log(`✅ Backtest Done: ${r.profitPct.toFixed(2)}% P&L`);
+}
+
+async function fetchBacktestData(coinId, currency, days) {
+  try{
+    let url = `https://api.coingecko.com/api/v3/coins/${COIN_DATA[coinId].cgId}/market_chart?vs_currency=${currency}&days=${days}`;
+    let res = await fetch(url); const data = await res.json();
+    BACKTEST_DATA = data.prices.map(p => ({time: p[0], price: p[1]}));
+  }catch(e){ BACKTEST_DATA = []; }
+}
+
+function simulateBacktest(strategy, data, fee, slippage, risk) {
+  BACKTEST_TRADES = [];
+  let balance = 10000; let holding = 0;
+  let wins=0, losses=0, grossP=0, grossL=0;
+  let best=-999, worst=999, cWin=0, cLoss=0, maxW=0, maxL=0;
+
+  for(let i=1; i<data.length; i++){
+    const change = ((data[i].price - data[i-1].price)/data[i-1].price)*100;
+    let signal = null;
+    if(change > strategy.buyThreshold) signal='BUY';
+    if(change < -strategy.sellThreshold) signal='SELL';
+
+    if(signal==='BUY' && balance>100){
+      const price = data[i].price * (1+slippage);
+      const amount = (balance * risk) * (1-fee);
+      const qty = amount/price;
+      holding += qty; balance -= amount;
+      BACKTEST_TRADES.push({type:'BUY', price, time:data[i].time, qty});
+    }
+
+    if(signal==='SELL' && holding>0){
+      const price = data[i].price * (1-slippage);
+      const qty = holding*0.5;
+      const amount = (qty*price)*(1-fee);
+      holding -= qty; balance += amount;
+
+      const buyTrade = BACKTEST_TRADES.findLast(t => t.type==='BUY');
+      const pnl = buyTrade? ((price-buyTrade.price)/buyTrade.price)*100 : 0;
+      BACKTEST_TRADES.push({type:'SELL', price, time:data[i].time, qty, pnl});
+
+      if(pnl>0){wins++; grossP+=pnl; cWin++; cLoss=0;} else {losses++; grossL+=Math.abs(pnl); cLoss++; cWin=0;}
+      if(pnl>best) best=pnl; if(pnl<worst) worst=pnl;
+      if(cWin>maxW) maxW=cWin; if(cLoss>maxL) maxL=cLoss;
+    }
+  }
+
+  const finalValue = balance + (holding * data[data.length-1].price);
+  const profitPct = ((finalValue - 10000) / 10000) * 100;
+  const winRate = (wins+losses) > 0? ((wins/(wins+losses))*100).toFixed(1) : 0;
+  const profitFactor = grossL!== 0? (grossP/grossL).toFixed(2) : '∞';
+
+  return {finalValue, profitPct, winRate, profitFactor, best, worst, maxW, maxL, trades:wins+losses};
+}
+
+function showBacktestResult(r){
+  document.getElementById('backtestResult').innerHTML = `
+    <div style="background:rgba(16,185,129,0.1); padding:12px; border-radius:8px; margin-top:10px">
+      <h4 style="color:#10b981;margin-bottom:8px">📊 Backtest Results</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:12px">
+        <div><b>Final:</b> ${STATE.currency === 'usd'? '$' : '₹'}${r.finalValue.toFixed(2)}</div>
+        <div><b>P&L:</b> <span class="${r.profitPct>=0?'green':'red'}">${r.profitPct>=0?'+':''}${r.profitPct.toFixed(2)}%</span></div>
+        <div><b>Win Rate:</b> ${r.winRate}%</div>
+        <div><b>Profit Factor:</b> ${r.profitFactor}</div>
+        <div><b>Best Trade:</b> ${r.best.toFixed(2)}%</div>
+        <div><b>Worst Trade:</b> ${r.worst.toFixed(2)}%</div>
+        <div><b>Max Win Streak:</b> ${r.maxW}</div>
+        <div><b>Max Loss Streak:</b> ${r.maxL}</div>
+        <div><b>Total Trades:</b> ${r.trades}</div>
+      </div>
+    </div>
+  `;
+}
+
+function showTradeTable(){
+  let html = `<h4 style="margin-top:10px">📋 Trade List</h4><table style="width:100%;font-size:11px"><tr><th>Type</th><th>Price</th><th>P&L%</th><th>Time</th></tr>`;
+  BACKTEST_TRADES.slice(-20).forEach(t => {
+    html += `<tr><td style="color:${t.type==='BUY'?'#10b981':'#ef4444'}">${t.type}</td><td>${t.price.toFixed(2)}</td><td>${t.pnl? t.pnl.toFixed(2)+'%' : '-'}</td><td>${new Date(t.time).toLocaleDateString()}</td></tr>`
+  });
+  html += `</table>`;
+  document.getElementById('backtestTradeTable').innerHTML = html;
+}
 
 <!-- ========== 11. FIREBASE MODULE SECTION ========== -->
 <script type="module">
