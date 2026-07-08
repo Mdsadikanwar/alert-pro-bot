@@ -577,29 +577,27 @@ function showBacktestResult(r){
         <div><b>Max Win Streak:</b> ${r.maxW}</div>
         <div><b>Max Loss Streak:</b> ${r.maxL}</div>
         <div><b>Total Trades:</b> ${r.trades}</div>
-      </div>
-    </div>
-  `;
-}
-
-function showTradeTable(){
-  let html = `<h4 style="margin-top:10px">📋 Trade List</h4><table style="width:100%;font-size:11px"><tr><th>Type</th><th>Price</th><th>P&L%</th><th>Time</th></tr>`;
-  BACKTEST_TRADES.slice(-20).forEach(t => {
-    html += `<tr><td style="color:${t.type==='BUY'?'#10b981':'#ef4444'}">${t.type}</td><td>${t.price.toFixed(2)}</td><td>${t.pnl? t.pnl.toFixed(2)+'%' : '-'}</td><td>${new Date(t.time).toLocaleDateString()}</td></tr>`
-  });
-  html += `</table>`;
-  document.getElementById('backtestTradeTable').innerHTML = html;
-}
-
-<!-- ========== 11. FIREBASE MODULE SECTION ========== -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-  const firebaseConfig = { apiKey: "AIzaSyDIPtw7gur2viWc4k39N3HBK_aPJ4EBWqk", authDomain: "alertpro-bot.firebaseapp.com", databaseURL: "https://alertpro-bot-default-rtdb.firebaseio.com", projectId: "alertpro-bot", storageBucket: "alertpro-bot.firebasestorage.app", messagingSenderId: "834804229548", appId: "1:834804229548:web:e46f165bd57b66e92f0609" };
-  const app = initializeApp(firebaseConfig); const db = getDatabase(app);
-
-  window.dbSave = async function() {
-    if(storageMode!== "firebase") return;
+580       </div>
+581     </div>
+582
+583     // RUN BACKTEST KA BAND YAHAN HONA CHAHIYE THA
+584     }
+585}
+586     function showTradeTable(){
+587       let html = `<h4 style="margin-top:10px">📋 Trade List</h4><table style="width:100%;font-size:11px"><tr><th>Type</th><th>Price</th><th>P&L%</th><th>Time</th></tr>`;
+588       BACKTEST_TRADES.slice(-20).forEach(t => {
+589         html += `<tr><td style="color:${t.type==='BUY'?'#10b981':'#ef4444'}">${t.type}</td><td>$${t.price.toFixed(2)}</td><td>${t.pnl? t.pnl.toFixed(2)+'%' : '-'}</td><td>${new Date(t.time).toLocaleTimeString()}</td></tr>`;
+590       });
+591       html += `</table>`;
+592       document.getElementById('backtestTradeTable').innerHTML = html;
+593     }
+594
+595     // ========== 11. FIREBASE MODULE SECTION ==========
+596     <script type="module">
+597       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+598       import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+599       const firebaseConfig = { apiKey: "AIzaSyDIPtw7gur2viWc4k39N3HBK_aPJ4EBWqk", authDomain: "alertpro-bot.firebaseapp.com", databaseURL: "https://alertpro-bot.firebaseio.com", projectId: "alertpro-bot", storageBucket: "alertpro-bot.appspot.com", messagingSenderId: "123456789", appId: "1:123456789:web:abc" };
+600       const app = initializeApp(firebaseConfig); const db = getDatabase(app);
     document.getElementById('syncStatus').textContent = '☁️ Saving...';
     try {
       await set(ref(db, 'users/' + DEVICE_ID), STATE);
