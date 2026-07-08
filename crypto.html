@@ -550,9 +550,9 @@ if(signal==='SELL' && holding>0){
   BACKTEST_TRADES.push({type:'SELL', price, time:data[i].time, qty, pnl});
 
   if(pnl>0){wins++; grossP+=pnl; cWin++; cLoss=0;} else {losses++; grossL+=Math.abs(pnl); cLoss++; cWin=0;}
-      if(pnl>best) best=pnl; if(pnl<worst) worst=pnl;
-      if(cWin>maxW) maxW=cWin; if(cLoss>maxL) maxL=cLoss;
-    }
+  if(pnl>best) best=pnl; if(pnl<worst) worst=pnl;
+  if(cWin>maxW) maxW=cWin; if(cLoss>maxL) maxL=cLoss;
+}
   }
 
   const finalValue = balance + (holding * data[data.length-1].price);
